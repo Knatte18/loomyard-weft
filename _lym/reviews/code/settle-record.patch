@@ -1,0 +1,934 @@
+diff --git a/internal/shedadapters/weaver.go b/internal/shedadapters/weaver.go
+index 5bb95aa3e..86b979ef0 100644
+--- a/internal/shedadapters/weaver.go
++++ b/internal/shedadapters/weaver.go
+@@ -11,6 +11,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/runplan"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/summaryparser"
+ 	"github.com/Knatte18/loomyard/internal/weaverengine"
+ )
+@@ -59,6 +60,7 @@ func NewWeaverProducer(name string, run WeaverRunner, deps weaverengine.RunDeps)
+ // Call runs one iteration of the producer.
+ // It checks the context on entry and maps the run's result.
+ // Done points at Weaver's summary, which survives a cancellation that arrives during the run.
++// A done or stuck result carries the plan-level verify's spans as gate spans of the verify entry.
+ // A stuck result consults the plan-conflict record the run left, through claimConflict,
+ // so a new conflict asks for a reroute to plan review and a repeat does not.
+ // A busy run and a fault in Weaver's config or state map to Stuck with the error's text, which names its way forward.
+@@ -78,14 +80,14 @@ func (p *WeaverProducer) Call(ctx context.Context) (shedengine.Outcome, shedengi
+ 
+ 	switch result.Outcome {
+ 	case weaverOutcomeDone:
+-		return shedengine.Done, shedengine.OutputPointer{Path: summaryparser.Path(p.deps.Geom.RunDir)}, nil
++		return shedengine.Done, shedengine.OutputPointer{Path: summaryparser.Path(p.deps.Geom.RunDir), GateSpans: weaverVerifySpans(result)}, nil
+ 
+ 	case weaverOutcomeStuck:
+ 		if cerr := cancelErr(ctx, p.name, weaverEngineLabel); cerr != nil {
+ 			return "", shedengine.OutputPointer{}, cerr
+ 		}
+ 		logger.Warn("shedadapters: weaver run is stuck", "producer", p.name, "engine", weaverEngineLabel, "stuckReason", result.StuckReason, "batchesDone", result.BatchesDone)
+-		ptr := claimConflict(p.name, weaverEngineLabel, result.StuckReason, runplan.ConflictDir(p.deps.Geom.AnchorRoot), shedengine.OutputPointer{})
++		ptr := claimConflict(p.name, weaverEngineLabel, result.StuckReason, runplan.ConflictDir(p.deps.Geom.AnchorRoot), shedengine.OutputPointer{GateSpans: weaverVerifySpans(result)})
+ 		return shedengine.Stuck, ptr, nil
+ 
+ 	default:
+@@ -96,6 +98,12 @@ func (p *WeaverProducer) Call(ctx context.Context) (shedengine.Outcome, shedengi
+ 	}
+ }
+ 
++// weaverVerifySpans returns the run's plan-level verify spans as the gate spans of one entry named for the verify.
++// A run that ran no verify returns nil.
++func weaverVerifySpans(result weaverengine.RunResult) []shedengine.GateSpan {
++	return gateSpansOf(&shuttleengine.GateOutcome{Entries: []shuttleengine.GateEntryOutcome{{Name: weaverengine.VerifyGateName, Spans: result.VerifySpans}}})
++}
++
+ // claimConflict claims the plan-conflict record in conflictDir for a stuck implementer row named name over engine.
+ // It returns ptr with its Reason set.
+ // A new conflict sets Reroute and asks plan review to clear it.
+diff --git a/internal/shedadapters/weaver_test.go b/internal/shedadapters/weaver_test.go
+index 02847eded..c0f5b7c2f 100644
+--- a/internal/shedadapters/weaver_test.go
++++ b/internal/shedadapters/weaver_test.go
+@@ -6,11 +6,14 @@ import (
+ 	"context"
+ 	"errors"
+ 	"fmt"
++	"reflect"
+ 	"strings"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/runplan"
+ 	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/summaryparser"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shedfake"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
+@@ -36,28 +39,51 @@ func TestWeaverProducer(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+-	t.Run("DonePointsAtTheSummary", func(t *testing.T) {
++	at := func(minute int) time.Time { return time.Date(2026, 11, 28, 10, minute, 0, 0, time.UTC) }
++	verifySpans := []shuttleengine.GateSpan{
++		{Kind: shuttleengine.GateSpanGate, Start: at(0), End: at(1)},
++		{Kind: shuttleengine.GateSpanRework, Start: at(1), End: at(5)},
++	}
++	wantSpans := []shedengine.GateSpan{
++		{Gate: "verify", Kind: "gate", Start: "2026-11-28T10:00:00Z", End: "2026-11-28T10:01:00Z"},
++		{Gate: "verify", Kind: "rework", Start: "2026-11-28T10:01:00Z", End: "2026-11-28T10:05:00Z"},
++	}
++
++	t.Run("DonePointsAtTheSummaryAndCarriesTheVerifySpans", func(t *testing.T) {
+ 		t.Parallel()
+ 		deps := weaverDeps(t)
+ 		var calls int
+-		p := NewWeaverProducer("loom", weaverRunner(weaverengine.RunResult{Outcome: "done", BatchesDone: 2}, nil, &calls), deps)
++		p := NewWeaverProducer("loom", weaverRunner(weaverengine.RunResult{Outcome: "done", BatchesDone: 2, VerifySpans: verifySpans}, nil, &calls), deps)
+ 
+ 		ptr := shedfake.RequireOutcome(t, p, shedengine.Done)
+ 
+ 		if want := summaryparser.Path(deps.Geom.RunDir); ptr.Path != want {
+ 			t.Errorf("Call() Path = %q; want Weaver's summary %q", ptr.Path, want)
+ 		}
++		if !reflect.DeepEqual(ptr.GateSpans, wantSpans) {
++			t.Errorf("Call() GateSpans = %+v; want %+v", ptr.GateSpans, wantSpans)
++		}
+ 	})
+ 
+-	t.Run("StuckReasonPassesThroughWhenNoConflictRecordWasLeft", func(t *testing.T) {
++	t.Run("StuckReasonPassesThroughWithTheVerifySpansWhenNoConflictRecordWasLeft", func(t *testing.T) {
+ 		t.Parallel()
+ 		var calls int
+-		p := NewWeaverProducer("loom", weaverRunner(weaverengine.RunResult{Outcome: "stuck", StuckReason: "batch 01-a stopped"}, nil, &calls), weaverDeps(t))
++		p := NewWeaverProducer("loom", weaverRunner(weaverengine.RunResult{Outcome: "stuck", StuckReason: "batch 01-a stopped", VerifySpans: verifySpans}, nil, &calls), weaverDeps(t))
+ 
+ 		ptr := shedfake.RequireOutcome(t, p, shedengine.Stuck)
+ 
+-		if ptr.Reason != "batch 01-a stopped" || ptr.Reroute {
+-			t.Errorf("Call() pointer = %+v; want the stuck reason as it is and no reroute", ptr)
++		if ptr.Reason != "batch 01-a stopped" || ptr.Reroute || !reflect.DeepEqual(ptr.GateSpans, wantSpans) {
++			t.Errorf("Call() pointer = %+v; want the stuck reason as it is, no reroute and the gate spans %+v", ptr, wantSpans)
++		}
++	})
++
++	t.Run("RunWithNoVerifyCarriesNoGateSpans", func(t *testing.T) {
++		t.Parallel()
++		var calls int
++		p := NewWeaverProducer("loom", weaverRunner(weaverengine.RunResult{Outcome: "stuck", StuckReason: "batch 01-a stopped"}, nil, &calls), weaverDeps(t))
++
++		if ptr := shedfake.RequireOutcome(t, p, shedengine.Stuck); ptr.GateSpans != nil {
++			t.Errorf("Call() GateSpans = %+v; want nil for a run that ran no verify", ptr.GateSpans)
+ 		}
+ 	})
+ 
+diff --git a/internal/weaverengine/config.go b/internal/weaverengine/config.go
+index b1eedb188..c04a9f9db 100644
+--- a/internal/weaverengine/config.go
++++ b/internal/weaverengine/config.go
+@@ -21,6 +21,10 @@ var configTemplate string
+ type Config struct {
+ 	// Ladder is the model-specs a batch attempt climbs in order, one rung per failed attempt.
+ 	Ladder []string `yaml:"ladder"`
++	// AttemptTimeoutMin is the number of minutes at which a batch attempt's strand times out.
++	// The minutes count from the strand's spawn, or from an attach for a strand a crashed call left.
++	// The waits on the attempt's gates and their fixers count against it.
++	AttemptTimeoutMin int `yaml:"attempt_timeout_min"`
+ 	// FixerTimeoutMin is the number of minutes after spawn at which a plan-level verify fixer strand classifies dead.
+ 	FixerTimeoutMin int `yaml:"fixer_timeout_min"`
+ 	// VerifyGate is the gate key of the plan-level verify Weaver's Done rests on.
+@@ -45,16 +49,18 @@ func ConfigSpec() configengine.Spec {
+ 		Name:     "weaver",
+ 		Template: []byte(ConfigTemplate()),
+ 		Categories: map[string]configengine.Category{
+-			"ladder":            configengine.CategoryNone,
+-			"fixer_timeout_min": configengine.CategoryNone,
+-			"verify_gate":       configengine.CategoryGuard,
++			"ladder":              configengine.CategoryNone,
++			"attempt_timeout_min": configengine.CategoryNone,
++			"fixer_timeout_min":   configengine.CategoryNone,
++			"verify_gate":         configengine.CategoryGuard,
+ 		},
+ 		OpenMaps: ConfigOpenMaps(),
+ 	}
+ }
+ 
+ // LoadConfig loads configuration from the weaver module's layer stack under dirs.
+-// It refuses a ladder spec modelspec.Parse rejects, a non-positive fixer_timeout_min and an empty verify_gate.
++// It refuses a ladder spec modelspec.Parse rejects and an empty `weaver.verify_gate`.
++// It also refuses a non-positive `weaver.attempt_timeout_min` or `weaver.fixer_timeout_min`.
+ // Each refusal names the key and is marked configengine.MarkInvalid.
+ // module names the config file to read.
+ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+@@ -74,6 +80,9 @@ func LoadConfig(dirs configengine.Dirs, module string) (Config, error) {
+ 			return Config{}, configengine.MarkInvalid(fmt.Errorf("config key %q rung %d: %w", keyName(ladderKey), i+1, err))
+ 		}
+ 	}
++	if cfg.AttemptTimeoutMin <= 0 {
++		return Config{}, configengine.MarkInvalid(fmt.Errorf("config key %q: must be a positive integer, got %d", keyName(attemptTimeoutMinKey), cfg.AttemptTimeoutMin))
++	}
+ 	if cfg.FixerTimeoutMin <= 0 {
+ 		return Config{}, configengine.MarkInvalid(fmt.Errorf("config key %q: must be a positive integer, got %d", keyName(fixerTimeoutMinKey), cfg.FixerTimeoutMin))
+ 	}
+diff --git a/internal/weaverengine/config_test.go b/internal/weaverengine/config_test.go
+index 8da26d624..eab9bca42 100644
+--- a/internal/weaverengine/config_test.go
++++ b/internal/weaverengine/config_test.go
+@@ -30,15 +30,16 @@ func seedConfig(t *testing.T, baseDir, module, content string) {
+ }
+ 
+ // TestLoadConfig pins how LoadConfig resolves weaver.yaml:
+-// the template loads its three defaults, and each invalid key refuses naming itself, marked configengine.ErrInvalid.
++// the template loads its defaults, and each invalid key refuses naming itself, marked configengine.ErrInvalid.
+ func TestLoadConfig(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+ 	templateDefaults := weaverengine.Config{
+-		Ladder:          []string{"sonnet[medium]", "opus[medium]", "opus[high]"},
+-		FixerTimeoutMin: 60,
+-		VerifyGate:      "webster",
++		Ladder:            []string{"sonnet[medium]", "opus[medium]", "opus[high]"},
++		AttemptTimeoutMin: 90,
++		FixerTimeoutMin:   60,
++		VerifyGate:        "webster",
+ 	}
+ 	tests := []struct {
+ 		name       string
+@@ -50,9 +51,10 @@ func TestLoadConfig(t *testing.T) {
+ 		{
+ 			name: "an absent key loads the template default",
+ 			body: "fixer_timeout_min: 30\n",
+-			want: weaverengine.Config{Ladder: templateDefaults.Ladder, FixerTimeoutMin: 30, VerifyGate: "webster"},
++			want: weaverengine.Config{Ladder: templateDefaults.Ladder, AttemptTimeoutMin: 90, FixerTimeoutMin: 30, VerifyGate: "webster"},
+ 		},
+ 		{name: "an unparseable ladder spec names the key", body: "ladder:\n  - \"opus \"\n", wantErrKey: "ladder"},
++		{name: "a zero attempt_timeout_min names the key", body: "attempt_timeout_min: 0\n", wantErrKey: "attempt_timeout_min"},
+ 		{name: "a zero fixer_timeout_min names the key", body: "fixer_timeout_min: 0\n", wantErrKey: "fixer_timeout_min"},
+ 		{name: "an empty verify_gate names the key", body: "verify_gate: \"\"\n", wantErrKey: "verify_gate"},
+ 	}
+diff --git a/internal/weaverengine/doc.go b/internal/weaverengine/doc.go
+index b3eda13d6..108ed10a1 100644
+--- a/internal/weaverengine/doc.go
++++ b/internal/weaverengine/doc.go
+@@ -1,11 +1,13 @@
+ // Package weaverengine is Weaver, the `weaver` implementer of tapestry's implementer row.
+ // Weaver builds a plan's batches as cold strands and climbs a model ladder when an attempt fails.
+ //
+-// Its `weaver.yaml` keys are `ladder`, `fixer_timeout_min` and `verify_gate`.
+-// `ladder` holds the model-specs a batch attempt climbs in order.
+-// `fixer_timeout_min` is the minutes a plan-level verify fixer may run.
+-// `verify_gate` is the gate key of the plan-level verify its Done rests on.
+-// The local override layer cannot change `verify_gate`, since a narrower key would hollow that guard.
++// Its `weaver.yaml` keys follow.
++// `weaver.ladder` holds the model-specs a batch attempt climbs in order.
++// `weaver.attempt_timeout_min` is the minutes one batch attempt's strand may run, its gate waits and fixers included.
++// A strand that a crashed call left gets those minutes again from the attach.
++// `weaver.fixer_timeout_min` is the minutes a plan-level verify fixer may run.
++// `weaver.verify_gate` is the gate key of the plan-level verify its Done rests on.
++// The local override layer cannot change `weaver.verify_gate`, since a narrower key would hollow that guard.
+ //
+ // Weaver's durable run directory is `_lym/weaver/`.
+ // It holds the state file, the per-attempt reports, `journal.md`, `summary.md` and `outcome.yaml`.
+@@ -34,12 +36,14 @@
+ // A failure that survives goes to one cold verify fixer on the next ladder rung.
+ // Weaver runs the verify again after it.
+ // The fixer carries no gates, since the re-run of the verify judges it.
++// Run returns one gate span per run of the verify and one rework span per fixer, which the row records as gate spans.
+ //
+ // Run is the row's producer body, holding `run.lock` in the scratch directory for its whole call.
+ // A failed attempt climbs a rung, and a lost one is retried once on its rung first.
+ // A failure on the last rung, a needs-parent report and a verify that no fixer clears each stop the row.
+ // Every stop is returned as a stuck result.
+ // Only a Done return writes `outcome.yaml` and `summary.md`, and Run removes both on entry.
++// The summary names each batch's files changed outside its targets and its `Pattern-Departure:` trailers.
+ //
+ // A call of Run settles what an earlier call left before it begins any batch.
+ // An attempt recorded in flight is probed by its report path, even when its strand's guid was never recorded.
+diff --git a/internal/weaverengine/keynames.go b/internal/weaverengine/keynames.go
+index 3ef1ade06..7b8eabb67 100644
+--- a/internal/weaverengine/keynames.go
++++ b/internal/weaverengine/keynames.go
+@@ -9,9 +9,10 @@ const configModule = "weaver"
+ 
+ // The weaver.yaml key paths that messages cite.
+ const (
+-	ladderKey          = "ladder"
+-	fixerTimeoutMinKey = "fixer_timeout_min"
+-	verifyGateKey      = "verify_gate"
++	ladderKey            = "ladder"
++	attemptTimeoutMinKey = "attempt_timeout_min"
++	fixerTimeoutMinKey   = "fixer_timeout_min"
++	verifyGateKey        = "verify_gate"
+ )
+ 
+ // keyName returns the full name of the weaver.yaml key at path.
+diff --git a/internal/weaverengine/resume.go b/internal/weaverengine/resume.go
+index 67775f502..875df1b75 100644
+--- a/internal/weaverengine/resume.go
++++ b/internal/weaverengine/resume.go
+@@ -160,7 +160,7 @@ func resumeAttempt(deps RunDeps, st *State, plan *planparser.Plan, attempt *Atte
+ 	if err != nil {
+ 		return "", err
+ 	}
+-	spec := attemptSpec(attemptLaunch{ReportPath: attempt.ReportPath, Choice: deps.Ladder[attempt.Rung], Label: label, Skills: deps.LanguageSkills})
++	spec := attemptSpec(attemptLaunch{ReportPath: attempt.ReportPath, Choice: deps.Ladder[attempt.Rung], Label: label, Skills: deps.LanguageSkills, Timeout: deps.attemptTimeout()})
+ 	run, found, err := deps.Runner.ProbeGated(spec, gateSpec)
+ 	if err != nil {
+ 		return fmt.Sprintf("probing for the run of attempt %d of batch %s failed: %v; way forward: follow the way forward the probe's error names", attempt.Number, label, err), nil
+diff --git a/internal/weaverengine/resume_test.go b/internal/weaverengine/resume_test.go
+index 8e998a803..1f39a9572 100644
+--- a/internal/weaverengine/resume_test.go
++++ b/internal/weaverengine/resume_test.go
+@@ -125,8 +125,8 @@ func TestRun_Resume(t *testing.T) {
+ 		if len(fx.runner.specs) != 1 {
+ 			t.Errorf("strands started = %d; want only the crashed attempt's, with no second agent", len(fx.runner.specs))
+ 		}
+-		if len(fx.runner.probed) == 0 || fx.runner.probed[0].OutputFiles[0] != attempt.ReportPath {
+-			t.Errorf("probed specs = %v; want the probe by the attempt's report path", fx.runner.probed)
++		if len(fx.runner.probed) == 0 || fx.runner.probed[0].OutputFiles[0] != attempt.ReportPath || fx.runner.probed[0].Timeout != 45*time.Minute {
++			t.Errorf("probed specs = %v; want the probe by the attempt's report path, bounded by attempt_timeout_min", fx.runner.probed)
+ 		}
+ 		got := fx.loadState().Attempts[0]
+ 		if got.Outcome != "done" || got.StrandGUID != run.StrandGUID() || !slices.Equal(got.Delivered, []string{"## a decision"}) {
+@@ -201,8 +201,12 @@ func TestRun_Resume(t *testing.T) {
+ 			return []string{"## a decision"}, nil
+ 		}
+ 
+-		requireDone(t, mustRun(t, fx), 1)
++		result := mustRun(t, fx)
+ 
++		requireDone(t, result, 1)
++		if got, want := spanKinds(result), []shuttleengine.GateSpanKind{shuttleengine.GateSpanGate}; !slices.Equal(got, want) {
++			t.Errorf("verify spans = %v; want the verify's run alone, with none for the attached fixer: %v", got, want)
++		}
+ 		if fx.fixer.attached != 1 || len(fx.fixer.specs) != 0 {
+ 			t.Errorf("fixer attaches = %d, spawns = %d; want one attach and no spawn", fx.fixer.attached, len(fx.fixer.specs))
+ 		}
+@@ -276,6 +280,22 @@ func TestRun_Resume(t *testing.T) {
+ 			}{{0, "lost"}, {0, "lost"}},
+ 			wantModel: "model-b",
+ 		},
++		{
++			name: "FailedSecondRungAttemptRunsTheThirdRung",
++			attempts: []struct {
++				rung    int
++				outcome string
++			}{{0, "failed"}, {1, "failed"}},
++			wantModel: "model-c",
++		},
++		{
++			name: "LostLastRungAttemptRetriesOnTheLastRung",
++			attempts: []struct {
++				rung    int
++				outcome string
++			}{{2, "lost"}},
++			wantModel: "model-c",
++		},
+ 		{
+ 			name: "FaultAttemptRetriesOnItsOwnRung",
+ 			attempts: []struct {
+diff --git a/internal/weaverengine/run.go b/internal/weaverengine/run.go
+index 5d3047e7d..56b73f225 100644
+--- a/internal/weaverengine/run.go
++++ b/internal/weaverengine/run.go
+@@ -23,6 +23,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/logger"
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/runplan"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/summaryparser"
+ )
+ 
+@@ -66,6 +67,10 @@ type RunResult struct {
+ 	StuckReason string
+ 	// BatchesDone counts the batches recorded done, set when Outcome is resultDone.
+ 	BatchesDone int
++	// VerifySpans are the time spans of this call's plan-level verify, in the order they started:
++	// one gate span per run of the verify and one rework span per verify fixer, from its spawn to its end.
++	// They are nil when the call ran no verify.
++	VerifySpans []shuttleengine.GateSpan
+ }
+ 
+ // outcomeRecord is outcome.yaml's one shape, with the keys Webster's outcome file holds so the two read alike.
+@@ -473,7 +478,7 @@ func runBatch(deps RunDeps, st *State, plan *planparser.Plan, batch batcher.Batc
+ 		if err != nil {
+ 			return batchEnd{}, err
+ 		}
+-		spec := attemptSpec(attemptLaunch{Prompt: prompt, Engine: engine, ReportPath: attempt.ReportPath, Choice: deps.Ladder[rung], Label: label, Skills: deps.LanguageSkills})
++		spec := attemptSpec(attemptLaunch{Prompt: prompt, Engine: engine, ReportPath: attempt.ReportPath, Choice: deps.Ladder[rung], Label: label, Skills: deps.LanguageSkills, Timeout: deps.attemptTimeout()})
+ 
+ 		var verdict attemptVerdict
+ 		run, startErr := deps.Runner.StartGated(spec, gateSpec)
+@@ -719,9 +724,12 @@ func clipBytes(text string) string {
+ // finishRun runs the plan-level verify and its fixers once every batch is recorded.
+ // A failure goes to one verify fixer on the next rung, and the verify runs again before any next fixer.
+ // A pass writes summary.md and outcome.yaml, commits the run record and returns done.
+-func finishRun(deps RunDeps, st *State) (RunResult, error) {
++// Every result it returns, done or stuck, carries the spans of the verify runs and fixers it started.
++func finishRun(deps RunDeps, st *State) (result RunResult, err error) {
+ 	geom := deps.Geom
+ 	batchesDone := doneBatches(st)
++	var spans []shuttleengine.GateSpan
++	defer func() { result.VerifySpans = spans }()
+ 	verifyStop := func(rung int, cause string) RunResult {
+ 		st.Stop = &StopRecord{Kind: stopKindVerify, Rung: rung}
+ 		if err := saveRunState(geom, st, false); err != nil {
+@@ -732,7 +740,7 @@ func finishRun(deps RunDeps, st *State) (RunResult, error) {
+ 
+ 	var flaky []string
+ 	for evaluation := 1; ; evaluation++ {
+-		out, err := runVerify(deps, st, evaluation)
++		out, err := runVerify(deps, st, evaluation, &spans)
+ 		if err != nil {
+ 			return stuck(stopReason(deps, st, "the plan-level verify", err.Error())), nil
+ 		}
+@@ -761,10 +769,12 @@ func finishRun(deps RunDeps, st *State) (RunResult, error) {
+ 		if err := saveRunState(geom, st, false); err != nil {
+ 			return stuck(stopReason(deps, st, "the plan-level verify", err.Error())), nil
+ 		}
+-		if result, err := runFixer(deps, st, fixer); err != nil {
++		stopCause, err := runFixer(deps, st, fixer, &spans)
++		if err != nil {
+ 			return stuck(stopReason(deps, st, "the plan-level verify", err.Error())), nil
+-		} else if result != "" {
+-			return verifyStop(fixer.Rung, result), nil
++		}
++		if stopCause != "" {
++			return verifyStop(fixer.Rung, stopCause), nil
+ 		}
+ 	}
+ 
+@@ -801,7 +811,8 @@ func nextFixerRung(st *State) int {
+ // runFixer spawns one verify fixer and waits for its end, then records the end on the fixer's state.
+ // A terminal result sets the record's status, since the wait never marks it, and the fixer's outcome.
+ // It returns a non-empty stop cause when the fixer's strand could not be stopped, and an error for any other fault.
+-func runFixer(deps RunDeps, st *State, fixer *FixerState) (stopCause string, err error) {
++// A fixer that spawned appends one rework span to spans, however its run then ends.
++func runFixer(deps RunDeps, st *State, fixer *FixerState, spans *[]shuttleengine.GateSpan) (stopCause string, err error) {
+ 	spec, err := fixerSpec(deps, st, fixer, fixer.Findings)
+ 	if err != nil {
+ 		return "", err
+@@ -811,6 +822,10 @@ func runFixer(deps RunDeps, st *State, fixer *FixerState) (stopCause string, err
+ 	if err != nil {
+ 		return "", err
+ 	}
++	start := deps.clock().Now()
++	defer func() {
++		*spans = append(*spans, shuttleengine.GateSpan{Kind: shuttleengine.GateSpanRework, Start: start, End: deps.clock().Now()})
++	}()
+ 	if err := saveRunState(deps.Geom, st, false); err != nil {
+ 		return "", err
+ 	}
+diff --git a/internal/weaverengine/run_fixture_test.go b/internal/weaverengine/run_fixture_test.go
+index f3d374898..8347e99fe 100644
+--- a/internal/weaverengine/run_fixture_test.go
++++ b/internal/weaverengine/run_fixture_test.go
+@@ -87,14 +87,14 @@ func (g *fakeGit) mint() string {
+ 	return fmt.Sprintf("%040x", g.counter)
+ }
+ 
+-// commit adds a commit on top of HEAD and returns it.
+-func (g *fakeGit) commit(subject string) string {
++// commit adds a commit on top of HEAD whose message carries departures as `Pattern-Departure:` trailers, and returns it.
++func (g *fakeGit) commit(subject string, departures ...string) string {
+ 	g.mu.Lock()
+ 	defer g.mu.Unlock()
+ 	sha := g.mint()
+ 	g.parents[sha] = []string{g.head}
+ 	g.head = sha
+-	g.log = append(g.log, runplan.CommitLogEntry{SHA: sha, Subject: subject})
++	g.log = append(g.log, runplan.CommitLogEntry{SHA: sha, Subject: subject, Departures: departures})
+ 	return sha
+ }
+ 
+@@ -169,6 +169,8 @@ type fakeIndex struct {
+ 	rewriteRenames bool
+ 	// dispatch is what the dispatch re-resolution reports.
+ 	dispatch []planindex.Finding
++	// outsideTargets is what the scope guard reports as files changed outside the batch's targets.
++	outsideTargets []planindex.Finding
+ }
+ 
+ func (i fakeIndex) ValidateDispatch(*planparser.Plan, string, []planparser.Card, []planparser.Card) ([]planindex.Finding, error) {
+@@ -196,7 +198,7 @@ func (fakeIndex) RebindResigns(*planparser.Plan, []planparser.Card, string) ([]p
+ }
+ 
+ func (i fakeIndex) Delta(string, string, string) (planindex.Delta, error) {
+-	return fakeDelta{removed: i.removed, removedOnlyWithLaterCards: i.removedOnlyWithLaterCards, rewriteRenames: i.rewriteRenames}, nil
++	return fakeDelta{removed: i.removed, removedOnlyWithLaterCards: i.removedOnlyWithLaterCards, rewriteRenames: i.rewriteRenames, outsideTargets: i.outsideTargets}, nil
+ }
+ 
+ type fakeDelta struct {
+@@ -204,13 +206,16 @@ type fakeDelta struct {
+ 	removed                   []planindex.Finding
+ 	removedOnlyWithLaterCards bool
+ 	rewriteRenames            bool
++	outsideTargets            []planindex.Finding
+ }
+ 
+ func (fakeDelta) BindHandles(*planparser.Plan, string, []planparser.Card) ([]planindex.Finding, []planindex.BindOutcome, error) {
+ 	return nil, nil, nil
+ }
+ 
+-func (fakeDelta) ScopeGuard(*planparser.Plan, []planparser.Card) []planindex.Finding { return nil }
++func (d fakeDelta) ScopeGuard(*planparser.Plan, []planparser.Card) []planindex.Finding {
++	return d.outsideTargets
++}
+ 
+ func (d fakeDelta) RemovedTargets(plan *planparser.Plan, completed, own []planparser.Card, _ []planindex.Rename) []planindex.Finding {
+ 	if d.removedOnlyWithLaterCards {
+@@ -275,12 +280,16 @@ type attemptScript struct {
+ 	report runplan.Report
+ 	// commit makes the attempt commit before it writes its report.
+ 	commit bool
++	// departure makes the attempt commit with this `Pattern-Departure:` trailer before it writes its report.
++	departure string
+ 	// rawReport writes these bytes as the report instead.
+ 	rawReport string
+ 	// failGate makes the named gate entry fail terminally.
+ 	failGate string
+ 	// dieAfterStart makes reed lose the strand, so the wait fails.
+ 	dieAfterStart bool
++	// paneDies marks the strand's pane dead after the start and writes no report, so the strand dies before its report.
++	paneDies bool
+ 	// dirty is the dirty paths the worktree holds when the attempt ends.
+ 	dirty []string
+ 	// abbreviate writes the report's head_sha as its first twelve digits.
+@@ -360,7 +369,10 @@ func (r *scriptedRunner) StartGated(spec shuttleengine.Spec, gate shuttleengine.
+ 	if err != nil {
+ 		return nil, err
+ 	}
+-	if script.commit {
++	switch {
++	case script.departure != "":
++		r.git.commit("the attempt's work", script.departure)
++	case script.commit:
+ 		r.git.commit("the attempt's work")
+ 	}
+ 	r.git.mu.Lock()
+@@ -370,6 +382,14 @@ func (r *scriptedRunner) StartGated(spec shuttleengine.Spec, gate shuttleengine.
+ 		r.reed.StatusErr = fmt.Errorf("reed lost the strand")
+ 		return run, nil
+ 	}
++	if script.paneDies {
++		for i := range r.reed.Strands {
++			if r.reed.Strands[i].GUID == run.StrandGUID() {
++				r.reed.Strands[i].Live = false
++			}
++		}
++		return run, nil
++	}
+ 	if script.noReport {
+ 		return run, nil
+ 	}
+@@ -431,9 +451,16 @@ type fixerScript struct {
+ 	commit string
+ }
+ 
++// The time one run of the scripted verify and one wait on a fake fixer take on the run's clock.
++const (
++	verifyRunTime = time.Minute
++	fixerRunTime  = 5 * time.Minute
++)
++
+ // fakeFixer is a gatefixer.Fixer over scripts.
+ type fakeFixer struct {
+-	git *fakeGit
++	git   *fakeGit
++	clock *fakeClock
+ 
+ 	mu      sync.Mutex
+ 	scripts []fixerScript
+@@ -468,6 +495,7 @@ func (f *fakeFixer) Await(rec *gatefixer.Record, _, _ time.Duration) (*gatefixer
+ 	if script.commit != "" {
+ 		f.git.commit(script.commit)
+ 	}
++	f.clock.Sleep(fixerRunTime)
+ 	result := &gatefixer.Result{Status: gatefixer.StatusDone, Warnings: script.warnings}
+ 	if script.dead {
+ 		result.Status, result.DeadReason = gatefixer.StatusDead, gatefixer.DeadReasonDied
+@@ -489,7 +517,8 @@ type verifyScript struct {
+ 
+ // scriptedVerify is a weaverengine.VerifyFunc over scripts; a call past the scripts passes.
+ type scriptedVerify struct {
+-	dir string
++	dir   string
++	clock *fakeClock
+ 
+ 	mu      sync.Mutex
+ 	scripts []verifyScript
+@@ -501,6 +530,7 @@ func (v *scriptedVerify) run(_ verifytree.Site, command string) (verifytree.Resu
+ 	defer v.mu.Unlock()
+ 	index := len(v.calls)
+ 	v.calls = append(v.calls, command)
++	v.clock.Sleep(verifyRunTime)
+ 	if index >= len(v.scripts) {
+ 		return verifytree.Result{Status: verifytree.StatusPassed}, nil
+ 	}
+@@ -580,15 +610,16 @@ func newRunFixture(t *testing.T, chunk int, slugs ...string) *runFixture {
+ 	inner := shuttleengine.NewRunner(reed, shuttlefake.EngineSet(engine), anchor, anchor, shuttleCfg)
+ 	inner.SetClock(&fakeClock{now: time.Unix(0, 0)})
+ 
++	clock := &fakeClock{now: time.Unix(0, 0)}
+ 	fx := &runFixture{
+ 		t: t, anchor: anchor, git: git, index: index, reed: reed,
+ 		runner: &scriptedRunner{inner: inner, reed: reed, git: git},
+-		fixer:  &fakeFixer{git: git},
+-		verify: &scriptedVerify{dir: t.TempDir()},
++		fixer:  &fakeFixer{git: git, clock: clock},
++		verify: &scriptedVerify{dir: t.TempDir(), clock: clock},
+ 	}
+ 	fx.deps = weaverengine.RunDeps{
+ 		Geom:    geom,
+-		Config:  weaverengine.Config{Ladder: []string{"a", "b", "c"}, FixerTimeoutMin: 7, VerifyGate: "webster"},
++		Config:  weaverengine.Config{Ladder: []string{"a", "b", "c"}, AttemptTimeoutMin: 45, FixerTimeoutMin: 7, VerifyGate: "webster"},
+ 		Ladder:  []shuttleengine.ModelChoice{{Model: "model-a"}, {Model: "model-b"}, {Model: "model-c"}},
+ 		Batcher: chunkBatcher{size: chunk},
+ 		Runner:  fx.runner,
+@@ -605,7 +636,7 @@ func newRunFixture(t *testing.T, chunk int, slugs ...string) *runFixture {
+ 			return nil
+ 		},
+ 		RecordsHead: func() (string, error) { return "records-head", nil },
+-		Clock:       &fakeClock{now: time.Unix(0, 0)},
++		Clock:       clock,
+ 	}
+ 	return fx
+ }
+diff --git a/internal/weaverengine/run_test.go b/internal/weaverengine/run_test.go
+index e6e3a20a9..2a6026532 100644
+--- a/internal/weaverengine/run_test.go
++++ b/internal/weaverengine/run_test.go
+@@ -57,6 +57,20 @@ func requireStuck(t *testing.T, result weaverengine.RunResult, want ...string) {
+ 	}
+ }
+ 
++// spanKinds returns the kind of each of result's verify spans, in order.
++func spanKinds(result weaverengine.RunResult) []shuttleengine.GateSpanKind {
++	var kinds []shuttleengine.GateSpanKind
++	for _, span := range result.VerifySpans {
++		kinds = append(kinds, span.Kind)
++	}
++	return kinds
++}
++
++// spanAt returns a verify span of kind between two minute marks counted from the fixture clock's start.
++func spanAt(kind shuttleengine.GateSpanKind, startMin, endMin int64) shuttleengine.GateSpan {
++	return shuttleengine.GateSpan{Kind: kind, Start: time.Unix(startMin*60, 0), End: time.Unix(endMin*60, 0)}
++}
++
+ // readFile returns the content of path, or fails the test.
+ func readFile(t *testing.T, path string) string {
+ 	t.Helper()
+@@ -86,10 +100,14 @@ func TestRun(t *testing.T) {
+ 			t.Fatalf("strands started = %d; want 2", got)
+ 		}
+ 		for i, spec := range fx.runner.specs {
+-			if spec.Model != "model-a" || spec.Role != weaverengine.BatchStrandRole || spec.PromptEngine != "claude" {
+-				t.Errorf("strand %d = model %q role %q prompt engine %q; want the first rung under role %q rendered for claude", i, spec.Model, spec.Role, spec.PromptEngine, weaverengine.BatchStrandRole)
++			if spec.Model != "model-a" || spec.Role != weaverengine.BatchStrandRole || spec.PromptEngine != "claude" || spec.Timeout != 45*time.Minute {
++				t.Errorf("strand %d = model %q role %q prompt engine %q timeout %v; want the first rung under role %q rendered for claude, bounded by attempt_timeout_min",
++					i, spec.Model, spec.Role, spec.PromptEngine, spec.Timeout, weaverengine.BatchStrandRole)
+ 			}
+ 		}
++		if got, want := spanKinds(result), []shuttleengine.GateSpanKind{shuttleengine.GateSpanGate}; !slices.Equal(got, want) {
++			t.Errorf("verify spans = %v; want %v, one for the verify's one run", got, want)
++		}
+ 		if got, want := fx.runner.gateNames(0), []string{"card 1-one", "card 2-two", "batch", "drift"}; !slices.Equal(got, want) {
+ 			t.Errorf("first batch's gates = %v; want %v", got, want)
+ 		}
+@@ -126,6 +144,44 @@ func TestRun(t *testing.T) {
+ 		}
+ 	})
+ 
++	summaries := []struct {
++		name string
++		// outsideTargets is what the scope guard reports for the batch.
++		outsideTargets []planindex.Finding
++		// script is the batch's one attempt.
++		script attemptScript
++		// want is the batch's lines in summary.md.
++		want string
++	}{
++		{
++			name:   "NoneWhenTheBatchHasNone",
++			script: attemptScript{commit: true},
++			want:   "- `01-one`: done after 1 attempt(s)\n  - Files changed outside its targets: none\n  - Pattern departures: none\n",
++		},
++		{
++			name:           "TheBatchsOwn",
++			outsideTargets: []planindex.Finding{{File: "internal/y/extra.go"}, {File: "internal/y/more.go"}},
++			script:         attemptScript{departure: "PATTERN-code-conventions — the literal is the test's own"},
++			want: "- `01-one`: done after 1 attempt(s)\n" +
++				"  - Files changed outside its targets: `internal/y/extra.go`, `internal/y/more.go`\n" +
++				"  - Pattern departures: the attempt's work: PATTERN-code-conventions — the literal is the test's own\n",
++		},
++	}
++	for _, tt := range summaries {
++		t.Run("SummaryNamesEachBatchsDeviationsAndDepartures_"+tt.name, func(t *testing.T) {
++			t.Parallel()
++			fx := newRunFixture(t, 1, "one")
++			fx.index.outsideTargets = tt.outsideTargets
++			fx.runner.scripts = []attemptScript{tt.script}
++
++			requireDone(t, mustRun(t, fx), 1)
++
++			if summary := readFile(t, filepath.Join(fx.deps.Geom.RunDir, "summary.md")); !strings.Contains(summary, tt.want) {
++				t.Errorf("summary.md lacks the batch's lines %q:\n%s", tt.want, summary)
++			}
++		})
++	}
++
+ 	t.Run("DroppedCreateTargetSkipsItsDoneCheck", func(t *testing.T) {
+ 		t.Parallel()
+ 		const target = "internal/x/one.go"
+@@ -349,6 +405,9 @@ func TestRun(t *testing.T) {
+ 		if strings.Contains(result.StuckReason, "lym webster") {
+ 			t.Errorf("stuck reason names a webster verb: %s", result.StuckReason)
+ 		}
++		if result.VerifySpans != nil {
++			t.Errorf("verify spans = %v; want none for a call that stopped before the verify", result.VerifySpans)
++		}
+ 		if got := len(fx.runner.specs); got != 3 {
+ 			t.Errorf("strands started = %d; want one per rung", got)
+ 		}
+@@ -361,26 +420,67 @@ func TestRun(t *testing.T) {
+ 		}
+ 	})
+ 
+-	t.Run("MachineryLossRetriesOnceOnTheSameRungThenClimbs", func(t *testing.T) {
++	t.Run("FailedAttemptsClimbToTheThirdRungWhichRecordsTheBatchDone", func(t *testing.T) {
+ 		t.Parallel()
+ 		fx := newRunFixture(t, 1, "one")
+-		fx.runner.scripts = []attemptScript{{dieAfterStart: true}, {dieAfterStart: true}, {}}
++		failed := attemptScript{report: runplan.Report{Status: runplan.ReportStatusFailed, Journal: "tried"}}
++		fx.runner.scripts = []attemptScript{failed, failed, {commit: true}}
+ 
+ 		requireDone(t, mustRun(t, fx), 1)
+ 
+-		models := []string{}
++		var models []string
+ 		for _, spec := range fx.runner.specs {
+ 			models = append(models, spec.Model)
+ 		}
+-		if want := []string{"model-a", "model-a", "model-b"}; !slices.Equal(models, want) {
+-			t.Errorf("models = %v; want the loss retried on its rung, then the second loss climbed: %v", models, want)
++		if want := []string{"model-a", "model-b", "model-c"}; !slices.Equal(models, want) {
++			t.Fatalf("models = %v; want one attempt per rung %v", models, want)
++		}
++		if want := "Attempt 2, on rung 2, ended failed: the attempt reported status FAILED"; !strings.Contains(fx.runner.specs[2].Prompt, want) {
++			t.Errorf("the third attempt's prompt lacks the second attempt's failure %q", want)
+ 		}
+ 		st := fx.loadState()
+-		if st.Attempts[0].Outcome != "lost" || st.Attempts[1].Outcome != "lost" || st.Attempts[1].Number != 2 {
+-			t.Errorf("attempts = %q, %q (number %d); want two lost attempts with new numbers", st.Attempts[0].Outcome, st.Attempts[1].Outcome, st.Attempts[1].Number)
++		if third := st.Attempts[2]; third.Number != 3 || third.Rung != 2 || third.Outcome != "done" {
++			t.Errorf("third attempt = number %d rung %d %q; want number 3 on rung 2, done", third.Number, third.Rung, third.Outcome)
++		}
++		if st.Stop != nil || st.Batches[1].Status != runplan.DigestStatusDone {
++			t.Errorf("Stop = %+v, batch status %q; want no stop and the batch done", st.Stop, st.Batches[1].Status)
+ 		}
+ 	})
+ 
++	losses := []struct {
++		name string
++		// script is each lost attempt.
++		script attemptScript
++		// cause is what each lost attempt's recorded cause holds.
++		cause string
++	}{
++		{"WaitError", attemptScript{dieAfterStart: true}, "waiting on the strand failed"},
++		{"StrandDiedBeforeItsReport", attemptScript{paneDies: true}, "the strand died before it wrote its report"},
++	}
++	for _, tt := range losses {
++		t.Run("LostStrandRetriesOnceOnTheSameRungThenClimbs_"+tt.name, func(t *testing.T) {
++			t.Parallel()
++			fx := newRunFixture(t, 1, "one")
++			fx.runner.scripts = []attemptScript{tt.script, tt.script, {}}
++
++			requireDone(t, mustRun(t, fx), 1)
++
++			var models []string
++			for _, spec := range fx.runner.specs {
++				models = append(models, spec.Model)
++			}
++			if want := []string{"model-a", "model-a", "model-b"}; !slices.Equal(models, want) {
++				t.Errorf("models = %v; want the loss retried on its rung, then the second loss climbed: %v", models, want)
++			}
++			st := fx.loadState()
++			for i, attempt := range st.Attempts[:2] {
++				if attempt.Outcome != "lost" || attempt.Number != i+1 || !strings.Contains(attempt.Cause, tt.cause) {
++					t.Errorf("attempt %d = number %d %q %q; want lost with its own number and a cause holding %q", i+1, attempt.Number, attempt.Outcome, attempt.Cause, tt.cause)
++				}
++			}
++		})
++	}
++
+ 	t.Run("StartFailureIsALoss", func(t *testing.T) {
+ 		t.Parallel()
+ 		fx := newRunFixture(t, 1, "one")
+@@ -602,11 +702,17 @@ func TestRun(t *testing.T) {
+ 		fx.verify.scripts = []verifyScript{{failing: "TestBroken"}, {failing: "TestBroken"}}
+ 		fx.fixer.scripts = []fixerScript{{commit: "fix: repair the broken test"}}
+ 
+-		requireDone(t, mustRun(t, fx), 1)
++		result := mustRun(t, fx)
+ 
++		requireDone(t, result, 1)
+ 		if len(fx.fixer.specs) != 1 {
+ 			t.Fatalf("fixers spawned = %d; want 1", len(fx.fixer.specs))
+ 		}
++		gate, rework := shuttleengine.GateSpanGate, shuttleengine.GateSpanRework
++		wantSpans := []shuttleengine.GateSpan{spanAt(gate, 0, 1), spanAt(gate, 1, 2), spanAt(rework, 2, 7), spanAt(gate, 7, 8)}
++		if got := result.VerifySpans; !slices.Equal(got, wantSpans) {
++			t.Errorf("verify spans = %v; want the run, its rerun, the fixer and the run after it: %v", got, wantSpans)
++		}
+ 		spec := fx.fixer.specs[0]
+ 		if spec.Timeout != 7*time.Minute || spec.ModelChoice.Model != "model-a" || spec.PromptEngine != "claude" || len(spec.Prompt) == 0 || !strings.Contains(string(spec.Prompt), "TestBroken") {
+ 			t.Errorf("fixer spec = timeout %v, model %q, prompt engine %q, prompt names the failure %v; want fixer_timeout_min, the first rung, claude and the findings",
+@@ -687,6 +793,16 @@ func TestRun(t *testing.T) {
+ 		result := mustRun(t, fx)
+ 
+ 		requireStuck(t, result, "plan-level verify", "TestBroken")
++		gate, rework := shuttleengine.GateSpanGate, shuttleengine.GateSpanRework
++		wantSpans := []shuttleengine.GateSpan{
++			spanAt(gate, 0, 1), spanAt(gate, 1, 2), spanAt(rework, 2, 7),
++			spanAt(gate, 7, 8), spanAt(gate, 8, 9), spanAt(rework, 9, 14),
++			spanAt(gate, 14, 15), spanAt(gate, 15, 16), spanAt(rework, 16, 21),
++			spanAt(gate, 21, 22), spanAt(gate, 22, 23),
++		}
++		if got := result.VerifySpans; !slices.Equal(got, wantSpans) {
++			t.Errorf("verify spans = %v; want each run and rerun and each fixer, up to the stop: %v", got, wantSpans)
++		}
+ 		var models, promptEngines []string
+ 		for _, spec := range fx.fixer.specs {
+ 			models = append(models, spec.ModelChoice.Model)
+diff --git a/internal/weaverengine/strand.go b/internal/weaverengine/strand.go
+index 1b12bd724..8e6dabb25 100644
+--- a/internal/weaverengine/strand.go
++++ b/internal/weaverengine/strand.go
+@@ -10,6 +10,7 @@ import (
+ 	"io/fs"
+ 	"os"
+ 	"strings"
++	"time"
+ 
+ 	"github.com/Knatte18/loomyard/internal/agentconfig"
+ 	"github.com/Knatte18/loomyard/internal/gateslot"
+@@ -76,12 +77,15 @@ type attemptLaunch struct {
+ 	Label string
+ 	// Skills are the hub's language skills, loaded after the implementer role's own.
+ 	Skills []string
++	// Timeout bounds the attempt's strand from its spawn, or from an attach for a strand a crash left.
++	Timeout time.Duration
+ }
+ 
+ // attemptSpec builds the spawn of one batch attempt.
+ // The attempt runs autonomously under the implementer role's skills, in a pane with no operator.
+ func attemptSpec(in attemptLaunch) shuttleengine.Spec {
+ 	return shuttleengine.Spec{
++		Timeout:      in.Timeout,
+ 		Prompt:       string(in.Prompt),
+ 		PromptEngine: in.Engine,
+ 		OutputFiles:  []string{in.ReportPath},
+diff --git a/internal/weaverengine/template.yaml b/internal/weaverengine/template.yaml
+index 0bf34d669..0c3a14e5b 100644
+--- a/internal/weaverengine/template.yaml
++++ b/internal/weaverengine/template.yaml
+@@ -2,5 +2,6 @@ ladder:  # model-specs a batch attempt climbs in order, one rung per failed atte
+   - sonnet[medium]
+   - opus[medium]
+   - opus[high]
++attempt_timeout_min: 90  # minutes from spawn, or from an attach after a crash, at which a batch attempt times out, gate waits and fixers included
+ fixer_timeout_min: 60  # minutes after spawn at which the plan-level verify fixer strand classifies dead
+ verify_gate: webster  # gate key of the plan-level verify Weaver's Done rests on
+diff --git a/internal/weaverengine/verify.go b/internal/weaverengine/verify.go
+index 2be0c29b8..031a15ec9 100644
+--- a/internal/weaverengine/verify.go
++++ b/internal/weaverengine/verify.go
+@@ -31,6 +31,9 @@ import (
+ // verifySite labels the plan-level verify's runs in the running marker.
+ const verifySite = "weaver verify"
+ 
++// VerifyGateName names the plan-level verify in the gate spans a row records for it.
++const VerifyGateName = "verify"
++
+ // verifyFixerWayForward opens the findings of a failed plan-level verify.
+ const verifyFixerWayForward = "Weaver hands this failure to a verify fixer, which fixes it and commits; Weaver then runs the verify again."
+ 
+@@ -94,6 +97,11 @@ func (d RunDeps) verify() VerifyFunc {
+ 	}
+ }
+ 
++// attemptTimeout returns the bound of one batch attempt's strand, from `weaver.attempt_timeout_min`.
++func (d RunDeps) attemptTimeout() time.Duration {
++	return time.Duration(d.Config.AttemptTimeoutMin) * time.Minute
++}
++
+ // clock returns the told clock, or the wall clock.
+ func (d RunDeps) clock() runplan.Clock {
+ 	if d.Clock != nil {
+@@ -125,7 +133,8 @@ type verifyOutcome struct {
+ // A failure is rerun once, and a pass on the rerun is a pass whose failing identities are flaky.
+ // A timeout, a dirty tree and an unjudged run are not rerun, and an unjudged run starts no fixer.
+ // A failure writes the verify-failure record and returns its findings.
+-func runVerify(deps RunDeps, st *State, evaluation int) (verifyOutcome, error) {
++// Each run of the verify appends one gate span to spans.
++func runVerify(deps RunDeps, st *State, evaluation int, spans *[]shuttleengine.GateSpan) (verifyOutcome, error) {
+ 	if deps.Geom.GateConfig == nil {
+ 		return verifyOutcome{}, errors.New("weaver: the geometry carries no gate config reader; way forward: the CLI layer must set Geometry.GateConfig")
+ 	}
+@@ -138,7 +147,7 @@ func runVerify(deps RunDeps, st *State, evaluation int) (verifyOutcome, error) {
+ 		return verifyOutcome{}, err
+ 	}
+ 
+-	verify := deps.verify()
++	verify := timedVerify(deps.verify(), deps.clock(), spans)
+ 	site := verifytree.Site{Label: verifySite, Attempt: evaluation, Hold: deps.Geom.VerifyHold}
+ 	res, err := verify(site, call)
+ 	if err != nil {
+@@ -190,6 +199,16 @@ func runVerify(deps RunDeps, st *State, evaluation int) (verifyOutcome, error) {
+ 	return verifyOutcome{Findings: runplan.RenderVerifyGateFindings(report, verifyFixerWayForward)}, nil
+ }
+ 
++// timedVerify returns verify wrapped to append one gate span to spans per call, measured on clock.
++func timedVerify(verify VerifyFunc, clock runplan.Clock, spans *[]shuttleengine.GateSpan) VerifyFunc {
++	return func(site verifytree.Site, command string) (verifytree.Result, error) {
++		start := clock.Now()
++		res, err := verify(site, command)
++		*spans = append(*spans, shuttleengine.GateSpan{Kind: shuttleengine.GateSpanGate, Start: start, End: clock.Now()})
++		return res, err
++	}
++}
++
+ // cardHint names the cards whose commits touched a failing package, from the batches' card trails.
+ // A card's changed paths are the paths that differ between its batch's start and HEAD but not between its end and HEAD,
+ // so a path a later batch changed again is not attributed to it.
+@@ -329,6 +348,8 @@ func fixerSpec(deps RunDeps, st *State, fixer *FixerState, findings string) (gat
+ 
+ // writeSummary writes summary.md in Weaver's run directory in the shared final-summary format.
+ // It opens with a title naming the task, then lists the batches with their outcomes.
++// Under each batch it names the files the batch changed outside its targets and its `Pattern-Departure:` trailers.
++// Either list reads `none` when it is empty.
+ // When flaky is non-empty it adds `## Integration suite triage`.
+ // When a verify fixer ran it adds `## Verify gate fixes` with each fixer's findings and its `fix:` commits.
+ func writeSummary(deps RunDeps, st *State, flaky []string) error {
+@@ -351,6 +372,15 @@ func writeSummary(deps RunDeps, st *State, flaky []string) error {
+ 			}
+ 		}
+ 		fmt.Fprintf(&b, "- `%02d-%s`: %s after %d attempt(s)\n", number, bs.Slug, bs.Status, attempts)
++		var deviations, departures []string
++		if bs.Digest != nil {
++			for _, file := range bs.Digest.Deviations {
++				deviations = append(deviations, "`"+file+"`")
++			}
++			departures = bs.Digest.Departures
++		}
++		fmt.Fprintf(&b, "  - Files changed outside its targets: %s\n", textOrNone(strings.Join(deviations, ", ")))
++		fmt.Fprintf(&b, "  - Pattern departures: %s\n", textOrNone(strings.Join(departures, "; ")))
+ 	}
+ 
+ 	if len(flaky) > 0 {
