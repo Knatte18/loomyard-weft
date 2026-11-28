@@ -1,6 +1,6 @@
 # Tier0 fails on a Go file gofmt would rewrite
 
-`battencli-wire-test-gofmt` · Task · enhancement, gate
+`battencli-wire-test-gofmt` · Task · enhancement, gate · starting · Worktree-Create
 
 Depends on: [`gate-call-shows-slot-wait`](design-gate-call-shows-slot-wait.md)
 
