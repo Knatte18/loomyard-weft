@@ -315,9 +315,29 @@
       "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-ae20bb67aa4483885.jsonl"
       ]
+    },
+    "7": {
+      "slug": "vscode-tasks-and-keys",
+      "cards": [
+        "07-vscode-tasks-and-keys",
+        "08-workspace-content-seam",
+        "09-beam-start-workspace-task"
+      ],
+      "cardHashes": {
+        "07-vscode-tasks-and-keys": "26bf4ab10eb7a217ba600e0f71cf2079605cdf74e17bd622daaa8b913a1375f7",
+        "08-workspace-content-seam": "549c51698866b1778cfa47003e12c6aa9cffc9ad424ea272354e72bcf89b3de8",
+        "09-beam-start-workspace-task": "076aa1ed6e8d6d4ecb1ce3b3cbe92533c669bce7939b1a3f22ac70a721f850a2"
+      },
+      "startSha": "015ab5a6bbc22a99224f5f3b9007e22e4407f98c",
+      "kind": "fork",
+      "spawnedAt": "2026-11-28T16:33:56Z",
+      "sessionId": "3bfdd3e6-6457-45e3-976f-844ffcfcba88",
+      "engine": "claude",
+      "terminal": false,
+      "status": ""
     }
   },
-  "currentBatch": 0,
+  "currentBatch": 7,
   "masterStrand": "3b72c7243ad10915642d1322bdc1c96b",
   "masterSessionId": "3bfdd3e6-6457-45e3-976f-844ffcfcba88",
   "masterEngine": "claude",
