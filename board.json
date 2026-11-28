@@ -968,28 +968,6 @@
       "revised": "2026-11-27T21:40:50Z"
     },
     {
-      "id": 1774,
-      "handle": "T20",
-      "slug": "reset-partial-commit-push",
-      "title": "webster reset refuses before its records push when fabricSync fails after the records commit landed",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "webster",
-        "fabric"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nCode-Review of `webster-reset-push-sync` (finding F1, 2026-11-28) found an edge in `internal/webstercli/reset.go`.\nWhen `fabricSync` returns an error after the records commit of the reset landed, the verb refuses before its synchronous push.\nAn owed push of that commit then writes no failed-push record and does not hold the run,\nalthough the pattern documents say the reset's records push is synchronous and its owed record sets `PushOwed`.\n\n## Fix\n\nWhen `fabricSync` fails after the records commit landed, run the reset's records push (`c.pushRecords`) before refusing,\nso the owed push is recorded as on the normal path; pin it with a test row beside `UnreachableRecordsOriginLeavesAnOwedRecord`.\n",
-      "status": "done",
-      "created": "2026-11-28T07:56:44Z",
-      "revised": "2026-11-28T07:56:46Z",
-      "profile": "light"
-    },
-    {
       "id": 1775,
       "handle": "T22",
       "slug": "window-retile-verb",
