@@ -1,11 +1,11 @@
 {
-  "current_producer": "Darn-Write",
+  "current_producer": "Drift-Verify",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Darn-Write",
-    "last": "Drift-Expect → skipped",
+    "now": "Drift-Verify",
+    "last": "Darn-Write → done",
     "wait": ""
   },
   "history": [
@@ -43,6 +43,46 @@
       "output": "",
       "at": "2026-11-28T12:59:31Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Darn-Write",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/lock-holder-gates-first/_lym/landing/summary.md",
+      "at": "2026-11-28T13:18:27Z",
+      "started_at": "2026-11-28T12:59:31Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "clean",
+          "kind": "gate",
+          "start": "2026-11-28T13:07:08.47857827Z",
+          "end": "2026-11-28T13:07:08.547500686Z"
+        },
+        {
+          "gate": "verify",
+          "kind": "gate",
+          "start": "2026-11-28T13:07:08.984857109Z",
+          "end": "2026-11-28T13:17:02.149148235Z"
+        },
+        {
+          "gate": "red-first",
+          "kind": "gate",
+          "start": "2026-11-28T13:17:02.559272912Z",
+          "end": "2026-11-28T13:17:02.582895076Z"
+        },
+        {
+          "gate": "drift",
+          "kind": "gate",
+          "start": "2026-11-28T13:17:02.733566549Z",
+          "end": "2026-11-28T13:17:03.43337259Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-28T13:17:03.790368252Z",
+          "end": "2026-11-28T13:17:03.790576031Z"
+        }
+      ]
     }
   ],
   "product": {
