@@ -1,0 +1,17 @@
+---
+round: 1
+focus:
+  - "Card order across cards 3, 4, 9, 10 and 11: for each test, refusal and grep-driven edit, settle whether the code it asserts reads the seam by the time its own card is done. Include card 4's TestInstallRequiredSeams run-lock check and which card moves ReconcileOrigin onto RunLocks."
+  - "Required-seam reach (cards 3, 4, 9, 10, 11; D13): trace every production path to each seam read, and each decode of a status record, in this concern's files. Settle whether every verb on such a path refuses before acting when the seam is unset, whether each prescribed refusal is reachable, and whether any of those files keeps a shedrun or shedengine import."
+  - "Card 3's test-file edit rule: run its grep, and a wider search over every package for callers of seam-reading functions, direct or indirect. Settle whether the card's search finds every test that would meet the refusal, and whether the files it edits are among its targets."
+  - "Card 7 against pushclassified.go and the executor: read each rule, fact, read phase and outcome class through the whole call chain. Settle whether verdicts, returned errors, lock hold, git process count and mutations stay as today, whether runRule and its action kinds support what the card prescribes (waits, seam calls, kept errors, the tracking-ref delete against D4), and whether any decision stays in the engine or is left to be found out while the card runs."
+  - "Cards 5, 6, 8, 10 and 11 against the Goal and D2/D3: for each file the Goal names, settle whether its rules reach the core in the phase and action-list shape the record asks for, or only as helpers the engine still sequences, and whether any rule in those files is carried by no card."
+  - "Cards 9, 10 and 11 against originreconcile*.go: settle whether the phase order, lock scope, mid-flow re-reads, move precedence and ended-entry handling the cards state match today's code, and whether the three cards agree on what ReconcileOrigin looks like between them."
+  - "Core signatures (cards 1, 5-11): settle whether every type each new core function takes or returns is visible to internal/fabriccore under its closed import set, and whether each cited engine helper, member and seam is visible from the package or test package that uses it, export_test shims included."
+  - "Acceptance criteria: for each moved verb, settle which card carries its core table rows, its unchanged printed mutations assertion and its flow-shape seam test, and what holds the non-files ref storage fallback test."
+  - "Test moves and cuts (cards 4-12): check each deleted row against the core row said to hold its assertion, and each kept or moved row against the rule it alone guards. Settle whether the new tests duplicate existing ones and whether this concern's fabric test code shrinks as the added entry asks."
+  - "Card 12's completeness: search every test file of this concern for imports of boardkit, boardengine, shedrun and shedengine and for reads of the run ledger. Settle whether every such row is moved, rewritten or deleted, whether kept rows still reach the branch they assert once they record no run, and whether the moved tests and helpers compile in boardengine_test."
+  - "Repository scans and allowlists: for every symbol a card moves, adds or deletes, settle whether the enforcement tests, allowlists, owner maps, vocabulary scan and PATTERN entries that name it or its file are carried by that same card."
+---
+
+Seed focus from a reading of the plan and the decision record; no claim above has been checked against the code.
