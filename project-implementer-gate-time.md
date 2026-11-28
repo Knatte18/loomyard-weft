@@ -1,9 +1,9 @@
 # P8 Webster and Weaver spend less of their row in gate runs
 
-Rendered 2026-11-28 14:55 UTC; every age below is as of then.
+Rendered 2026-11-28 14:59 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`implementer-gate-time`](design-implementer-gate-time.md) · Age 2h · Owner `neve`
+[`implementer-gate-time`](design-implementer-gate-time.md) · Age 3h · Owner `neve`
 
 ## Aim (operator, 2026-11-28)
 
@@ -29,7 +29,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **The card gate runs over the card own packages and its fixer stops at the failed check** | [`card-gate-own-packages`](design-card-gate-own-packages.md) | darn · light | T6 | 2h<br>24m | gate, webster, weaver |
+| T1 | **The card gate runs over the card own packages and its fixer stops at the failed check** | [`card-gate-own-packages`](design-card-gate-own-packages.md) | darn · light | T6 | 2h<br>28m | gate, webster, weaver |
 
 ## Enhancements (1)
 
