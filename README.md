@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-28 12:30 UTC; every age below is as of then.
+Rendered 2026-11-28 12:31 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `on` · PR setting `off`.
@@ -104,20 +104,20 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P5 Tapestry chains plan the next task while the one before still builds](project-plan-ahead-chains.md) (3)
 
-[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 37m · Owner `neve`
+[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 38m · Owner `neve`
 
 ### Running (1)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | motif | Discussion-Burler-Fix | neve | 1h<br>34m | shed, loom, batten, board |
+| T6 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | motif | Discussion-Bouncer | neve | 1h<br>35m | shed, loom, batten, board |
 
 ### Features (2)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T6 | 1h<br>36m | loom, batten, shed |
-| F3 |  | **Plan and build become recipes of their own, so a planned task waits for its dependencies with no run held** | [`plan-and-build-recipes`](design-plan-and-build-recipes.md) |  | 20m<br>12m | shed, loom, batten, board, dobby |
+| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T6 | 1h<br>37m | loom, batten, shed |
+| F3 |  | **Plan and build become recipes of their own, so a planned task waits for its dependencies with no run held** | [`plan-and-build-recipes`](design-plan-and-build-recipes.md) |  | 21m<br>13m | shed, loom, batten, board, dobby |
 
 ## [P6 Intake motifs: run watch, landed records, closed area](project-intake-motifs.md) (1)
 
@@ -156,10 +156,10 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| E4 |  | **The card gate leaves the guard step to the batch gate** | [`card-gate-no-guard-step`](design-card-gate-no-guard-step.md) | T9 | 24m<br>24m | gate, webster, weaver |
-| E6 |  | **An implementer batch gets the files and symbols its cards name, so it starts editing sooner** | [`implementer-orientation-read`](design-implementer-orientation-read.md) | T9 | 24m<br>24m | webster, weaver, stencil |
-| E7 |  | **The last batch gate covers cmd/lym and cross-package tests, so the plan-level verify seldom fails** | [`batch-gate-covers-cmd-lym`](design-batch-gate-covers-cmd-lym.md) | T9 | 24m<br>24m | gate, webster, weaver |
-| E8 |  | **A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock** | [`lock-holder-gates-first`](design-lock-holder-gates-first.md) | T9 | 24m<br>24m | gate, landing |
+| E4 |  | **The card gate leaves the guard step to the batch gate** | [`card-gate-no-guard-step`](design-card-gate-no-guard-step.md) | T9 | 25m<br>25m | gate, webster, weaver |
+| E6 |  | **An implementer batch gets the files and symbols its cards name, so it starts editing sooner** | [`implementer-orientation-read`](design-implementer-orientation-read.md) | T9 | 25m<br>25m | webster, weaver, stencil |
+| E7 |  | **The last batch gate covers cmd/lym and cross-package tests, so the plan-level verify seldom fails** | [`batch-gate-covers-cmd-lym`](design-batch-gate-covers-cmd-lym.md) | T9 | 25m<br>25m | gate, webster, weaver |
+| E8 |  | **A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock** | [`lock-holder-gates-first`](design-lock-holder-gates-first.md) | T9 | 25m<br>25m | gate, landing |
 
 ## [P0 Root: entries under no project](project-root.md) (17)
 
@@ -171,11 +171,11 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **Weaver gets a batch timeout of its own, names deviations in its summary, records gate spans and is tested on the paths its bench missed** | [`weaver-bench-fixes`](design-weaver-bench-fixes.md) | darn · solid | Code-Burler-Fix | neve | 54m<br>54m | weaver, shed, shuttle |
+| T1 | **Weaver gets a batch timeout of its own, names deviations in its summary, records gate spans and is tested on the paths its bench missed** | [`weaver-bench-fixes`](design-weaver-bench-fixes.md) | darn · solid | Code-Burler-Fix | neve | 55m<br>55m | weaver, shed, shuttle |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 21h<br>21h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | landing · Finalize | neve | 1d<br>1d | docs |
 | T5 | **PR-Review session tests run over a real creel daemon and the recorded tmux kit, which learns to replay pastes**<br>• Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins | [`pr-session-mail-stand-ins`](design-pr-session-mail-stand-ins.md) | darn · solid | landing · Finalize | neve | 17h<br>3h | testkit, landing, reed, creel |
-| T8 | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | motif | Discussion-Bouncer | neve | 1d<br>26m | landing, gate, batten |
+| T8 | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | motif | Discussion-Bouncer | neve | 1d<br>27m | landing, gate, batten |
 | T29 | **A running beam orch reads as down, and a strand missing from reed state is not covered** | [`beam-orch-reads-down`](design-beam-orch-reads-down.md) | darn · light | landing · Finalize | neve | 2h<br>2h | orch, reed, cwd |
 | T30 | **lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes** | [`clone-reset-keeps-unpushed`](design-clone-reset-keeps-unpushed.md) | darn · light | Darn-Write | neve | 2h<br>2h | fabric |
 
@@ -183,7 +183,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T4 | **Bench Weaver against Webster again on the same three landed plans, both run side by side the same day** | [`weaver-bench-rerun`](design-weaver-bench-rerun.md) | darn · docs | T1 | 54m<br>54m | weaver, webster |
+| T4 | **Bench Weaver against Webster again on the same three landed plans, both run side by side the same day** | [`weaver-bench-rerun`](design-weaver-bench-rerun.md) | darn · docs | T1 | 55m<br>55m | weaver, webster |
 | T22 | **A lym verb puts the hub windows back in their desktops and tiling zones when they have drifted** | [`window-retile-verb`](design-window-retile-verb.md) | darn · light | T2 | 3h<br>3h | termwindow, desktop |
 
 ### Research (2)
@@ -207,4 +207,4 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | T38 | 14h<br>2h | board, orch, dobby |
-| F4 |  | **Shed gains a row that repeats or unfolds into rows from a list, so a producer such as Weaver runs one step per batch** | [`shed-dynamic-rows`](design-shed-dynamic-rows.md) |  | 44m<br>44m | shed, weaver |
+| F4 |  | **Shed gains a row that repeats or unfolds into rows from a list, so a producer such as Weaver runs one step per batch** | [`shed-dynamic-rows`](design-shed-dynamic-rows.md) |  | 45m<br>45m | shed, weaver |
