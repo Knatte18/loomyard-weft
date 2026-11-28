@@ -66,37 +66,37 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 [`fabric-core`](design-fabric-core.md) · Age 1d · Owner `neve`
 
-### Layer A (1)
+### Ready (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid | T8 | 1d<br>1h | fabric, testkit, shed, board, pattern |
+| T23 | **Fabric core: push classification, retries, origin reconcile and failed-push records move to the core** | [`fabric-core-push-origin`](design-fabric-core-push-origin.md)<br>[Sketch](decision-fabric-core-push-origin.md) | tapestry · solid |  | 1d<br>1h | fabric, testkit, shed, board, pattern |
 
-### Layer B (1)
+### Layer A (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T24 | **Fabric core: remove, destroy, cleanup, prune, remote teardown and pending teardown move to the core** | [`fabric-core-teardown`](design-fabric-core-teardown.md)<br>[Sketch](decision-fabric-core-teardown.md) | tapestry · solid | T23 | 1d<br>1d | fabric, testkit, shed, landing |
 
-### Layer C (1)
+### Layer B (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T25 | **Fabric core: merge-in, mid-merge, handover, takeover, integrate, task patch and discard move to the core** | [`fabric-core-merge-landing`](design-fabric-core-merge-landing.md)<br>[Sketch](decision-fabric-core-merge-landing.md) | tapestry · solid | T24 | 1d<br>1d | fabric, testkit, shed, batten, landing |
 
-### Layer D (1)
+### Layer C (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T26 | **Fabric core: pull, replay, bolt, reconcile, parent tips and warp forward move to the core; stencil reads leave fabric** | [`fabric-core-pull-replay`](design-fabric-core-pull-replay.md)<br>[Sketch](decision-fabric-core-pull-replay.md) | tapestry · solid | T25 | 1d<br>1d | fabric, testkit, shed, stencil, board, heddle |
 
-### Layer E (1)
+### Layer D (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T27 | **Fabric core: add, clone, adopt, junctions, weft wiring and the hub workspace move to the core; the vscode import is cut** | [`fabric-core-add-clone`](design-fabric-core-add-clone.md)<br>[Sketch](decision-fabric-core-add-clone.md) | tapestry · solid | T26 | 1d<br>1d | fabric, testkit, ide, batten, heddle, reconcile, shed |
 
-### Layer F (1)
+### Layer E (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -104,25 +104,25 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P5 Tapestry chains plan the next task while the one before still builds](project-plan-ahead-chains.md) (2)
 
-[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 6m · Owner `neve`
+[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 7m · Owner `neve`
 
 ### Running (1)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | motif | Discussion-Write | neve | 30m<br>3m | shed, loom, batten, board |
+| T6 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | motif | Discussion-Write | neve | 30m<br>4m | shed, loom, batten, board |
 
 ### Features (1)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T6 | 45m<br>5m | loom, batten, shed |
+| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T6 | 46m<br>6m | loom, batten, shed |
 
 ## [P6 Intake motifs: run watch, landed records, closed area](project-intake-motifs.md) (1)
 
 `intake-motifs` · Age 2d · Owner `neve`
 
-### Layer G (1)
+### Layer F (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -151,13 +151,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- |
 | T9 | **Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages** | [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md) | darn · docs |  | 0m<br>0m | gate, webster, weaver |
 
-## [P0 Root: entries under no project](project-root.md) (20)
+## [P0 Root: entries under no project](project-root.md) (19)
 
 Owner `neve`
 
 Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 
-### Running (8)
+### Running (7)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -165,18 +165,22 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 21h<br>21h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | landing · Finalize | neve | 1d<br>1d | docs |
 | T5 | **PR-Review session tests run over a real creel daemon and the recorded tmux kit, which learns to replay pastes**<br>• Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins | [`pr-session-mail-stand-ins`](design-pr-session-mail-stand-ins.md) | darn · solid | landing · Finalize | neve | 16h<br>3h | testkit, landing, reed, creel |
-| T8 | **runpusher tries to start pushers for removed task worktrees** | [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md) | darn · light | Friction-Reflect | neve | 14h<br>14h | fabric |
 | T11 | **Discussion-Bouncer reports stalemate when the fixer's decision-record edits are uncommitted** | [`bouncer-stalemate-uncommitted`](design-bouncer-stalemate-uncommitted.md) | darn · light | landing · Finalize | neve | 14h<br>14h | shed, burler |
 | T18 | **Darn writer prompt forbids the gate calls a measurement entry requires** | [`darn-writer-measure-gates`](design-darn-writer-measure-gates.md) | darn · light | landing · Finalize | neve | 14h<br>14h | darn, stencil |
 | T29 | **A running beam orch reads as down, and a strand missing from reed state is not covered** | [`beam-orch-reads-down`](design-beam-orch-reads-down.md) | darn · light | Code-Burler-Fix | neve | 2h<br>2h | orch, reed, cwd |
 
-### Layer A (3)
+### Ready (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T30 | **lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes** | [`clone-reset-keeps-unpushed`](design-clone-reset-keeps-unpushed.md) | darn · light |  | 2h<br>2h | fabric |
+
+### Layer A (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Bench Weaver against Webster again on the same three landed plans, both run side by side the same day** | [`weaver-bench-rerun`](design-weaver-bench-rerun.md) | darn · docs | T1 | 23m<br>23m | weaver, webster |
 | T22 | **A lym verb puts the hub windows back in their desktops and tiling zones when they have drifted** | [`window-retile-verb`](design-window-retile-verb.md) | darn · light | T2 | 3h<br>3h | termwindow, desktop |
-| T30 | **lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes** | [`clone-reset-keeps-unpushed`](design-clone-reset-keeps-unpushed.md) | darn · light | T8 | 2h<br>2h | fabric |
 
 ### Research (2)
 
@@ -201,3 +205,9 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | --- | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | T38 | 14h<br>1h | board, orch, dobby |
 | F4 |  | **Shed gains a row that repeats or unfolds into rows from a list, so a producer such as Weaver runs one step per batch** | [`shed-dynamic-rows`](design-shed-dynamic-rows.md) |  | 14m<br>14m | shed, weaver |
+
+### Done (1)
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T8 | **runpusher tries to start pushers for removed task worktrees** | [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md) | 14h<br>14h | fabric |

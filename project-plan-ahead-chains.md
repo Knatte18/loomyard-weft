@@ -3,7 +3,7 @@
 Rendered 2026-11-28 12:00 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 6m · Owner `neve`
+[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 7m · Owner `neve`
 
 ## Aim (operator, 2026-11-28)
 
@@ -23,10 +23,10 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T6 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | motif | Discussion-Write | neve | 30m<br>3m | shed, loom, batten, board |
+| T6 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | motif | Discussion-Write | neve | 30m<br>4m | shed, loom, batten, board |
 
 ## Features (1)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T6 | 45m<br>5m | loom, batten, shed |
+| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T6 | 46m<br>6m | loom, batten, shed |

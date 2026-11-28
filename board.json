@@ -645,7 +645,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #286](https://github.com/Knatte18/loomyard/issues/286).\n\nOn `lym board sync` from the prime, runpusher logs one WARN per task worktree that was removed long ago:\n\n`runpusher: the pusher did not start ... resolve main worktree: list git worktrees in \"\u003chub\u003e/\u003cslug\u003e\": dotgit: not a git repository: no .git above \u003chub\u003e/\u003cslug\u003e`\n\nFive such slugs were listed, all of runs that landed and whose pairs were removed through lym fabric. The pusher's run registry keeps entries for worktrees that no longer exist. Expected: entries for removed pairs are dropped at removal (or skipped silently when the directory is gone).",
-      "status": "running · Friction-Reflect",
+      "status": "done",
       "created": "2026-11-27T21:39:15Z",
       "revised": "2026-11-27T21:40:04Z",
       "profile": "light"

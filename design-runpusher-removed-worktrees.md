@@ -1,6 +1,6 @@
 # runpusher tries to start pushers for removed task worktrees
 
-`runpusher-removed-worktrees` · Task · bug, fabric · running · Friction-Reflect
+`runpusher-removed-worktrees` · Task · bug, fabric · done
 
 Imported from [issue #286](https://github.com/Knatte18/loomyard/issues/286).
 

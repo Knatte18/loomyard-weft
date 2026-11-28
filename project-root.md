@@ -10,7 +10,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Running (8)
+## Running (7)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -18,18 +18,22 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 21h<br>21h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
 | T3 | **Name config keys as <module>.<path> in Go comments, and guard string literals for bare keys** | [`config-key-comment-sweep`](design-config-key-comment-sweep.md) | darn · light | landing · Finalize | neve | 1d<br>1d | docs |
 | T5 | **PR-Review session tests run over a real creel daemon and the recorded tmux kit, which learns to replay pastes**<br>• Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins | [`pr-session-mail-stand-ins`](design-pr-session-mail-stand-ins.md) | darn · solid | landing · Finalize | neve | 16h<br>3h | testkit, landing, reed, creel |
-| T8 | **runpusher tries to start pushers for removed task worktrees** | [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md) | darn · light | Friction-Reflect | neve | 14h<br>14h | fabric |
 | T11 | **Discussion-Bouncer reports stalemate when the fixer's decision-record edits are uncommitted** | [`bouncer-stalemate-uncommitted`](design-bouncer-stalemate-uncommitted.md) | darn · light | landing · Finalize | neve | 14h<br>14h | shed, burler |
 | T18 | **Darn writer prompt forbids the gate calls a measurement entry requires** | [`darn-writer-measure-gates`](design-darn-writer-measure-gates.md) | darn · light | landing · Finalize | neve | 14h<br>14h | darn, stencil |
 | T29 | **A running beam orch reads as down, and a strand missing from reed state is not covered** | [`beam-orch-reads-down`](design-beam-orch-reads-down.md) | darn · light | Code-Burler-Fix | neve | 2h<br>2h | orch, reed, cwd |
 
-## Layer A (3)
+## Ready (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T30 | **lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes** | [`clone-reset-keeps-unpushed`](design-clone-reset-keeps-unpushed.md) | darn · light |  | 2h<br>2h | fabric |
+
+## Layer A (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Bench Weaver against Webster again on the same three landed plans, both run side by side the same day** | [`weaver-bench-rerun`](design-weaver-bench-rerun.md) | darn · docs | T1 | 23m<br>23m | weaver, webster |
 | T22 | **A lym verb puts the hub windows back in their desktops and tiling zones when they have drifted** | [`window-retile-verb`](design-window-retile-verb.md) | darn · light | T2 | 3h<br>3h | termwindow, desktop |
-| T30 | **lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes** | [`clone-reset-keeps-unpushed`](design-clone-reset-keeps-unpushed.md) | darn · light | T8 | 2h<br>2h | fabric |
 
 ## Research (2)
 
@@ -54,3 +58,9 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | T38 | 14h<br>1h | board, orch, dobby |
 | F4 |  | **Shed gains a row that repeats or unfolds into rows from a list, so a producer such as Weaver runs one step per batch** | [`shed-dynamic-rows`](design-shed-dynamic-rows.md) |  | 14m<br>14m | shed, weaver |
+
+## Done (1)
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T8 | **runpusher tries to start pushers for removed task worktrees** | [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md) | 14h<br>14h | fabric |
