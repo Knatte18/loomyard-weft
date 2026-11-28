@@ -913,7 +913,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #289](https://github.com/Knatte18/loomyard/issues/289).\n\n## What happened\n\nA card gate in `internal/boardengine` crashed with `fatal error: concurrent map writes` in `TestDiscussedPayload`.\nThe batch being implemented did not touch that package, and a rerun of the same gate passed.\n\n## Why it is abnormal\n\nA concurrent map write is a data race in the test or in the code under it.\nIt fails gates at random for tasks unrelated to the package.\n\n## What to do\n\nRun `TestDiscussedPayload` repeatedly with the race detector, find the unsynchronized map, and fix it.\n\nProvenance: task `push-retry-not-halt`, note `05-pusher-interval.md`.\n",
-      "status": "running · Friction-Reflect",
+      "status": "done",
       "created": "2026-11-27T21:39:18Z",
       "revised": "2026-11-27T21:40:04Z",
       "profile": "light"

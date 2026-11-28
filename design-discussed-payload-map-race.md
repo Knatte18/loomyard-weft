@@ -1,6 +1,6 @@
 # boardengine: TestDiscussedPayload crashes with concurrent map writes
 
-`discussed-payload-map-race` · Task · bug, board · running · Friction-Reflect
+`discussed-payload-map-race` · Task · bug, board · done
 
 Imported from [issue #289](https://github.com/Knatte18/loomyard/issues/289).
 
