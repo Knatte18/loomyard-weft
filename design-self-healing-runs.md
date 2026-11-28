@@ -1,6 +1,6 @@
 # Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack
 
-`self-healing-runs` · Task · sketch, dobby, batten, orch · starting · Open-IDE
+`self-healing-runs` · Task · sketch, dobby, batten, orch · running · Raddle-Write
 
 Decision record: [Sketch](decision-self-healing-runs.md)
 
