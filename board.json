@@ -1135,12 +1135,14 @@
         "landing"
       ],
       "issues": [],
-      "depends_on": [],
+      "depends_on": [
+        "pr-session-mail-stand-ins"
+      ],
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nCode-Review round 2 of `pr-session-mail-stand-ins` (finding F10, BLOCKING) was closed by an accepted decision with the finding unfixed.\n`prReviewMailDeps` takes only `Mode`, `Origin` and `TaskHead` from `wired.PullRequest`.\nIt still reads envkit's hand-written `DirtyPaths` (nil), `CommitsMissing` (nil), `TaskHasCommits` (true), `PauseCovered` (false) and `RecordChanges` (nil channel),\nstanding in for verifytree, fabricengine, the pause record and the record watch over a real pair.\n\n## Idea\n\nAssign those seams from `wired.PullRequest` as well, and make the state a wired seam needs through gitkit or fabric in the test setup,\nsuch as a commit on the pair's HEAD beyond the parent branch for `TaskHasCommits`.\nKeep `RecordPath` and `RecordLockPath` in step with the wired record paths.\n",
       "created": "2026-11-28T11:41:45Z",
-      "revised": "2026-11-28T11:41:45Z"
+      "revised": "2026-11-28T11:41:50Z"
     }
   ],
   "prime_owner": "neve",
