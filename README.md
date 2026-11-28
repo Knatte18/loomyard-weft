@@ -106,11 +106,11 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 [`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 2m · Owner `neve`
 
-### Draft (1)
+### Ready (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T6 | `draft` **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | darn |  | 26m<br>0m | shed, loom, batten, board |
+| T6 | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | motif |  | 26m<br>0m | shed, loom, batten, board |
 
 ### Features (1)
 
