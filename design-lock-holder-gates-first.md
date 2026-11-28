@@ -1,8 +1,6 @@
 # A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock
 
-`lock-holder-gates-first` · Note · enhancement, gate, landing
-
-Depends on: [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md)
+`lock-holder-gates-first` · Task · enhancement, gate, landing
 
 ## Seen (2026-11-28)
 
