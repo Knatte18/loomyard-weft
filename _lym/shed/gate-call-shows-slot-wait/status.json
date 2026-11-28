@@ -1,11 +1,11 @@
 {
-  "current_producer": "Describe",
+  "current_producer": "PR-Review",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Describe",
-    "last": "Drift-Recheck → skipped",
+    "now": "PR-Review",
+    "last": "Describe → done",
     "wait": ""
   },
   "history": [
@@ -184,6 +184,52 @@
       "output": "",
       "at": "2026-11-28T08:31:17Z",
       "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Describe",
+      "outcome": "done",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/gate-call-shows-slot-wait/_lym/landing/summary.md",
+      "at": "2026-11-28T08:32:46Z",
+      "started_at": "2026-11-28T08:31:17Z",
+      "gate_attempts": 1,
+      "gate_spans": [
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-28T08:31:57.085490366Z",
+          "end": "2026-11-28T08:31:57.085546271Z"
+        },
+        {
+          "gate": "description",
+          "kind": "gate",
+          "start": "2026-11-28T08:32:44.067007854Z",
+          "end": "2026-11-28T08:32:44.067066704Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "gate",
+          "start": "2026-11-28T08:31:57.227192747Z",
+          "end": "2026-11-28T08:31:57.227393032Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "held",
+          "start": "2026-11-28T08:31:57.32707783Z",
+          "end": "2026-11-28T08:32:35.434978903Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "rework",
+          "start": "2026-11-28T08:32:35.936852298Z",
+          "end": "2026-11-28T08:32:42.02671774Z"
+        },
+        {
+          "gate": "Describe-Review",
+          "kind": "gate",
+          "start": "2026-11-28T08:32:44.299518128Z",
+          "end": "2026-11-28T08:32:44.299542594Z"
+        }
+      ]
     }
   ],
   "product": {
