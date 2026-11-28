@@ -1,6 +1,6 @@
 # A beam member's run names its beam orch as parent, which may amend the beam's record
 
-`beam-member-parent` · Task · bug, batten, landing, orch, stencil, shed, loom, pawl · running · Code-Burler-Review
+`beam-member-parent` · Task · bug, batten, landing, orch, stencil, shed, loom, pawl · running · Code-Burler-Fix
 
 Bundled from the notes below; each part keeps its note's text.
 
