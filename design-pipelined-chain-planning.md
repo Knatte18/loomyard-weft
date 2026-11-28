@@ -14,16 +14,26 @@ In Millhouse, which LoomYard grew from, the operator sped such chains up by hand
 - When A had landed, B merged A's changes, and a small fixer read the code changes and updated B's discussion and plan for what had moved.
 - Only then did B's builders start, so the builders were the only part that waited for A.
 
-## Idea
+## Design (operator, 2026-11-28)
 
-Let lym do this systematically, since keeping it straight by hand is hard:
-a task whose dependency has an approved record (and later an approved plan) may run its own Discussion and Plan rows ahead,
-reading the dependency's record and plan as given; it then parks before its build rows until the dependency lands,
-merges the landed change, runs a small re-align row that updates its record and plan for what the landing changed, and builds.
+Tapestry only: darn has no separate plan row to run ahead.
+
+1. B depends on A.
+2. When A's plan is approved, B is released.
+3. B runs Discussion and Plan as usual, Plan Perch included, with A's record and plan as input.
+4. After B's plan is approved, a new producer row waits for B's dependencies: B parks there until A has landed.
+5. When A has landed, that row merges B's parent into B, bringing in A's change,
+   and a fixer updates B's decision record and plan for what A's change brought.
+   This stays small when A kept to its own plan.
+6. B then goes on to Webster as today.
+
+The merge in step 5 also brings in whatever else landed on the parent, not only A.
+That is no new cost: Parent-Align already meets the same landings later today.
+Running the chain in a beam of its own keeps the parent quiet, so the merge in step 5 brings in little beside A.
 
 ## Bounds
 
 - The choice is made up front, before B plans ahead, never after: a plan written ahead and then thrown away is the waste to avoid.
   From A's record and plan, estimate how much of what B builds on A will change;
-  when A is estimated to change too much of it, B does not plan ahead and waits as today (operator, 2026-11-28).
+  when A is estimated to change too much of it, B does not plan ahead and waits as today.
 - Not for now (operator, 2026-11-28).
