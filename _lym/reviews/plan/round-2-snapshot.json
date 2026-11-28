@@ -1,0 +1,41 @@
+{
+  "fix_scope": "overlay",
+  "target_paths": [
+    "_lym/plan"
+  ],
+  "target_id": "a9484fbe2f4b724b79391d91123f6fc271d03809672a1e898e3140c9930ce2af",
+  "added_decisions": [
+    {
+      "title": "push-retry-not-halt waits for the whole chain",
+      "digest": "9cde3159c035cebeed5a4a81eda687bcf575082840c34db2ac06f9ef76b7fb4c"
+    },
+    {
+      "title": "hubforge, boardkit and envkit keep their import sets in this task",
+      "digest": "efb424cc7b8a2dbecbaddcc4235c0bd2823da464534e829a42545527542dc07e"
+    },
+    {
+      "title": "The secret-path refusal reaches the core as a snapshot fact",
+      "digest": "73aaa60be69d45cc7bb5d05d03dfef2966b0a41d68ce8f9115d291e82eb84f49"
+    },
+    {
+      "title": "Process-installed seams follow the sequential rule, not OriginSeams' per-call shape",
+      "digest": "18be77c80080c2dd28fda264237983f9f6b6501128d451b2b32a2c0de42b5989"
+    },
+    {
+      "title": "The restructure cuts fabric's test code, it does not only move it",
+      "digest": "a04c6f1cc28cec12c63da4ef755867580caf293bba445956955994770a8ef756"
+    },
+    {
+      "title": "A protected-branch refusal keeps the rejection path",
+      "digest": "b1d039f798450ea56a19d2d26975dc787f50274e827b4a8e9011b755eb4e052a"
+    },
+    {
+      "title": "Push verbs refuse an unset run record seam before the push lock",
+      "digest": "8df57ff7da0dbfcec9172ea9ca142477d5576bedfc689ccd59e3c30bec5f0617"
+    },
+    {
+      "title": "Fabric asks a status codec verdict instead of decoding shed records",
+      "digest": "a1f290150814404e518123690cb3b8118b971a5d18b7b4735f8822bdf455d393"
+    }
+  ]
+}

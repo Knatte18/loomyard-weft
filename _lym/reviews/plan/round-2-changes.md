@@ -1,0 +1,10 @@
+_lym/plan/00-overview.md
+_lym/plan/02-shed-status-adapter.md
+_lym/plan/03-required-seam-installer.md
+_lym/plan/04-origin-reads-seams.md
+_lym/plan/07-push-side-core.md
+_lym/plan/08-pair-push-core.md
+_lym/plan/09-origin-judge-core.md
+_lym/plan/10-origin-ended-core.md
+_lym/plan/11-origin-moves-core.md
+_lym/plan/12-board-test-moves.md

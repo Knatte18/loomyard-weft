@@ -1,11 +1,11 @@
 {
-  "current_producer": "Plan-Burler-Review",
+  "current_producer": "Plan-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Plan-Burler-Review",
-    "last": "Plan-Bouncer → bounced to Plan-Burler-Review",
+    "now": "Plan-Burler-Fix",
+    "last": "Plan-Burler-Review → bounced to Plan-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -123,6 +123,30 @@
       "at": "2026-11-28T13:29:42Z",
       "started_at": "2026-11-28T13:29:06Z",
       "routed_to": "Plan-Burler-Review"
+    },
+    {
+      "producer": "Plan-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/fabric-core-push-origin/_lym/reviews/plan/round-2-review.md",
+      "at": "2026-11-28T13:56:21Z",
+      "started_at": "2026-11-28T13:29:45Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-28T13:56:19.503471415Z",
+          "end": "2026-11-28T13:56:19.504469071Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-28T13:56:19.868806814Z",
+          "end": "2026-11-28T13:56:19.869530958Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Plan-Burler-Fix"
     }
   ],
   "product": {
