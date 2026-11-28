@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-orch-unattended-rules.md)
 
-Depends on: [`dobby-stall-chase`](design-dobby-stall-chase.md)
+Depends on: [`driver-settles-stops`](design-driver-settles-stops.md), [`dobby-pause-lift-resume`](design-dobby-pause-lift-resume.md)
 
 Filed from the Sketch `self-healing-runs`.
 

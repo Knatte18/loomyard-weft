@@ -21,7 +21,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T6 | **Arras still shows in seeded profiles and in the overview and glossary**<br>• The landed design-first route left arras keys in the profile template and descriptions in two docs | [`arras-visible-leftovers`](design-arras-visible-leftovers.md) | darn · light | landing · Finalize | neve | 13h<br>1h | board, docs |
 | T9 | **Tier0 fails on a Go file gofmt would rewrite**<br>• A mis-formatted Go file passes every tier; add a gofmt check to tier0 | [`battencli-wire-test-gofmt`](design-battencli-wire-test-gofmt.md) | darn · light | landing · Finalize | neve | 13h<br>1h | gate |
 | T10 | **A catch-up fetch that fails on an unreachable origin still stops a run start**<br>• push-retry-not-halt made pushes retry quietly, but dobby catch-up fetch failure still refuses the start | [`catchup-fetch-stops-start`](design-catchup-fetch-stops-start.md) | darn · light | Darn-Write | neve | 12h<br>26m | dobby, fabric |
-| T19 | **A creelengine scheduler test fails at times and passes on a rerun** | [`creel-machine-outbound-flake`](design-creel-machine-outbound-flake.md) | darn · light | landing · Finalize | neve | 41m<br>28m | creel |
+| T19 | **A creelengine scheduler test fails at times and passes on a rerun** | [`creel-machine-outbound-flake`](design-creel-machine-outbound-flake.md) | darn · light | landing · Finalize | neve | 42m<br>28m | creel |
 
 ## Ready (5)
 
