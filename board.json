@@ -65,23 +65,6 @@
       "revised": "2026-11-17T18:54:35Z"
     },
     {
-      "id": 1661,
-      "handle": "P5",
-      "slug": "intake-wave-3",
-      "title": "Intake wave 3: beam orch parent, scope and earlier checks",
-      "kind": "project",
-      "labels": [
-        "enhancement"
-      ],
-      "issues": [],
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "",
-      "created": "2026-11-26T08:19:25Z",
-      "revised": "2026-11-26T08:20:40Z"
-    },
-    {
       "id": 1662,
       "handle": "P6",
       "slug": "intake-motifs",
