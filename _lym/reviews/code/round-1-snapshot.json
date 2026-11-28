@@ -7,5 +7,6 @@
       "title": "No bug fixed",
       "digest": "911907b466eb163efb43627029791d15da070e6a837ce11ff0c7a2e7db7ca308"
     }
-  ]
+  ],
+  "decisions_routed": true
 }
