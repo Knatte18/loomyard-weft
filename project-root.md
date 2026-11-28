@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-28 07:58 UTC; every age below is as of then.
+Rendered 2026-11-28 07:59 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -10,24 +10,24 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Running (6)
+## Running (5)
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Webster | neve | 17h<br>17h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T5 | **webster reset records push is asynchronous and unrecorded, against the decision record** | [`webster-reset-push-sync`](design-webster-reset-push-sync.md) | darn · light | Friction-Reflect | neve | 10h<br>10h | webster, fabric, pattern |
 | T9 | **boardengine: TestDiscussedPayload crashes with concurrent map writes** | [`discussed-payload-map-race`](design-discussed-payload-map-race.md) | darn · light | Darn-Write | neve | 10h<br>10h | board |
 | T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | Code-Burler-Fix | neve | 16h<br>16h | batten, fabric |
 | T19 | **Timing a gate test call includes the slot wait; run time needs the run record** | [`gate-call-shows-slot-wait`](design-gate-call-shows-slot-wait.md) | darn · light | Darn-Write | neve | 10h<br>10h | gate |
 | T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | Darn-Write | neve | 1d<br>13h | fabric, cleanup, batten |
 
-## Ready (1)
+## Ready (2)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
+| T20 | **webster reset refuses before its records push when fabricSync fails after the records commit landed** | [`reset-partial-commit-push`](design-reset-partial-commit-push.md) | darn · light |  | 2m<br>2m | webster, fabric |
 | T22 | **internal/shedcli.names is reached by no main package**<br>• Remove the function or give it a caller; TestTestOnlyCode fails on it in the upkeep gate | [`shedcli-names-unreached`](design-shedcli-names-unreached.md) | darn · light |  | 10h<br>0m | shed |
 
-## Layer A (8)
+## Layer A (7)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -38,7 +38,6 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T11 | **Discussion-Bouncer reports stalemate when the fixer's decision-record edits are uncommitted** | [`bouncer-stalemate-uncommitted`](design-bouncer-stalemate-uncommitted.md) | darn · light | T12 | 10h<br>10h | shed, burler |
 | T13 | **Reviews and plans check their claims against the code: fix keys, test infrastructure, card claims and first callers** | [`review-fix-claims-checked`](design-review-fix-claims-checked.md) | darn · light | T12 | 10h<br>10h | burler, stencil, webster |
 | T18 | **Darn writer prompt forbids the gate calls a measurement entry requires** | [`darn-writer-measure-gates`](design-darn-writer-measure-gates.md) | darn · light | T12 | 10h<br>10h | darn, stencil |
-| T20 | **webster reset refuses before its records push when fabricSync fails after the records commit landed** | [`reset-partial-commit-push`](design-reset-partial-commit-push.md) | darn · light | T5 | 2m<br>2m | webster, fabric |
 
 ## Sketches (1)
 
@@ -73,3 +72,9 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
 | F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | 10h<br>10h | board, orch, dobby |
+
+## Done (1)
+
+| # | Entry | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- |
+| T5 | **webster reset records push is asynchronous and unrecorded, against the decision record** | [`webster-reset-push-sync`](design-webster-reset-push-sync.md) | 10h<br>10h | webster, fabric, pattern |
