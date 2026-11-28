@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-28 14:38 UTC; every age below is as of then.
+Rendered 2026-11-28 14:39 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `on` · PR setting `off`.
@@ -130,7 +130,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T19<br>F3 | 3h<br>1h | loom, batten, shed |
-| F3 |  | **Released tasks start in a queue order the board shows and the operator can change** | [`release-order-queue`](design-release-order-queue.md) |  | 1h<br>1h | board, dobby |
+| F3 |  | **Released tasks start in a queue order the board shows and the operator can change** | [`release-order-queue`](design-release-order-queue.md) |  | 2h<br>1h | board, dobby |
 
 ## [P6 Intake motifs: run watch, landed records, closed area](project-intake-motifs.md) (1)
 
@@ -169,7 +169,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T1 | **The card gate runs over the card own packages and its fixer stops at the failed check** | [`card-gate-own-packages`](design-card-gate-own-packages.md) | darn · light | T6 | 2h<br>7m | gate, webster, weaver |
+| T1 | **The card gate runs over the card own packages and its fixer stops at the failed check** | [`card-gate-own-packages`](design-card-gate-own-packages.md) | darn · light | T6 | 2h<br>8m | gate, webster, weaver |
 
 ### Enhancements (1)
 
@@ -188,7 +188,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Parent-Align | neve | 1d<br>1d | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T3 | **A push-ledger landing is written from a slug, tip and records commit given as arguments, so a parent ahead by several runs' landing commits reads as owed tips** | [`landing-ledger-own-tip`](design-landing-ledger-own-tip.md)<br>[Sketch](decision-landing-ledger-own-tip.md) | darn · light | Code-Burler-Review | neve | 1h<br>1h | loom, landing |
+| T3 | **A push-ledger landing is written from a slug, tip and records commit given as arguments, so a parent ahead by several runs' landing commits reads as owed tips** | [`landing-ledger-own-tip`](design-landing-ledger-own-tip.md)<br>[Sketch](decision-landing-ledger-own-tip.md) | darn · light | Code-Burler-Fix | neve | 1h<br>1h | loom, landing |
 | T4 | **Bench Weaver against Webster again on the same three landed plans, both run side by side the same day** | [`weaver-bench-rerun`](design-weaver-bench-rerun.md) | darn · docs | Darn-Write | neve | 3h<br>3h | weaver, webster |
 | T30 | **lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes** | [`clone-reset-keeps-unpushed`](design-clone-reset-keeps-unpushed.md) | darn · light | Code-Burler-Fix | neve | 4h<br>4h | fabric |
 
