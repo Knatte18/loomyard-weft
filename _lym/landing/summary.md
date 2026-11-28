@@ -1,0 +1,33 @@
+# Hash the Bouncer's review target under the anchor, refuse an empty one
+
+The Bouncer's stalemate check compares a round's review target id before and after the round's fix.
+For an overlay target, such as a Discussion segment's decision record and support log, that id is a SHA-256 over the target files.
+The snapshot resolved the target paths against the worktree root,
+while the round's reviewers and fixer resolve the same paths against the anchor path.
+On a hub anchored to a subpath of its worktree, no target file existed under the worktree root.
+Every round then hashed empty input to the same id (`e3b0c442…b855`),
+so a round whose fixer had edited the decision record escalated with cause `stalemate`, and its changes file listed nothing.
+
+## Changes
+
+- `internal/shedrecipe/entries_burler.go`: `reviewTargetSnapshot` roots the overlay snapshot at `Env.AnchorPath`, the root burler resolves the profile's target paths against.
+  Both the review row and the Bouncer build their snapshot through it, so the round-start id and the post-fix id now read the files the agents edit.
+- `internal/shedadapters/targetsnapshot.go`: an overlay id over a target that matches no file is an error instead of the hash of empty input.
+  The round snapshot then records no target id, and a round with no target id already counts as changed, so a missing target can never produce a stalemate.
+  A single missing path beside an existing file is still skipped, as before.
+
+## Design decisions
+
+- The overlay snapshot keeps its `WorktreeRoot` field name; it means the root the target paths resolve against, as the same field of burler's geometry does, which also holds the anchor path.
+- An empty target fails the id read rather than the round: the review and the Bouncer log the failure at Warn and go on, as they already do for any failed id read, so a misconfigured target costs the stalemate check, never the run.
+
+## Tests
+
+- `TestBurlerReviewEntry_ProfileMapping`'s `OverlayTargetRecordsTheRoundSnapshot` writes the target under the anchor alone and asserts the round-1 snapshot's target id is the id of that file.
+  On the old code the id hashed empty input and the assertion fails.
+- `TestTargetSnapshot` gains `an overlay target with no file is an error`, asserting `ID` and `Take` both fail when no target path exists.
+
+## Merge danger
+
+**Door:** two-way
+**Blast radius:** bouncer
