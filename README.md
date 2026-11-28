@@ -1,6 +1,6 @@
 # Board
 
-Rendered 2026-11-28 13:37 UTC; every age below is as of then.
+Rendered 2026-11-28 13:38 UTC; every age below is as of then.
 Prime owner: `neve`.
 
 Hub-wide default: autonomy `on` · PR setting `off`.
@@ -104,17 +104,17 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T9 | `draft` **Jacquard recipe holds tapestry's rows after Discussion, tapestry becomes the Motif and Jacquard blocks, and a Record-Seed row seeds the stored record** | [`jacquard-recipe`](design-jacquard-recipe.md)<br>[Sketch](decision-jacquard-recipe.md) | darn · solid |  | 0m<br>0m | shed, loom, testkit |
-| T11 | `draft` **Batten, loom verbs and the report admit jacquard where it walks tapestry's path, and cost cells count a discussed tapestry run as jacquard** | [`jacquard-recipe-lists`](design-jacquard-recipe-lists.md)<br>[Sketch](decision-jacquard-recipe-lists.md) | darn · light | T9 | 0m<br>0m | batten, loom, report, tools |
-| T13 | `draft` **Jacquard refuses an entry with no stored record at batten's start and at a first lym loom start, and the decision verbs name the seed row** | [`jacquard-start-refusal`](design-jacquard-start-refusal.md)<br>[Sketch](decision-jacquard-start-refusal.md) | darn · light | T11 | 0m<br>0m | loom, batten |
-| T18 | `draft` **Every run profile with a tapestry block gains a jacquard block, carried over from the operator's tapestry values once at reconcile** | [`jacquard-run-profiles`](design-jacquard-run-profiles.md)<br>[Sketch](decision-jacquard-run-profiles.md) | darn · light |  | 0m<br>0m | profiles, config |
-| T19 | `draft` **Raddle names jacquard for the parts it files, and the glossary and docs name jacquard and tapestry's two blocks** | [`raddle-names-jacquard`](design-raddle-names-jacquard.md)<br>[Sketch](decision-raddle-names-jacquard.md) | darn · light | T13<br>T18 | 0m<br>0m | parsers, loom, stencil, heddle, docs |
+| T9 | `draft` **Jacquard recipe holds tapestry's rows after Discussion, tapestry becomes the Motif and Jacquard blocks, and a Record-Seed row seeds the stored record** | [`jacquard-recipe`](design-jacquard-recipe.md)<br>[Sketch](decision-jacquard-recipe.md) | darn · solid |  | 1m<br>1m | shed, loom, testkit |
+| T11 | `draft` **Batten, loom verbs and the report admit jacquard where it walks tapestry's path, and cost cells count a discussed tapestry run as jacquard** | [`jacquard-recipe-lists`](design-jacquard-recipe-lists.md)<br>[Sketch](decision-jacquard-recipe-lists.md) | darn · light | T9 | 1m<br>1m | batten, loom, report, tools |
+| T13 | `draft` **Jacquard refuses an entry with no stored record at batten's start and at a first lym loom start, and the decision verbs name the seed row** | [`jacquard-start-refusal`](design-jacquard-start-refusal.md)<br>[Sketch](decision-jacquard-start-refusal.md) | darn · light | T11 | 1m<br>1m | loom, batten |
+| T18 | `draft` **Every run profile with a tapestry block gains a jacquard block, carried over from the operator's tapestry values once at reconcile** | [`jacquard-run-profiles`](design-jacquard-run-profiles.md)<br>[Sketch](decision-jacquard-run-profiles.md) | darn · light |  | 1m<br>1m | profiles, config |
+| T19 | `draft` **Raddle names jacquard for the parts it files, and the glossary and docs name jacquard and tapestry's two blocks** | [`raddle-names-jacquard`](design-raddle-names-jacquard.md)<br>[Sketch](decision-raddle-names-jacquard.md) | darn · light | T13<br>T18 | 1m<br>1m | parsers, loom, stencil, heddle, docs |
 
 ### Features (2)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T19<br>F3 | 2h<br>0m | loom, batten, shed |
+| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T19<br>F3 | 2h<br>1m | loom, batten, shed |
 | F3 |  | **Released tasks start in a queue order the board shows and the operator can change** | [`release-order-queue`](design-release-order-queue.md) |  | 59m<br>55m | board, dobby |
 
 ## [P6 Intake motifs: run watch, landed records, closed area](project-intake-motifs.md) (1)
@@ -155,11 +155,11 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E4 |  | **The card gate leaves the guard step to the batch gate** | [`card-gate-no-guard-step`](design-card-gate-no-guard-step.md) | 1h<br>15m | gate, webster, weaver |
-| E6 |  | **An implementer batch gets the files and symbols its cards name, so it starts editing sooner** | [`implementer-orientation-read`](design-implementer-orientation-read.md) | 1h<br>15m | webster, weaver, stencil |
-| E7 |  | **The last batch gate covers cmd/lym and cross-package tests, so the plan-level verify seldom fails** | [`batch-gate-covers-cmd-lym`](design-batch-gate-covers-cmd-lym.md) | 1h<br>15m | gate, webster, weaver |
+| E4 |  | **The card gate leaves the guard step to the batch gate** | [`card-gate-no-guard-step`](design-card-gate-no-guard-step.md) | 1h<br>16m | gate, webster, weaver |
+| E6 |  | **An implementer batch gets the files and symbols its cards name, so it starts editing sooner** | [`implementer-orientation-read`](design-implementer-orientation-read.md) | 1h<br>16m | webster, weaver, stencil |
+| E7 |  | **The last batch gate covers cmd/lym and cross-package tests, so the plan-level verify seldom fails** | [`batch-gate-covers-cmd-lym`](design-batch-gate-covers-cmd-lym.md) | 1h<br>16m | gate, webster, weaver |
 
-## [P0 Root: entries under no project](project-root.md) (17)
+## [P0 Root: entries under no project](project-root.md) (19)
 
 Owner `neve`
 
@@ -171,7 +171,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 | **Weaver gets a batch timeout of its own, names deviations in its summary, records gate spans and is tested on the paths its bench missed** | [`weaver-bench-fixes`](design-weaver-bench-fixes.md) | darn · solid | landing · Finalize | neve | 2h<br>2h | weaver, shed, shuttle |
 | T2 | **Place lym's Konsole windows on KDE Plasma 6 desktops and tiling zones, remembered per hub** | [`kde-window-placement-build`](design-kde-window-placement-build.md)<br>[Sketch](decision-kde-window-placement-build.md) | tapestry · solid | Parent-Align | neve | 23h<br>23h | termwindow, desktop, reed, dobby, cwd, fabric, gate, pattern, docs |
-| T8 | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md)<br>[Sketch](decision-landing-queue.md) | raddle | Raddle-Write | neve | 1d<br>9m | landing, gate, batten |
+| T8 | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md)<br>[Sketch](decision-landing-queue.md) | raddle | Raddle-File | neve | 1d<br>9m | landing, gate, batten |
 | T10 | **Darn measurement rule covers a run with no parent and bars subagents from measurement calls** | [`darn-measure-rule-gaps`](design-darn-measure-rule-gaps.md) | darn · light | landing · Finalize | neve | 59m<br>59m | darn, stencil |
 | T30 | **lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes** | [`clone-reset-keeps-unpushed`](design-clone-reset-keeps-unpushed.md) | darn · light | Code-Burler-Review | neve | 3h<br>3h | fabric |
 
@@ -181,6 +181,13 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | --- | --- | --- | --- | --- | --- | --- |
 | T4 | **Bench Weaver against Webster again on the same three landed plans, both run side by side the same day** | [`weaver-bench-rerun`](design-weaver-bench-rerun.md) | darn · docs | T1 | 2h<br>2h | weaver, webster |
 | T22 | **A lym verb puts the hub windows back in their desktops and tiling zones when they have drifted** | [`window-retile-verb`](design-window-retile-verb.md) | darn · light | T2 | 4h<br>4h | termwindow, desktop |
+
+### Draft (2)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T3 | `draft` **A push-ledger landing is written from a slug, tip and records commit given as arguments, so a parent ahead by several runs' landing commits reads as owed tips** | [`landing-ledger-own-tip`](design-landing-ledger-own-tip.md)<br>[Sketch](decision-landing-ledger-own-tip.md) | darn · light |  | 0m<br>0m | loom, landing |
+| T20 | `draft` **Finalize joins a landing queue, and the parent lock's holder builds, gates, bisects and lands a batch of queued runs with one gate run** | [`landing-queue-batch`](design-landing-queue-batch.md)<br>[Sketch](decision-landing-queue-batch.md) | tapestry · solid | T3<br>T23 | 0m<br>0m | landing, fabric, git, cwd, loom, shed, docs, pattern, heddle |
 
 ### Research (2)
 
@@ -202,7 +209,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | --- | --- | --- | --- | --- | --- | --- |
 | E1 |  | **PR-Review session tests drive pullrequest.Client over a recorded GitHub stand-in instead of prkit.API** | [`pr-review-github-recorded`](design-pr-review-github-recorded.md) |  | 3h<br>3h | testkit, landing |
 | E2 |  | **A tier1 creel delivery backed by real reed, so tests stop listing strands by hand in creelfake.Delivery** | [`creel-delivery-reed-tier1`](design-creel-delivery-reed-tier1.md) |  | 3h<br>3h | testkit, creel, reed |
-| E3 |  | **The PR-Review mail test takes its CommitRecord, BaseCommand and GateTiers seams from loomcli wiring instead of envkit stand-ins** | [`pr-mail-test-wired-seams`](design-pr-mail-test-wired-seams.md) |  | 1h<br>15m | testkit, landing |
+| E3 |  | **The PR-Review mail test takes its CommitRecord, BaseCommand and GateTiers seams from loomcli wiring instead of envkit stand-ins** | [`pr-mail-test-wired-seams`](design-pr-mail-test-wired-seams.md) |  | 1h<br>16m | testkit, landing |
 | E5 |  | **Weaver runs each batch as a Shed row of the new kind and drops its own stop, re-entry, resume and lock code** | [`weaver-onto-shed-rows`](design-weaver-onto-shed-rows.md) | F4 | 1h<br>1h | weaver, shed |
 
 ### Features (2)
