@@ -1,6 +1,6 @@
 # A missing local origin is not classed as unreachable by push or origin reconcile
 
-`missing-origin-unreachable` · Task · bug, fabric, git · starting · Worktree-Create
+`missing-origin-unreachable` · Task · bug, fabric, git · starting · Open-Window
 
 Imported from [issue #294](https://github.com/Knatte18/loomyard/issues/294).
 

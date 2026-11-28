@@ -649,28 +649,6 @@
       "profile": "solid"
     },
     {
-      "id": 1759,
-      "handle": "T6",
-      "slug": "arras-visible-leftovers",
-      "title": "Arras still shows in seeded profiles and in the overview and glossary",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "board",
-        "docs"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "The landed design-first route left arras keys in the profile template and descriptions in two docs",
-      "body": "## Seen\n\nThe landed design-first route stopped offering arras, and its landing listed what still names it:\nthe `arras` keys that `internal/runprofile/template.yaml` seeds into `profiles.yaml`, so `lym board profiles` lists them,\nand the recipe's descriptions in `docs/overview.md` and `docs/reference/weaving-glossary.md`.\n\n## Idea\n\nLeave the arras keys out of the seeded profiles and the `lym board profiles` listing, and mark arras in the two docs as kept in code but not offered.\n",
-      "status": "done",
-      "created": "2026-11-27T19:53:35Z",
-      "revised": "2026-11-28T08:45:19Z",
-      "profile": "light"
-    },
-    {
       "id": 1760,
       "handle": "T9",
       "slug": "battencli-wire-test-gofmt",
@@ -732,7 +710,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #294](https://github.com/Knatte18/loomyard/issues/294).\n\n## What happened\n\nAn origin that is missing on disk is not treated as unreachable:\n\n- A removed bare repository used as origin is classed `other` by the push failure classification, not as transport.\n- A remote pointing at a missing directory makes the origin reconcile return an error instead of reporting origin unreachable.\n\nTests of an owed push or an unreachable origin had to use a refused connection URL instead.\n\n## Why it is abnormal\n\nAn origin that cannot be reached for a path reason, such as a missing or unmounted directory, takes a different route from one that refuses a connection.\nIt may therefore stop a run where an owed push would be expected.\n\n## What to do\n\nDecide how a missing local remote should be classed.\nEither treat it as unreachable in both places, or document that only network failures count.\n\nProvenance: task `push-retry-not-halt`, notes `06-pusher-target-kinds.md`, `12-finalize-local-landing.md`.\n",
-      "status": "starting · Worktree-Create",
+      "status": "starting · Open-Window",
       "created": "2026-11-27T21:39:07Z",
       "revised": "2026-11-27T21:40:02Z",
       "profile": "light"
