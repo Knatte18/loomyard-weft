@@ -333,11 +333,36 @@
       "spawnedAt": "2026-11-28T16:33:56Z",
       "sessionId": "3bfdd3e6-6457-45e3-976f-844ffcfcba88",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "07-vscode-tasks-and-keys",
+        "status": "done",
+        "head_sha": "90d893bd4a64209a68406a13729f1970178d42ba",
+        "deviations": [
+          "internal/fabricengine/hubworkspace.go",
+          "internal/fabricengine/hubworkspace_integration_test.go",
+          "internal/ideengine/spawn_hub_integration_test.go",
+          "internal/vscode/config.go",
+          "internal/vscode/config_test.go",
+          "internal/vscode/workspace.go"
+        ],
+        "departures": [
+          "8: fabric: a workspace-content seam for the workspace files: PATTERN-test-only-code — a temporary testOnlyCodeAllowed entry admits fabricengine.InstallWorkspaceContent, which is not a test helper; its caller, lym's root pre-run, installs the hook in card 9, which removes the entry"
+        ]
+      },
+      "cardShas": [
+        "90d893bd4a64209a68406a13729f1970178d42ba"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a096a89ec40397a85.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a096a89ec40397a85.jsonl"
+      ]
     }
   },
-  "currentBatch": 7,
+  "currentBatch": 0,
   "masterStrand": "3b72c7243ad10915642d1322bdc1c96b",
   "masterSessionId": "3bfdd3e6-6457-45e3-976f-844ffcfcba88",
   "masterEngine": "claude",
@@ -348,6 +373,7 @@
   "seenForkTranscripts": [
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a5d6580f8cd58b2ee.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a2fe56bf586405cf4.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-ae20bb67aa4483885.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-ae20bb67aa4483885.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-wbr-b2/3bfdd3e6-6457-45e3-976f-844ffcfcba88/subagents/agent-a096a89ec40397a85.jsonl"
   ]
 }
