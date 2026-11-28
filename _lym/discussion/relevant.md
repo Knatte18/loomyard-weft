@@ -1,0 +1,28 @@
+# Relevant files
+
+- `contracts/recipes/tapestry-recipe.yaml` — the rows jacquard takes over, and the Motif block row
+- `contracts/recipes/motif-recipe.yaml` — the Discussion block tapestry keeps
+- `contracts/recipes/darn-recipe.yaml` — Record-Write's placement after Preflight, which jacquard copies
+- `contracts/recipes/recipes.go` — embeds each recipe file
+- `internal/shedbuild/expand.go` `Expand` — block inlining and the empty on_done refusal D3 changes
+- `internal/shedbuild/loomcontract.go` `checkLoomContract` — the one-record-row clause D4 widens
+- `internal/shedrecipe/entries_block.go` `undiscussedBlockGate` — tapestry's seed of a discussed entry
+- `internal/shedrecipe/entries_recordwrite.go` `recordWriteEntry` — the registry entry RecordSeed sits beside
+- `internal/loomshed/recordwrite.go` `recordWrite.Call` — writes only missing files, stored record first
+- `internal/loomrecipe/recipekeys.go` `RecordEngine` — picks the record row decision verbs read
+- `internal/loomshed/raddlefile.go` — filing re-runs the proposal check
+- `internal/loomcli/discussionrecord.go` `seedDiscussedRecord`, `approveDiscussion` — store and seed of the board record
+- `internal/shedrun/seed.go` `RecipeNames`, `ValidateRecipe` — the closed recipe-name vocabulary
+- `internal/loomrecipe/names.go` — the embedded-recipe map and recipe lists
+- `internal/battencli/startguard.go` `readRaddleStartRefusal`, `raddleStartRefusal` — the stored-record start refusal to mirror
+- `internal/battencli/wire.go` `childRecipeSupported` — batten's admitted child recipes
+- `internal/raddleparser/check.go` `checker.vocabulary` — the part recipe check
+- `internal/boardengine/raddlefile.go` — filing sets the record and the discussed flag
+- `internal/boardengine/store.go` `checkOfferedRecipe` — the board's recipe refusal pattern
+- `internal/runprofile/template.yaml` — per-recipe profile blocks
+- `internal/reportengine/runs.go` — the report's selected run recipes
+- `internal/reportengine/timingspans.go` — per-recipe phase tables
+- `internal/reportengine/cost.go` — cost cells keyed by recipe and stored_record
+- `internal/heddleengine/glossary.md` — lym's glossary
+- `contracts/specs/raddle-proposal-spec.md` — names tapestry as a part recipe
+- `contracts/stencils/raddle/raddle-template-agent.md` — the raddle writer's recipe wording
