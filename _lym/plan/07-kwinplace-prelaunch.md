@@ -1,16 +1,16 @@
 # Card 7 — kwinplace-prelaunch
 
 **Create:**
-- `plan:internal/kwinplace#PreLaunch` -> `func PreLaunch(konsole bool) error`
-- `plan:internal/kwinplace#OpenWindow` -> `func OpenWindow(launcher termwindow.Launcher, dir, title, lymPath string) (int, bool, error)`
-- `plan:internal/kwinplace#TestPreLaunch` -> `func TestPreLaunch(t *testing.T)`
+- `internal/kwinplace#PreLaunch`
+- `internal/kwinplace#OpenWindow`
+- `internal/kwinplace#TestPreLaunch`
 
 **Extends:**
 - `internal/kwinplace/doc.go`
 
 **Uses:**
 - `internal/termwindow#Launcher.IsKonsole`
-- `plan:internal/termwindow#Launcher.Open`
+- `internal/termwindow#Launcher.Open`
 
 **Intent:** Add D1's pre-launch checks and the one window opener both window paths call (D1, D2, D12).
 

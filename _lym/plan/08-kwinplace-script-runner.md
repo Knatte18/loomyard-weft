@@ -2,21 +2,21 @@
 
 **Create:**
 - `internal/kwinplace/contract_test.go`
-- `plan:internal/kwinplace#Runner` -> `type Runner struct`
-- `plan:internal/kwinplace#NewRunner` -> `func NewRunner() (*Runner, error)`
-- `plan:internal/kwinplace#Runner.Query` -> `func (r *Runner) Query(ctx context.Context, tilingOutput string, after time.Time, within time.Duration) (Snapshot, time.Time, error)`
-- `plan:internal/kwinplace#Runner.Apply` -> `func (r *Runner) Apply(ctx context.Context, order ApplyOrder) (ApplyReport, error)`
-- `plan:internal/kwinplace#Runner.ReadTilingOutput` -> `func (r *Runner) ReadTilingOutput(ctx context.Context) (string, error)`
-- `plan:internal/kwinplace#Runner.run` -> `func (r *Runner) run(ctx context.Context, script func(runID string) string, within time.Duration) ([]string, error)`
-- `plan:internal/kwinplace#ErrScriptTimeout` -> `var ErrScriptTimeout = errors.New("kwinplace: no end marker within the bound")`
-- `plan:internal/kwinplace#LeftoverScriptError` -> `type LeftoverScriptError struct`
-- `plan:internal/kwinplace#acquireWithin` -> `func acquireWithin(ctx context.Context, path string, bound time.Duration, acquire func(string) (*lock.FileLock, error)) (*lock.FileLock, bool, error)`
-- `plan:internal/kwinplace#recordedExec` -> `type recordedExec struct`
-- `plan:internal/kwinplace#TestRunner_ScriptRuns` -> `func TestRunner_ScriptRuns(t *testing.T)`
-- `plan:internal/kwinplace#TestRunner_OverlappingRunsTakeTheScriptLockInTurn` -> `func TestRunner_OverlappingRunsTakeTheScriptLockInTurn(t *testing.T)`
-- `plan:internal/kwinplace#TestAcquireWithin` -> `func TestAcquireWithin(t *testing.T)`
-- `plan:internal/kwinplace#TestContract_TheRealKWinAnswersAsRecorded` -> `func TestContract_TheRealKWinAnswersAsRecorded(t *testing.T)`
-- `plan:internal/kwinplace#TestContract_TheRealKWinAppliesAsRecorded` -> `func TestContract_TheRealKWinAppliesAsRecorded(t *testing.T)`
+- `internal/kwinplace#Runner`
+- `internal/kwinplace#NewRunner`
+- `internal/kwinplace#Runner.Query`
+- `internal/kwinplace#Runner.Apply`
+- `internal/kwinplace#Runner.ReadTilingOutput`
+- `internal/kwinplace#Runner.run`
+- `internal/kwinplace#ErrScriptTimeout`
+- `internal/kwinplace#LeftoverScriptError`
+- `internal/kwinplace#acquireWithin`
+- `internal/kwinplace#recordedExec`
+- `internal/kwinplace#TestRunner_ScriptRuns`
+- `internal/kwinplace#TestRunner_OverlappingRunsTakeTheScriptLockInTurn`
+- `internal/kwinplace#TestAcquireWithin`
+- `internal/kwinplace#TestContract_TheRealKWinAnswersAsRecorded`
+- `internal/kwinplace#TestContract_TheRealKWinAppliesAsRecorded`
 
 **Edit:**
 - `//pattern/PATTERN-test-speed.md`

@@ -1,18 +1,18 @@
 {
   "runGuid": "e321b798881361ecc272e875dad42dec",
-  "planFingerprint": "438f0ba01ccbfd6405112c0ee805f7dd254a9a7553bdddff294f6939622b81ac",
+  "planFingerprint": "694b9471db0b0cd7101eb657911937c8c3fad25a81692ef26b39ac441bf6aa63",
   "planFileHashes": {
     "00-overview.md": "e3911eb2d7bd28f4409b34e9dc6f9d43422d30213c127e75d00d4b6621c52340",
     "01-kwin-probes.md": "4f223aef42e20493dadab583e11f83cda12b3644d141295728e076114de82e5d",
     "02-beam-window-placement-setting.md": "08eaab8333d60493c1bc36740d175bd63f3ac2af92864ff4c6cb17b482e07fe9",
     "03-desktop-placement-keys.md": "93714ef6d5df5894c8d3a07c0323f4c2bd95fdb6c8c55b1623ffd92c6d3018d9",
     "04-window-command-cancel.md": "8648a3393d78604ae08bd8a8154bebcb85d48eb24539014f91861cd00ad8ca06",
-    "05-konsole-separate-launch.md": "3ecdd6c7d3ec6b74a28e7bdc6793c799ce33514ebe3641066da9accdcb108e2c",
-    "06-kwinplace-scripts-readers.md": "27aefb102967caa125b277fd82d728e47454b41ae43e28e180df380242b05040",
-    "07-kwinplace-prelaunch.md": "43dd1cfadcfe666adf47aaa8e33c6ed0d5fc6d50f114af3c58739e6ee1b58440",
-    "08-kwinplace-script-runner.md": "08af217bf165fc229d329a6c6bc58afdc79028711a1e125ab9d3d1fbd5e4e23a",
-    "09-kwinplace-places.md": "4fd8fae0e3bfb70ae2cd479a1bcbba94e260417da97edf267a78e9a60d714716",
-    "10-kwinplace-planner.md": "faba3da9620c4c1919a2c654d5f7e35754cdb2d60def2ba92cbe5f730a39fc8f",
+    "05-konsole-separate-launch.md": "01f54611ad47aa70fa445aae333422611c575781c4832a5e0b46c1e99cb9c01d",
+    "06-kwinplace-scripts-readers.md": "2fa25ce141c9d5e4f5e62c333ecbf37a9e9941fc0f368944a62aebc8074dcb35",
+    "07-kwinplace-prelaunch.md": "e9c8b8ba57a527d42fd2231f44da98937de47c81903b4475ca46f354f4026fa9",
+    "08-kwinplace-script-runner.md": "bbed78c3c942bf62c6680e38d89530d5b52a46f389e6e0d00194c43cce8afd7b",
+    "09-kwinplace-places.md": "3c79c25caaf800f6cbe9037815ee31c7fa85ce29ba8fb7605bc22bde9e2352b8",
+    "10-kwinplace-planner.md": "46e73b9ed3949c450009a0c7b45815a184d46c56589a68cdc5d490a8b268afd5",
     "11-kwinplace-place-flow.md": "845848742a6732f5f280ee50cdf6d8997cb1699c9ce9ed5e044f93860e718f87",
     "12-place-window-child.md": "502d146890ce37b17a6574bda5421a935bac8d2bb8a11ad31489845a2c1b52c9",
     "13-reed-window-placement.md": "8473ba96fe68b8250f9ba163d750e4e490fe5bd9dd2821399f952d41829aa34a",
@@ -378,23 +378,50 @@
         "10-kwinplace-planner"
       ],
       "cardHashes": {
-        "05-konsole-separate-launch": "3ecdd6c7d3ec6b74a28e7bdc6793c799ce33514ebe3641066da9accdcb108e2c",
-        "06-kwinplace-scripts-readers": "27aefb102967caa125b277fd82d728e47454b41ae43e28e180df380242b05040",
-        "07-kwinplace-prelaunch": "43dd1cfadcfe666adf47aaa8e33c6ed0d5fc6d50f114af3c58739e6ee1b58440",
-        "08-kwinplace-script-runner": "08af217bf165fc229d329a6c6bc58afdc79028711a1e125ab9d3d1fbd5e4e23a",
-        "09-kwinplace-places": "4fd8fae0e3bfb70ae2cd479a1bcbba94e260417da97edf267a78e9a60d714716",
-        "10-kwinplace-planner": "faba3da9620c4c1919a2c654d5f7e35754cdb2d60def2ba92cbe5f730a39fc8f"
+        "05-konsole-separate-launch": "01f54611ad47aa70fa445aae333422611c575781c4832a5e0b46c1e99cb9c01d",
+        "06-kwinplace-scripts-readers": "2fa25ce141c9d5e4f5e62c333ecbf37a9e9941fc0f368944a62aebc8074dcb35",
+        "07-kwinplace-prelaunch": "e9c8b8ba57a527d42fd2231f44da98937de47c81903b4475ca46f354f4026fa9",
+        "08-kwinplace-script-runner": "bbed78c3c942bf62c6680e38d89530d5b52a46f389e6e0d00194c43cce8afd7b",
+        "09-kwinplace-places": "3c79c25caaf800f6cbe9037815ee31c7fa85ce29ba8fb7605bc22bde9e2352b8",
+        "10-kwinplace-planner": "46e73b9ed3949c450009a0c7b45815a184d46c56589a68cdc5d490a8b268afd5"
       },
       "startSha": "9b5243b09982db7240e32de27f3c62b3d2bdcc34",
       "kind": "fork",
       "spawnedAt": "2026-11-28T11:19:00Z",
       "sessionId": "78462927-9201-46af-8d63-2a9fc3bbff31",
       "engine": "claude",
-      "terminal": false,
-      "status": ""
+      "terminal": true,
+      "status": "done",
+      "digest": {
+        "batch": "05-konsole-separate-launch",
+        "status": "done",
+        "head_sha": "3822ec075a160471df0b6ce58cd8f33d92a9dc69",
+        "deviations": [
+          "internal/kwinplace/places.go",
+          "internal/kwinplace/places_test.go",
+          "internal/kwinplace/planner.go",
+          "internal/kwinplace/planner_test.go",
+          "internal/kwinplace/prelaunch.go",
+          "internal/kwinplace/recordings_test.go",
+          "internal/kwinplace/report.go",
+          "internal/kwinplace/runner.go",
+          "internal/kwinplace/runner_test.go",
+          "internal/kwinplace/scripts.go",
+          "internal/kwinplace/snapshot.go"
+        ]
+      },
+      "cardShas": [
+        "3822ec075a160471df0b6ce58cd8f33d92a9dc69"
+      ],
+      "forkTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-adab46d2414f09366.jsonl"
+      ],
+      "bracketTranscripts": [
+        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-adab46d2414f09366.jsonl"
+      ]
     }
   },
-  "currentBatch": 5,
+  "currentBatch": 0,
   "masterStrand": "b19f1c9d69e8efc58cd59ad562567257",
   "masterSessionId": "78462927-9201-46af-8d63-2a9fc3bbff31",
   "masterEngine": "claude",
@@ -411,6 +438,7 @@
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-ab3ad5d69edb46759.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a9b157b73dfa921ca.jsonl",
     "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a5c65087f1f388c11.jsonl",
-    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a64a5c1e6d84b2d8d.jsonl"
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a64a5c1e6d84b2d8d.jsonl",
+    "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-adab46d2414f09366.jsonl"
   ]
 }

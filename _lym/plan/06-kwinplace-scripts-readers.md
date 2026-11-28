@@ -3,26 +3,26 @@
 **Create:**
 - `internal/kwinplace/doc.go`
 - `internal/kwinplace/testmain_test.go`
-- `plan:internal/kwinplace#Rect` -> `type Rect struct`
-- `plan:internal/kwinplace#Desktop` -> `type Desktop struct`
-- `plan:internal/kwinplace#Output` -> `type Output struct`
-- `plan:internal/kwinplace#Tile` -> `type Tile struct`
-- `plan:internal/kwinplace#Window` -> `type Window struct`
-- `plan:internal/kwinplace#Snapshot` -> `type Snapshot struct`
-- `plan:internal/kwinplace#Snapshot.ZoneOf` -> `func (s Snapshot) ZoneOf(windowID, desktopID string) (int, bool)`
-- `plan:internal/kwinplace#Window.Matches` -> `func (w Window) Matches(pid int, title string) bool`
-- `plan:internal/kwinplace#ApplyOrder` -> `type ApplyOrder struct`
-- `plan:internal/kwinplace#ApplyReport` -> `type ApplyReport struct`
-- `plan:internal/kwinplace#QueryScript` -> `func QueryScript(runID, tilingOutput string) string`
-- `plan:internal/kwinplace#ApplyScript` -> `func ApplyScript(runID string, order ApplyOrder) string`
-- `plan:internal/kwinplace#ReportLines` -> `func ReportLines(journal []byte, runID string) ([]string, bool)`
-- `plan:internal/kwinplace#ParseQueryReport` -> `func ParseQueryReport(lines []string) (Snapshot, error)`
-- `plan:internal/kwinplace#ParseApplyReport` -> `func ParseApplyReport(lines []string) (ApplyReport, error)`
-- `plan:internal/kwinplace#TilingOutput` -> `func TilingOutput(kscreenJSON []byte) (string, error)`
-- `plan:internal/kwinplace#ErrNoTilingOutput` -> `var ErrNoTilingOutput = errors.New("kwinplace: KWin has no output of the tiling screen's name")`
-- `plan:internal/kwinplace#TestRecordings_EveryRecordingReads` -> `func TestRecordings_EveryRecordingReads(t *testing.T)`
-- `plan:internal/kwinplace#TestWindow_Matches` -> `func TestWindow_Matches(t *testing.T)`
-- `plan:internal/kwinplace#TestApplyScript_AddressesWindowsByInternalID` -> `func TestApplyScript_AddressesWindowsByInternalID(t *testing.T)`
+- `internal/kwinplace#Rect`
+- `internal/kwinplace#Desktop`
+- `internal/kwinplace#Output`
+- `internal/kwinplace#Tile`
+- `internal/kwinplace#Window`
+- `internal/kwinplace#Snapshot`
+- `internal/kwinplace#Snapshot.ZoneOf`
+- `internal/kwinplace#Window.Matches`
+- `internal/kwinplace#ApplyOrder`
+- `internal/kwinplace#ApplyReport`
+- `internal/kwinplace#QueryScript`
+- `internal/kwinplace#ApplyScript`
+- `internal/kwinplace#ReportLines`
+- `internal/kwinplace#ParseQueryReport`
+- `internal/kwinplace#ParseApplyReport`
+- `internal/kwinplace#TilingOutput`
+- `internal/kwinplace#ErrNoTilingOutput`
+- `internal/kwinplace#TestRecordings_EveryRecordingReads`
+- `internal/kwinplace#TestWindow_Matches`
+- `internal/kwinplace#TestApplyScript_AddressesWindowsByInternalID`
 
 **Uses:**
 - `internal/kwinplace/query.js`

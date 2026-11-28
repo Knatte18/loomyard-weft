@@ -1,19 +1,19 @@
 # Card 9 — kwinplace-places
 
 **Create:**
-- `plan:internal/lymdirs#WindowPlacesDirName` -> `const WindowPlacesDirName = "window-places"`
-- `plan:internal/kwinplace#Places` -> `type Places struct`
-- `plan:internal/kwinplace#Entry` -> `type Entry struct`
-- `plan:internal/kwinplace#Entry.Settled` -> `func (e Entry) Settled() bool`
-- `plan:internal/kwinplace#PlacesPath` -> `func PlacesPath(boltDir string) string`
-- `plan:internal/kwinplace#ReadPlaces` -> `func ReadPlaces(path string) Places`
-- `plan:internal/kwinplace#RecordOpen` -> `func RecordOpen(path, worktree string, pid int, title string, now time.Time) error`
-- `plan:internal/kwinplace#Settle` -> `func Settle(path, worktree string, pid int, seenOn string, now time.Time) error`
-- `plan:internal/kwinplace#ReportUpdate` -> `type ReportUpdate struct`
-- `plan:internal/kwinplace#RecordReport` -> `func RecordReport(path string, update ReportUpdate) error`
-- `plan:internal/kwinplace#updatePlaces` -> `func updatePlaces(cur Places, update ReportUpdate) Places`
-- `plan:internal/kwinplace#TestUpdatePlaces` -> `func TestUpdatePlaces(t *testing.T)`
-- `plan:internal/kwinplace#TestPlacesFile` -> `func TestPlacesFile(t *testing.T)`
+- `internal/lymdirs#WindowPlacesDirName`
+- `internal/kwinplace#Places`
+- `internal/kwinplace#Entry`
+- `internal/kwinplace#Entry.Settled`
+- `internal/kwinplace#PlacesPath`
+- `internal/kwinplace#ReadPlaces`
+- `internal/kwinplace#RecordOpen`
+- `internal/kwinplace#Settle`
+- `internal/kwinplace#ReportUpdate`
+- `internal/kwinplace#RecordReport`
+- `internal/kwinplace#updatePlaces`
+- `internal/kwinplace#TestUpdatePlaces`
+- `internal/kwinplace#TestPlacesFile`
 
 **Extends:**
 - `internal/kwinplace/doc.go`

@@ -1,18 +1,18 @@
 # Card 10 — kwinplace-planner
 
 **Create:**
-- `plan:internal/kwinplace#Grid` -> `type Grid struct`
-- `plan:internal/kwinplace#Capacity` -> `func Capacity(screen Rect, minTileWidth, minTileHeight int) Grid`
-- `plan:internal/kwinplace#GridFor` -> `func GridFor(windows int, room Grid) Grid`
-- `plan:internal/kwinplace#Anchor` -> `func Anchor(snap Snapshot, places Places, parent string) (string, bool)`
-- `plan:internal/kwinplace#CurrentOrder` -> `func CurrentOrder(tiles []Tile, windows []Window) []string`
-- `plan:internal/kwinplace#PlanInput` -> `type PlanInput struct`
-- `plan:internal/kwinplace#Placement` -> `type Placement struct`
-- `plan:internal/kwinplace#Plan` -> `func Plan(in PlanInput) Placement`
-- `plan:internal/kwinplace#TestCapacityAndGrid` -> `func TestCapacityAndGrid(t *testing.T)`
-- `plan:internal/kwinplace#TestAnchor` -> `func TestAnchor(t *testing.T)`
-- `plan:internal/kwinplace#TestCurrentOrder` -> `func TestCurrentOrder(t *testing.T)`
-- `plan:internal/kwinplace#TestPlan` -> `func TestPlan(t *testing.T)`
+- `internal/kwinplace#Grid`
+- `internal/kwinplace#Capacity`
+- `internal/kwinplace#GridFor`
+- `internal/kwinplace#Anchor`
+- `internal/kwinplace#CurrentOrder`
+- `internal/kwinplace#PlanInput`
+- `internal/kwinplace#Placement`
+- `internal/kwinplace#Plan`
+- `internal/kwinplace#TestCapacityAndGrid`
+- `internal/kwinplace#TestAnchor`
+- `internal/kwinplace#TestCurrentOrder`
+- `internal/kwinplace#TestPlan`
 
 **Extends:**
 - `internal/kwinplace/doc.go`

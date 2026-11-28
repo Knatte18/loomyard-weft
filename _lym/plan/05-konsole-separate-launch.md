@@ -1,10 +1,10 @@
 # Card 5 — konsole-separate-launch
 
 **Create:**
-- `plan:internal/termwindow#Launcher.IsKonsole` -> `func (l Launcher) IsKonsole() bool`
-- `plan:internal/termwindow#Launcher.Open` -> `func (l Launcher) Open(dir, title, lymPath string, separate bool) (int, error)`
-- `plan:internal/termwindow#separateKonsoleArguments` -> `func separateKonsoleArguments(dir, title, lymPath string) []string`
-- `plan:internal/termwindow#TestLauncher_OpenRunsTheChosenCommandLine` -> `func TestLauncher_OpenRunsTheChosenCommandLine(t *testing.T)`
+- `internal/termwindow#Launcher.IsKonsole`
+- `internal/termwindow#Launcher.Open`
+- `internal/termwindow#separateKonsoleArguments`
+- `internal/termwindow#TestLauncher_OpenRunsTheChosenCommandLine`
 
 **Edit:**
 - `internal/termwindow#Launcher`
