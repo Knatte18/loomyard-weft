@@ -1,12 +1,11 @@
 {
-  "current_producer": "Code-Bouncer",
+  "current_producer": "Code-Burler-Review",
   "state": "running",
   "error": "",
-  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Bouncer",
-    "last": "Code-Bouncer → awaiting",
+    "now": "Code-Burler-Review",
+    "last": "Code-Bouncer → bounced to Code-Burler-Review",
     "wait": ""
   },
   "history": [
@@ -178,6 +177,15 @@
       "output": "/home/knatte/Code/loomyard-LYMHUB/autonomy-unattended-level/_lym/reviews/code/round-1-bouncer-ledger.md",
       "at": "2026-11-28T15:05:36Z",
       "started_at": "2026-11-28T15:05:05Z"
+    },
+    {
+      "producer": "Code-Bouncer",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/autonomy-unattended-level/_lym/reviews/code/round-1-bouncer-ledger.md",
+      "at": "2026-11-28T15:07:35Z",
+      "started_at": "2026-11-28T15:07:35Z",
+      "routed_to": "Code-Burler-Review",
+      "by": "shed"
     }
   ],
   "product": {
