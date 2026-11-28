@@ -98,7 +98,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 ## [P5 Tapestry chains plan the next task while the one before still builds](project-plan-ahead-chains.md) (3)
 
-[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 54m · Owner `neve`
+[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 55m · Owner `neve`
 
 ### Running (1)
 
@@ -144,7 +144,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages** | [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md) | darn · docs | Drift-Verify | neve | 48m<br>48m | gate, webster, weaver |
+| T9 | **Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages** | [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md) | darn · docs | landing · Finalize | neve | 48m<br>48m | gate, webster, weaver |
 
 ### Enhancements (4)
 
