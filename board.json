@@ -1266,12 +1266,57 @@
         "stencil"
       ],
       "issues": [],
-      "depends_on": [],
+      "depends_on": [
+        "implementer-gate-time-measure"
+      ],
       "isolated": false,
       "brief": "",
       "body": "## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 2)\n\nA Webster fork's first edit came a median 95 s in; orientation was 16.5% of fork time, 12.1 min per row.\n\n## Idea\n\nHand each batch the file and symbol list its cards name, or have it read them in one batched turn; the report assumed this halves orientation, 3 to 6 min per row.\nWeaver's cold batches are measured too before this is built.\n",
       "created": "2026-11-28T12:06:17Z",
-      "revised": "2026-11-28T12:06:17Z",
+      "revised": "2026-11-28T12:06:18Z",
+      "project": "implementer-gate-time"
+    },
+    {
+      "id": 1806,
+      "handle": "E7",
+      "slug": "batch-gate-covers-cmd-lym",
+      "title": "The last batch gate covers cmd/lym and cross-package tests, so the plan-level verify seldom fails",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "gate",
+        "webster",
+        "weaver"
+      ],
+      "issues": [],
+      "depends_on": [
+        "implementer-gate-time-measure"
+      ],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (`docs/research/webster/webster-time-2026-11-08.md`, lever 3)\n\n8 of 14 rows failed the plan-level verify on attempt 1, with `cmd/lym` in the failing ids of 5,\nand each paid a verify-fix session plus a second verify: 3.9 min per row, 6.8 per affected row.\n\n## Idea\n\nAdd `cmd/lym` to the batch gate's scope, or to the last batch's gate, so a batch session that can fix the failure meets it at once.\nThe cost of the added gate run is measured before this is built.\n",
+      "created": "2026-11-28T12:06:19Z",
+      "revised": "2026-11-28T12:06:19Z",
+      "project": "implementer-gate-time"
+    },
+    {
+      "id": 1807,
+      "handle": "E8",
+      "slug": "lock-holder-gates-first",
+      "title": "A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock",
+      "kind": "note",
+      "labels": [
+        "enhancement",
+        "gate",
+        "landing"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Seen (2026-11-28)\n\nA run gating tiers 0 to 2 under the parent lock waited for the same four gate slots as the runs queued behind its lock,\nwhose lock-free gates its landing would make stale anyway.\n`docs/research/webster/webster-time-2026-11-08.md` (lever 4) also measured 3.1 min of slot wait per Webster row, 27 min in one.\n\n## Idea\n\nGive gate slot requests a priority: a gate run under the parent lock first, then implementer gates, then the rest.\n",
+      "created": "2026-11-28T12:06:20Z",
+      "revised": "2026-11-28T12:06:20Z",
       "project": "implementer-gate-time"
     }
   ],
