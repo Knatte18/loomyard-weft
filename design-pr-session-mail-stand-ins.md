@@ -1,6 +1,6 @@
 # PR-Review session tests run over a real creel daemon and the recorded tmux kit, which learns to replay pastes
 
-`pr-session-mail-stand-ins` · Task · enhancement, testkit, landing, reed, creel
+`pr-session-mail-stand-ins` · Task · enhancement, testkit, landing, reed, creel · starting · Worktree-Create
 
 Depends on: [`beam-member-parent`](design-beam-member-parent.md)
 
