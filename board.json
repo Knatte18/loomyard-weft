@@ -1075,7 +1075,8 @@
       "brief": "",
       "body": "## Seen (operator, 2026-11-28)\n\nThe operator now seldom runs a full tapestry without a motif first.\nA task raddle files from a Sketch already carries `discussed`, so its tapestry run skips Discussion;\nwhich tapestry run does Discussion and which does not is read from a flag, not from the recipe named.\n\n## Idea\n\nA new recipe holds the tapestry rows after Discussion: Plan, Plan Perch, Webster, review and landing.\nIt runs only on an entry with a stored decision record, a task filed from a Sketch or a discussed entry, and refuses any other at start.\nTapestry then reads as motif plus this recipe, and the operator can say \"run recipe X\" with no doubt about whether Discussion runs.\nRaddle names this recipe for the parts it files from a Sketch where it names tapestry today.\n\n## Open\n\n- The recipe's name.\n- Whether plain tapestry stays as a recipe or becomes motif then this recipe.\n",
       "created": "2026-11-28T11:29:56Z",
-      "revised": "2026-11-28T11:29:56Z"
+      "revised": "2026-11-28T11:53:29Z",
+      "project": "plan-ahead-chains"
     },
     {
       "id": 1796,
@@ -1183,6 +1184,26 @@
       "body": "## Seen (operator, 2026-11-28)\n\nAbout 15–20% of Weaver's production code repeats in concept what Shed does: its stop and re-entry glue, part of its resume and its run lock.\nIt exists because Shed had no row that repeats or unfolds from a list.\n\n## Idea\n\nOnce Shed has that row kind and it has proven itself, move Weaver onto it:\neach batch becomes a pass or an unfolded row with Weaver as a thin producer,\nand Weaver's own stop record, re-entry, in-row resume and run lock give way to Shed's.\nThe model ladder, batch partitioning, verify fixer, in-flight strand probing and reset stay Weaver's, since Shed has no counterpart for them.\n\n## Bounds\n\n- Weaver's behaviour seen from the run stays the same: the same batches, ladder, journal, summary and outcome.\n- A bench against today's Weaver on the same plans checks it before Weaver's own loop is removed.\n",
       "created": "2026-11-28T11:46:46Z",
       "revised": "2026-11-28T11:46:48Z"
+    },
+    {
+      "id": 1801,
+      "handle": "P5",
+      "slug": "plan-ahead-chains",
+      "title": "Tapestry chains plan the next task while the one before still builds",
+      "kind": "project",
+      "labels": [
+        "feature",
+        "shed",
+        "loom",
+        "batten"
+      ],
+      "issues": [],
+      "depends_on": [],
+      "isolated": false,
+      "brief": "",
+      "body": "## Aim (operator, 2026-11-28)\n\nA chain of tapestry tasks runs fully in series today, though the plan writer is the slowest row.\nStarting the next task's planning before the one before has finished building gains more than parallel batches inside one plan,\nwhich a card-graph study found buys about 1.6x at best (`docs/research/webster/parallel-batches-2026-10-17/report.md`).\n\n## Parts\n\n1. A recipe, `jacquard`, that runs the tapestry rows after Discussion and starts only from a stored decision record.\n2. Plan-ahead on that recipe: a dependent task plans from its dependency's record and plan, parks before building, re-aligns after the dependency lands, then builds.\n",
+      "created": "2026-11-28T11:53:28Z",
+      "revised": "2026-11-28T11:53:28Z"
     }
   ],
   "prime_owner": "neve",

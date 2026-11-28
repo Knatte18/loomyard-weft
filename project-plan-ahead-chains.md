@@ -1,0 +1,26 @@
+# P5 Tapestry chains plan the next task while the one before still builds
+
+Rendered 2026-11-28 11:53 UTC; every age below is as of then.
+Under: [Board](README.md).
+
+[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 0m · Owner `neve`
+
+## Aim (operator, 2026-11-28)
+
+A chain of tapestry tasks runs fully in series today, though the plan writer is the slowest row.
+Starting the next task's planning before the one before has finished building gains more than parallel batches inside one plan,
+which a card-graph study found buys about 1.6x at best (`docs/research/webster/parallel-batches-2026-10-17/report.md`).
+
+## Parts
+
+1. A recipe, `jacquard`, that runs the tapestry rows after Discussion and starts only from a stored decision record.
+2. Plan-ahead on that recipe: a dependent task plans from its dependency's record and plan, parks before building, re-aligns after the dependency lands, then builds.
+
+Tasks are grouped by dependency layer and notes by type.
+An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
+
+## Features (1)
+
+| # | Prio | Note | Slug | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- |
+| F3 |  | **A recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | 23m<br>0m | shed, loom, batten, board |
