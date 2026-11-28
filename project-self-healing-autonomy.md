@@ -1,6 +1,6 @@
 # P3 Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack
 
-Rendered 2026-11-28 10:27 UTC; every age below is as of then.
+Rendered 2026-11-28 10:28 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`self-healing-autonomy`](design-self-healing-autonomy.md) · Age 47m · Owner `neve`
@@ -26,16 +26,16 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T33 | **The driver and the arbiter settle known stops and budget escalations themselves within the table's bound** | [`driver-settles-stops`](design-driver-settles-stops.md)<br>[Sketch](decision-driver-settles-stops.md) | darn · solid | T12<br>T11<br>T1 | 47m<br>39m | shed, board, batten, shuttle, webster, arbiter, loom, stencil |
+| T33 | **The driver and the arbiter settle known stops and budget escalations themselves within the table's bound** | [`driver-settles-stops`](design-driver-settles-stops.md)<br>[Sketch](decision-driver-settles-stops.md) | darn · solid | T12<br>T11<br>T1 | 47m<br>40m | shed, board, batten, shuttle, webster, arbiter, loom, stencil |
 
 ## Layer D (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T32 | **The dobby resumes lifted pauses, posts severe halts to Slack, keeps quiet on correct waits and chases unsettled stalls** | [`dobby-pause-lift-resume`](design-dobby-pause-lift-resume.md)<br>[Sketch](decision-dobby-pause-lift-resume.md) | darn · solid | T33<br>T10<br>T2 | 47m<br>39m | dobby, tender, batten, slack, creel, shuttle, loom, config |
+| T32 | **The dobby resumes lifted pauses, posts severe halts to Slack, keeps quiet on correct waits and chases unsettled stalls** | [`dobby-pause-lift-resume`](design-dobby-pause-lift-resume.md)<br>[Sketch](decision-dobby-pause-lift-resume.md) | darn · solid | T33<br>T10<br>T2 | 47m<br>40m | dobby, tender, batten, slack, creel, shuttle, loom, config |
 
 ## Layer E (1)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T38 | **The orch role texts gain the unattended level's rules and the glossary names the level** | [`orch-unattended-rules`](design-orch-unattended-rules.md)<br>[Sketch](decision-orch-unattended-rules.md) | darn · docs | T33<br>T32 | 47m<br>39m | orch, heddle |
+| T38 | **The orch role texts gain the unattended level's rules and the glossary names the level** | [`orch-unattended-rules`](design-orch-unattended-rules.md)<br>[Sketch](decision-orch-unattended-rules.md) | darn · docs | T33<br>T32 | 47m<br>40m | orch, heddle |
