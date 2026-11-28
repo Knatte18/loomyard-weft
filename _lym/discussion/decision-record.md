@@ -381,6 +381,14 @@ Rationale: Each round-3 finding's prescribed fix is in card 12 as the review wro
 
 ## Open risks
 
+<!-- lym:carry-over Plan-Review -->
+- Plan-Review, round 3: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/plan/round-3-review.md; fixer report: _lym/reviews/plan/round-3-fixer-report.md.
+  - moved-board-tests-duplicate-shared-support (class design, severity BLOCKING, open in rounds 2, 3)
+  - moved-board-tests-script-foreign-seams (class design, severity BLOCKING, open in rounds 3)
+  - push-assertion-kit-asserts-on-code-under-test (class design, severity BLOCKING, open in rounds 3)
+<!-- /lym:carry-over Plan-Review -->
+
 ## Acceptance criteria
 
 - Review: no file outside fabric imports `internal/fabricengine` while using only names `internal/fabriclayout` (new) holds, `internal/fabricengine` keeps no alias of a moved name, and every scan, owner map and PATTERN background naming a moved symbol names its new home (D1, D7).
