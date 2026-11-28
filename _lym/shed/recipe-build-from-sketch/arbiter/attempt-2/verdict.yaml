@@ -1,0 +1,10 @@
+verdict: resume
+reason: |-
+  Cause hard-cap at round 3. The two open design-wrong findings are F16 and F17. Both target D5's motif-run clear passage, and the round-3 fix already answers both.
+  F16 (the clear serves a state the board refuses): D5 lines 125-129 now say that a finished motif run turns its entry into a Sketch (finishesAsSketch, internal/loomcli/wiring.go:243), and that a refused Sketch leaves a draft task (sketchFinish, wiring.go:293). Only raddle takes a Sketch (checkDiscussedPromotion, internal/boardengine/sketch.go:125), and batten gains no motif-run clear. The clear's Bound clause, its tier 1 criterion and the task-branch Constraints fact are gone. A grep of the record and the support log finds no Worktree-Create, clearsMotifRun or clear text left.
+  The fixer did one thing differently from the finding: it dropped the kept cleanup clause and named doneSlugRefusal instead. The code bears that out. refuseAtStart (internal/battencli/startguard.go:530) clears a done status only when clearsMotifRun admits it, and that stays raddle-only. Raddle's check, beside which D5 puts the jacquard check, runs only when there is no status file (startguard.go:339). So a done slug meets checkRunStatus's doneSlugRefusal (internal/battencli/arm.go:535, 945), which names lym batten cleanup --apply, as D5 line 112-114 now says.
+  F17 (the way forward for a standing motif pair loops): its sentence went out with the F16 passage, as F17's own fix says, so no way forward in the record leads into the cancel/start-guard loop.
+  Both findings are answered by the fix in place, so I accepted the round. No board-entry question was open, and no decision was needed.
+verbs:
+  - |-
+    lym loom circling accept recipe-build-from-sketch

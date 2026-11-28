@@ -1,0 +1,20 @@
+{
+  "number": 2,
+  "stop_key": {
+    "current_producer": "Discussion-Bouncer",
+    "history_length": 12,
+    "state": "awaiting"
+  },
+  "pause_before": "",
+  "pause_after": "",
+  "spawned_at": "2026-11-28T14:11:42.588246136+01:00",
+  "deadline": "2026-11-28T14:41:42.588246136+01:00",
+  "strand_guid": "e1c01dfbf745ab29f71846aec88474cf",
+  "envelope_path": "/home/knatte/Code/loomyard-LYMHUB/recipe-build-from-sketch/_lym/shed/recipe-build-from-sketch/drive-reports/drive-envelope-20261128-141141-8d46.json",
+  "report_path": "/home/knatte/Code/loomyard-LYMHUB/recipe-build-from-sketch/_lym/shed/recipe-build-from-sketch/drive-reports/drive-report-20261128-141141-759d.md",
+  "snapshot": {
+    "head": "1ae03e17f62aa83fbd81bfa9dbadabad3645366e",
+    "branch": "recipe-build-from-sketch",
+    "dirty": {}
+  }
+}
