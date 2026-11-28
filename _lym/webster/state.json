@@ -335,25 +335,16 @@
       },
       "startSha": "2326ef4da0640800959a1d7b2bc9c3444f708748",
       "kind": "fork",
-      "spawnedAt": "2026-11-28T08:06:15Z",
+      "spawnedAt": "2026-11-28T08:24:56Z",
       "sessionId": "78462927-9201-46af-8d63-2a9fc3bbff31",
       "engine": "claude",
       "terminal": false,
-      "status": "waiting",
-      "digest": {
-        "batch": "01-kwin-probes",
-        "status": "waiting",
-        "head_sha": "abb34c8997b132337db8e89ae9e8f073042cb17b",
-        "need": "run-probes.sh is ready: ask the operator, with mail tabs closed, to run `read-only`, `apply`, `apply-one-row` again and send all printed output and what they saw, because the neve-query and neve-apply journals taken today hold the operator's e-mail address in window captions and are not committed (the script now stops before recording when a title holds an address; it names the test desktop, lists numbered checks and runs the DP-2 placement a second time). Possible contradiction of D3/D6 for you to weigh: in apply run bc1886227368 window A, tiled on HDMI-A-1, ended on DP-2 but in no tile of the grid (zone -1, tiled false, small, lower left as the operator saw), while window B moved the same way in run 4b7c0cea4cb5 was taken by its zone; the rerun is to show whether this repeats and whether a second apply tiles it. Other facts in the uncommitted recordings: output names match kscreen, perDesktop true, Konsole class org.kde.konsole, disabled eDP-1 holds priority 1 like DP-2"
-      },
+      "status": "",
       "forkTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-ab120e1121d6df223.jsonl",
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a57e5371e911dc9b6.jsonl",
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-ab5fd3b5454d018f8.jsonl",
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a5bab0db4f42e34cd.jsonl",
-        "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a1b2d5b4d967187d1.jsonl"
-      ],
-      "bracketTranscripts": [
         "/home/knatte/.claude/projects/-home-knatte-Code-loomyard-LYMHUB-kde-window-placement-build/78462927-9201-46af-8d63-2a9fc3bbff31/subagents/agent-a1b2d5b4d967187d1.jsonl"
       ]
     }
