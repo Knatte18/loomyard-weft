@@ -1,32 +1,41 @@
-# Finalize gates a parent ahead by owed landings at its local head
+# Verify with no lock when the parent is ahead only by owed landings
 
-With local landing, a parent branch can sit ahead of origin by landing tips whose push is still owed.
-Finalize lands on top of those tips, but its lock-free merge and gate took the upstream tip as the gated tip.
-Under the parent lock the parent's head was then always past the gated tip, so every such landing lost each of its `landing.finalize_lost_races` races.
-It then merged and verified under the parent lock, and other landings on the same parent waited for that verify.
+With local landing, a parent branch can be ahead of origin by earlier landing tips whose push is still owed.
+Finalize's lock-free pass merged the upstream tip of such a parent, while the locked pass compares that tip with the parent's local head.
+The two never matched, so each landing in that state lost all of its `landing.finalize_lost_races` races
+and then merged and ran verify while holding the parent lock, making other landings on the same parent wait.
 
-## What changes
+The lock-free pass now merges and verifies the local tip of a parent that is ahead by owed landing tips alone.
+The landing then goes through under the lock unless another landing has moved the parent.
 
-- `parentMergeTip` in `internal/landingshed/parentalign.go` takes a `takeOwedLocal` flag.
-  When it is set and the parent is ahead of its upstream, it asks `Deps.ParentAheadByOwed`.
-  A parent ahead by owed landing tips alone is merged at its local tip, read under the parent lock as the push-skipped path already does.
-  Any other ahead parent still merges the upstream tip, and the locked pass's sync refuses it as before.
-- Finalize's lock-free pass sets the flag, so its gated tip is the head the locked pass compares with.
-  A parent that another landing moves in between still loses the race as before.
-- Parent-Align passes `false` and keeps merging the upstream tip, so it never merges a local landing that has not been pushed.
-- A failed read of whether the parent is ahead by owed tips alone is an error from the lock-free pass, with the same wording the locked pass's sync uses.
+Closes #292
 
 ## Design decisions
 
-- The flag is per caller rather than a change for both producers, since Parent-Align's contract is to merge only what origin holds.
-- The local tip is read under the parent lock, as in the existing local-tip path, so the read never sees a landing half made.
+- `parentMergeTip` takes a `takeOwedLocal` flag.
+  Only Finalize's lock-free pass sets it; Parent-Align still merges the upstream tip of an owed-ahead parent.
+- When `Deps.ParentAheadByOwed` first answers true, which is read with no lock,
+  it is asked again under the lock taken to read the local tip.
+  If a commit that is no owed landing has arrived in between, the upstream tip is merged.
+- A parent ahead by anything else, or an unwired `ParentAheadByOwed`, still gets the upstream tip.
+  A failed read of `ParentAheadByOwed` is returned as an error.
+- A landing known from local reads to need GitHub merges the upstream tip,
+  since it cannot land until origin holds the owed tips.
+  A failed read of that need also keeps the owed tips out.
+  `needsGitHubOnDisk` therefore returns its read error instead of folding it into `false`.
+- Known limit: a landing that needs GitHub only because of GitHub's repository rules is not recognised in the lock-free pass,
+  since reading the rules is a GitHub call.
+  On an owed-ahead parent, this change makes that pass merge the owed tips into the task worktree for such a landing.
 
-## Tests
+## To check by hand
 
-- `TestFinalize_GatesWithNoLockAndLocksToLand` gains a row for a parent ahead by owed landing tips:
-  it gates once with no lock, merges the local head, and lands with no verify under the lock.
-  Before the fix the row merged the upstream tip and verified under the lock after its lost races.
-- `TestFinalize_LockFreePassStops` gains a row for a failed owed-tips read, which ends the call before any merge.
+- Check that `TestFinalize_LockFreePassMergesTheUpstreamTipOfAnAheadParent`
+  in `internal/landingshed/finalize_unlocked_test.go` covers the lock-free pass's fallbacks to the upstream tip
+  for an ahead parent.
+- Check that the owed-only answer is read again under the parent lock,
+  in `parentMergeTip` (`internal/landingshed/parentalign.go`).
+- Check that the owed-ahead case of `TestMergeIn_MergeTip` in `internal/landingshed/parentalign_test.go`
+  pins Parent-Align to the upstream tip of an owed-ahead parent.
 
 ## Merge danger
 
