@@ -1,8 +1,0 @@
-{
-  "recipe": "darn",
-  "driver": "go",
-  "params": {
-    "parent": "main"
-  },
-  "started_at": "2026-11-28T13:49:15Z"
-}
