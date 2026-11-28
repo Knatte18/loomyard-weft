@@ -1,9 +1,9 @@
 # P5 Tapestry chains plan the next task while the one before still builds
 
-Rendered 2026-11-28 11:54 UTC; every age below is as of then.
+Rendered 2026-11-28 11:56 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 0m · Owner `neve`
+[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 2m · Owner `neve`
 
 ## Aim (operator, 2026-11-28)
 
@@ -19,9 +19,14 @@ which a card-graph study found buys about 1.6x at best (`docs/research/webster/p
 Tasks are grouped by dependency layer and notes by type.
 An entry waits only on the open entries it names under After, so the entries in one layer can run in parallel.
 
-## Features (2)
+## Draft (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T6 | `draft` **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) | darn |  | 26m<br>0m | shed, loom, batten, board |
+
+## Features (1)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | F3 | 40m<br>0m | loom, batten, shed |
-| F3 |  | **Jacquard, a recipe that runs the tapestry rows after Discussion and refuses an entry with no stored decision record** | [`recipe-build-from-sketch`](design-recipe-build-from-sketch.md) |  | 24m<br>0m | shed, loom, batten, board |
+| F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T6 | 41m<br>1m | loom, batten, shed |
