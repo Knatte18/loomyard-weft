@@ -1,6 +1,6 @@
 # webster reset records push is asynchronous and unrecorded, against the decision record
 
-`webster-reset-push-sync` · Task · bug, webster, fabric, pattern · running · Code-Burler-Review
+`webster-reset-push-sync` · Task · bug, webster, fabric, pattern · running · Code-Bouncer
 
 Imported from [issue #293](https://github.com/Knatte18/loomyard/issues/293).
 

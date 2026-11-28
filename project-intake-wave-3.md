@@ -1,6 +1,6 @@
 # P5 Intake wave 3: beam orch parent, scope and earlier checks
 
-Rendered 2026-11-27 21:47 UTC; every age below is as of then.
+Rendered 2026-11-28 07:55 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 `intake-wave-3` · Age 1d · Owner `neve`
@@ -12,4 +12,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T12 | **A beam member's run names its beam orch as parent, which may amend the beam's record** | [`beam-member-parent`](design-beam-member-parent.md) | darn · light | Darn-Write | neve | 1d<br>1d | batten, landing, orch, stencil, shed, loom, pawl |
+| T12 | **A beam member's run names its beam orch as parent, which may amend the beam's record** | [`beam-member-parent`](design-beam-member-parent.md) | darn · light | Darn-Write | neve | 2d<br>1d | batten, landing, orch, stencil, shed, loom, pawl |
