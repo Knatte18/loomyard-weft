@@ -604,12 +604,14 @@
       ],
       "issues": [],
       "priority": "low",
-      "depends_on": [],
+      "depends_on": [
+        "landing-lock-effect-measure"
+      ],
       "isolated": false,
       "brief": "",
       "body": "## Seen (operator, 2026-11-27)\n\nEach landing ran its own landing gate under the parent lock, one after the other, so with many runs ready the gates queued in series.\n\n## Since (`d87a9ce24`, `landing-lock-only-for-land`)\n\n`Finalize` now merges the parent's tip and gates the merged tree with no parent lock held, and takes the lock only to land.\nReady runs therefore gate side by side.\nA run whose parent moved during its gate merges the new tip and gates again,\nand after `landing.finalize_lost_races` lost races (default 2) it merges and gates under the lock.\nEach ready run still pays for its own gate, plus one for each race it loses.\n\n## Idea\n\nA landing queue in the manner of GitHub's merge queue, bors or Zuul:\n\n- A run ready to land joins a queue for its parent branch instead of gating and taking the parent lock itself.\n- The queue takes the waiting runs, say A, B and C, builds the tree parent + A + B + C and runs the landing gate once on it.\n- A pass lands all of them together.\n- A failure is bisected (parent + A + B, and so on): the runs that pass land, and the culprit goes back to its own run's fixer.\n- A later step may gate the prefixes in parallel (parent + A, parent + A + B, parent + A + B + C) so a failure costs little time.\n\nNo drift: the batch is gated exactly as it lands.\nIt saves the most gate time when many runs land often, and it costs the most to build:\na queue service, batch merging, bisection on failure and fixer handling for the culprit.\n",
       "created": "2026-11-27T07:03:20Z",
-      "revised": "2026-11-27T18:26:37Z"
+      "revised": "2026-11-28T09:26:33Z"
     },
     {
       "id": 1730,

@@ -2,6 +2,8 @@
 
 `landing-queue` · Note · enhancement, landing, gate, batten
 
+Depends on: [`landing-lock-effect-measure`](design-landing-lock-effect-measure.md)
+
 ## Seen (operator, 2026-11-27)
 
 Each landing ran its own landing gate under the parent lock, one after the other, so with many runs ready the gates queued in series.

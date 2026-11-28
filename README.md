@@ -147,9 +147,9 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 
 ### Enhancements (1)
 
-| # | Prio | Note | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- |
-| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 1d<br>14h | landing, gate, batten |
+| # | Prio | Note | Slug | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | R1 | 1d<br>0m | landing, gate, batten |
 
 ### Features (1)
 
