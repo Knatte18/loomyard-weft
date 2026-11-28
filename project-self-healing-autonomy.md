@@ -1,6 +1,6 @@
 # P3 Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack
 
-Rendered 2026-11-28 14:17 UTC; every age below is as of then.
+Rendered 2026-11-28 14:18 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`self-healing-autonomy`](design-self-healing-autonomy.md) · Age 4h · Owner `neve`
