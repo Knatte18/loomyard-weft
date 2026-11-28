@@ -986,7 +986,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nCode-Review of `webster-reset-push-sync` (finding F1, 2026-11-28) found an edge in `internal/webstercli/reset.go`.\nWhen `fabricSync` returns an error after the records commit of the reset landed, the verb refuses before its synchronous push.\nAn owed push of that commit then writes no failed-push record and does not hold the run,\nalthough the pattern documents say the reset's records push is synchronous and its owed record sets `PushOwed`.\n\n## Fix\n\nWhen `fabricSync` fails after the records commit landed, run the reset's records push (`c.pushRecords`) before refusing,\nso the owed push is recorded as on the normal path; pin it with a test row beside `UnreachableRecordsOriginLeavesAnOwedRecord`.\n",
-      "status": "landing · Finalize",
+      "status": "done",
       "created": "2026-11-28T07:56:44Z",
       "revised": "2026-11-28T07:56:46Z",
       "profile": "light"
@@ -1030,7 +1030,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nThe landing of `discussed-payload-map-race` (`d252353e5`) records a gate failure that passed on a second run, in `internal/creelengine`:\n\n`TestStore_MachineOutbound/WithTheSchedulerStartedAndNoTakeAMessageIsReturnedAtItsHourWithItsLastReportedReasonOrBridgeUnsettled`\n\nThat landing did not touch `internal/creelengine`, so the failure is the test's own.\n\n## Idea\n\nFind what the subtest waits on, likely the scheduler's hour against the test's clock, and make it wait on a signal instead of on time, so it passes every run.\n",
-      "status": "starting · Worktree-Create",
+      "status": "running · Darn-Write",
       "created": "2026-11-28T09:05:42Z",
       "revised": "2026-11-28T09:19:22Z",
       "profile": "light"
