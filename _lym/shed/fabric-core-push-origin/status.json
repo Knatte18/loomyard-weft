@@ -1,11 +1,11 @@
 {
-  "current_producer": "Drift-Expect",
+  "current_producer": "Webster",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Drift-Expect",
-    "last": "Drift-Await → skipped",
+    "now": "Webster",
+    "last": "Drift-Expect → skipped",
     "wait": ""
   },
   "history": [
@@ -246,6 +246,13 @@
     },
     {
       "producer": "Drift-Await",
+      "outcome": "skipped",
+      "output": "",
+      "at": "2026-11-28T16:08:48Z",
+      "reason": "drift.enabled = false"
+    },
+    {
+      "producer": "Drift-Expect",
       "outcome": "skipped",
       "output": "",
       "at": "2026-11-28T16:08:48Z",
