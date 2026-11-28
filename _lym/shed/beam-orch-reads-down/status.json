@@ -1,12 +1,12 @@
 {
   "current_producer": "Land",
-  "state": "blocked",
-  "error": "deploy failed: exit code 1; log: /home/knatte/Code/loomyard-LYMHUB/loomyard/.lym/shed/beam-orch-reads-down/Land-deploy.log; way forward: fix the cause, then run \"lym batten run beam-orch-reads-down\" from the prime",
+  "state": "running",
+  "error": "",
   "pause_requested": false,
   "activity": {
     "now": "Land",
-    "last": "Land → stuck",
-    "wait": "deploy failed: exit code 1; log: /home/knatte/Code/loomyard-LYMHUB/loomyard/.lym/shed/beam-orch-reads-down/Land-deploy.log; way forward: fix the cause, then run \"lym batten run beam-orch-reads-down\" from the prime"
+    "last": "Land → goto",
+    "wait": ""
   },
   "history": [
     {
@@ -75,6 +75,12 @@
       "started_at": "2026-11-28T13:19:01Z",
       "budget_exempt": true,
       "machine": "neve"
+    },
+    {
+      "producer": "Land",
+      "outcome": "goto",
+      "output": "",
+      "at": "2026-11-28T13:19:36Z"
     }
   ]
 }
