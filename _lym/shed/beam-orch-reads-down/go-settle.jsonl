@@ -1,2 +1,0 @@
-{"stop_key":{"current_producer":"Land","history_length":8,"state":"blocked"},"settler":"tackler","action":"spawn","outcome":"tackler spawned","at":"2026-11-28T14:19:36.111418062+01:00","target":"attempt-1"}
-{"stop_key":{"current_producer":"Land","history_length":8,"state":"blocked"},"settler":"tackler","action":"restep","outcome":"tackler resume","at":"2026-11-28T14:19:36.112531234+01:00","target":"Land"}
