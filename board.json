@@ -1256,9 +1256,9 @@
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nThe Code-Review Bouncer of `clone-reset-keeps-unpushed` (2026-11-28) reports that a hub holding files of an earlier layout at the `_bolt` root,\nsuch as `.gitrepo-push.lock` and `board.json.swaplock` in the live loomyard hub, still has a plain `lym fabric clone --reset` refused.\nNo current code writes those files, so the run's rule (lym's own ignored files are no work) does not skip them.\n\n## Idea\n\nEither skip the known leftovers of earlier layouts in the reset's work check, or remove them in a reconcile step, so a plain reset passes on an old hub.\n",
-      "status": "draft",
       "created": "2026-11-28T14:43:49Z",
-      "revised": "2026-11-28T15:24:48Z"
+      "revised": "2026-11-28T15:24:48Z",
+      "profile": "light"
     },
     {
       "id": 1822,

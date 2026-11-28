@@ -1,6 +1,6 @@
 # lym fabric clone --reset refuses a hub holding leftovers of an earlier _bolt layout
 
-`reset-old-layout-leftovers` · Task · bug, fabric · draft
+`reset-old-layout-leftovers` · Task · bug, fabric
 
 Depends on: [`fabric-core-push-origin`](design-fabric-core-push-origin.md)
 
