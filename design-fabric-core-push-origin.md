@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-fabric-core-push-origin.md)
 
-Depends on: [`missing-origin-unreachable`](design-missing-origin-unreachable.md), [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md), [`catchup-fetch-stops-start`](design-catchup-fetch-stops-start.md)
+Depends on: [`missing-origin-unreachable`](design-missing-origin-unreachable.md), [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md), [`catchup-fetch-stops-start`](design-catchup-fetch-stops-start.md), [`clone-reset-keeps-unpushed`](design-clone-reset-keeps-unpushed.md)
 
 Filed from the Sketch `fabric-git-free-core`.
 

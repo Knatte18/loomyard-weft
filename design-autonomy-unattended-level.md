@@ -4,7 +4,7 @@
 
 Decision record: [Sketch](decision-autonomy-unattended-level.md)
 
-Depends on: [`battencli-wire-test-gofmt`](design-battencli-wire-test-gofmt.md)
+Depends on: [`battencli-wire-test-gofmt`](design-battencli-wire-test-gofmt.md), [`beam-orch-reads-down`](design-beam-orch-reads-down.md)
 
 Filed from the Sketch `self-healing-runs`.
 
