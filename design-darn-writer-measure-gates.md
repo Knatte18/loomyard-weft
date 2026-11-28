@@ -1,6 +1,6 @@
 # Darn writer prompt forbids the gate calls a measurement entry requires
 
-`darn-writer-measure-gates` · Task · bug, darn, stencil
+`darn-writer-measure-gates` · Task · bug, darn, stencil · starting · Worktree-Create
 
 Imported from [issue #283](https://github.com/Knatte18/loomyard/issues/283).
 
