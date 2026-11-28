@@ -1,27 +1,25 @@
-# Post the machine hour subtest's messages before the scheduler starts
+# Fix a race in the creelengine machine mail hour subtest
 
-`TestStore_MachineOutbound/WithTheSchedulerStartedAndNoTakeAMessageIsReturnedAtItsHourWithItsLastReportedReasonOrBridgeUnsettled` failed at times and passed on a rerun.
+`TestStore_MachineOutbound/WithTheSchedulerStartedAndNoTakeAMessageIsReturnedAtItsHourWithItsLastReportedReasonOrBridgeUnsettled`
+failed at times and passed on a rerun.
+The subtest now posts both of its messages before it starts the scheduler.
+Only the test changes.
 
-## Cause
+The cause is in the test's own synchronization.
+A post made after the start could wake another pass of `machineHourLoop`.
+That pass could read the store before the test's `Advance(time.Hour)` and read the clock after it.
+It then armed the `machineHourFloor` wait of one second on the fake clock, past the advance, and nothing fired it.
+Neither message came back, and the wait on the first timed out.
 
-The subtest started the scheduler and then posted two messages to another machine.
-Each post wakes the machine hour loop for a pass, and the subtest advanced the fake clock by an hour once it saw one hour wait armed.
-That wait could come from the pass the first post woke while the pass the second post woke was still running.
-When that second pass read the store before the advance and read the clock after it, the loop armed its one-second floor wait past the hour.
-Nothing advanced the clock again, so neither message came back and the wait on the first message timed out.
-Under a real clock the floor wait expires a second later, so the scheduler itself is correct, and the change is test-only.
+With both posts ahead of the start, the loop's first pass sees both messages
+and arms the one hour wait that the test advances past.
 
-## Change
+Production code is left as it is: on a real clock the same one-second floor wait expires on its own,
+so the messages come back about a second late at worst in that interleaving.
 
-The subtest now posts both messages and reports the hold before it starts the scheduler.
-With no hook installed yet, the posts wake nothing.
-The loop's first pass then sees both messages and arms the one hour wait the advance fires.
-A comment above the posts states why they come first.
-The other subtests still cover a post after the start waking the loop.
-
-## Design decisions
-
-- No production change: the race lies in the test's synchronization, and no test can reach it through the scheduler's code, so the test that fixes it passes on the merge base as well.
+No test reproduces the race on demand: the subtest passed nearly every run before the change,
+so a passing run does not show the fix.
+Check the interleaving above against `machineHourLoop`.
 
 ## Merge danger
 
