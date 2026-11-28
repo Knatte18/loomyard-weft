@@ -1,6 +1,6 @@
 # P8 Webster and Weaver spend less of their row in gate runs
 
-Rendered 2026-11-28 12:33 UTC; every age below is as of then.
+Rendered 2026-11-28 12:34 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`implementer-gate-time`](design-implementer-gate-time.md) · Age 34m · Owner `neve`
@@ -22,13 +22,13 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T9 | **Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages** | [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md) | darn · docs | starting · Worktree-Create | neve | 34m<br>34m | gate, webster, weaver |
+| T9 | **Measure where Webster and Weaver rows spend their gate time since the card gate took in dependent packages** | [`implementer-gate-time-measure`](design-implementer-gate-time-measure.md) | darn · docs | Darn-Write | neve | 34m<br>34m | gate, webster, weaver |
 
 ## Enhancements (4)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| E4 |  | **The card gate leaves the guard step to the batch gate** | [`card-gate-no-guard-step`](design-card-gate-no-guard-step.md) | T9 | 27m<br>27m | gate, webster, weaver |
-| E6 |  | **An implementer batch gets the files and symbols its cards name, so it starts editing sooner** | [`implementer-orientation-read`](design-implementer-orientation-read.md) | T9 | 27m<br>27m | webster, weaver, stencil |
-| E7 |  | **The last batch gate covers cmd/lym and cross-package tests, so the plan-level verify seldom fails** | [`batch-gate-covers-cmd-lym`](design-batch-gate-covers-cmd-lym.md) | T9 | 27m<br>27m | gate, webster, weaver |
-| E8 |  | **A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock** | [`lock-holder-gates-first`](design-lock-holder-gates-first.md) | T9 | 27m<br>27m | gate, landing |
+| E4 |  | **The card gate leaves the guard step to the batch gate** | [`card-gate-no-guard-step`](design-card-gate-no-guard-step.md) | T9 | 28m<br>28m | gate, webster, weaver |
+| E6 |  | **An implementer batch gets the files and symbols its cards name, so it starts editing sooner** | [`implementer-orientation-read`](design-implementer-orientation-read.md) | T9 | 28m<br>28m | webster, weaver, stencil |
+| E7 |  | **The last batch gate covers cmd/lym and cross-package tests, so the plan-level verify seldom fails** | [`batch-gate-covers-cmd-lym`](design-batch-gate-covers-cmd-lym.md) | T9 | 28m<br>28m | gate, webster, weaver |
+| E8 |  | **A gate run under the parent lock takes the next free gate slot ahead of runs that hold no lock** | [`lock-holder-gates-first`](design-lock-holder-gates-first.md) | T9 | 28m<br>28m | gate, landing |
