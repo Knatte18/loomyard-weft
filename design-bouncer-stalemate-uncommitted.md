@@ -1,6 +1,6 @@
 # Discussion-Bouncer reports stalemate when the fixer's decision-record edits are uncommitted
 
-`bouncer-stalemate-uncommitted` · Task · bug, shed, burler · landing · Finalize
+`bouncer-stalemate-uncommitted` · Task · bug, shed, burler · running · Friction-Reflect
 
 Imported from [issue #287](https://github.com/Knatte18/loomyard/issues/287).
 
