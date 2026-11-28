@@ -2,7 +2,7 @@
 
 `clone-reset-keeps-unpushed` · Task · bug, fabric
 
-Depends on: [`missing-origin-unreachable`](design-missing-origin-unreachable.md), [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md)
+Depends on: [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md)
 
 ## Seen
 

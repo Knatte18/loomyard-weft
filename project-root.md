@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-28 11:10 UTC; every age below is as of then.
+Rendered 2026-11-28 11:12 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -34,25 +34,19 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| R1 |  | **Measure how much landing-lock-only-for-land cut the wait for the parent lock** | [`landing-lock-effect-measure`](design-landing-lock-effect-measure.md) | 1h<br>6m | landing, batten |
+| R1 |  | **Measure how much landing-lock-only-for-land cut the wait for the parent lock** | [`landing-lock-effect-measure`](design-landing-lock-effect-measure.md) | 1h<br>8m | landing, batten |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 10d<br>10d | shuttle |
 
 ## Enhancements (3)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| E1 |  | **PR-Review session tests drive pullrequest.Client over a recorded GitHub stand-in instead of prkit.API** | [`pr-review-github-recorded`](design-pr-review-github-recorded.md) |  | 38m<br>38m | testkit, landing |
-| E2 |  | **A tier1 creel delivery backed by real reed, so tests stop listing strands by hand in creelfake.Delivery** | [`creel-delivery-reed-tier1`](design-creel-delivery-reed-tier1.md) |  | 38m<br>38m | testkit, creel, reed |
-| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | R1 | 1d<br>6m | landing, gate, batten |
+| E1 |  | **PR-Review session tests drive pullrequest.Client over a recorded GitHub stand-in instead of prkit.API** | [`pr-review-github-recorded`](design-pr-review-github-recorded.md) |  | 39m<br>39m | testkit, landing |
+| E2 |  | **A tier1 creel delivery backed by real reed, so tests stop listing strands by hand in creelfake.Delivery** | [`creel-delivery-reed-tier1`](design-creel-delivery-reed-tier1.md) |  | 39m<br>39m | testkit, creel, reed |
+| E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | R1 | 1d<br>8m | landing, gate, batten |
 
 ## Features (1)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | T38 | 13h<br>59m | board, orch, dobby |
-
-## Done (1)
-
-| # | Entry | Slug | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- |
-| T1 | **A missing local origin is not classed as unreachable by push or origin reconcile** | [`missing-origin-unreachable`](design-missing-origin-unreachable.md) | 13h<br>13h | fabric, git |
+| F1 |  | **Autonomy takes in new GitHub issues and runs them, so findings do not wait for the operator** | [`autonomy-intake-runs`](design-autonomy-intake-runs.md) | T38 | 13h<br>1h | board, orch, dobby |
