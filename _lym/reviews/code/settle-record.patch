@@ -1,0 +1,499 @@
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index f8502aead..9e9075f43 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -82,11 +82,11 @@ Without --wait, an agent strand's call runs in a detached runner it starts or jo
+ run the same command again in a turn that does nothing else, so the prompt cache stays warm; it prints the result once the run ended.
+ With --wait, and with no strand, the tiers run in this process.
+ The exit code is the first failing run's own, or 0.
++Each tier's stderr summary line shows its slot wait as wait and its run time without that wait as wall.
+ Without --gate the scope is the explicit <targets>, --all, --card <id>, --base <rev>, or the diff from the merge base with the pair's parent branch.
+ Arguments after "--" fill each tier's {args}.
+ A --filter among them is ANDed with the tier's filter where the tier's command holds {filter}.
+ --guards, and a narrower scope while ` + keyName(scoperKey) + ` is go, also run the //lym:guard tests outside the scope; --card adds tier-skipped ones.
+---copies N, with --gate and explicit targets, runs N copies of the key's one tier side by side.
+ 
+ Examples:
+ 
+diff --git a/internal/gatecli/copies_test.go b/internal/gatecli/copies_test.go
+index a2c0571ef..66e4be7f2 100644
+--- a/internal/gatecli/copies_test.go
++++ b/internal/gatecli/copies_test.go
+@@ -104,7 +104,7 @@ func TestRunTierCopies(t *testing.T) {
+ 				guardStep:   tt.guardStep,
+ 			}
+ 
+-			end := exe.runWithSlots(run, false, func(env []string, _ time.Time) tierResult {
++			end := exe.runWithSlots(run, false, func(env []string, _ slotWait) tierResult {
+ 				return runTier(exe.ctx, io.Discard, run, env, exe.request)
+ 			})
+ 
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index e82d890b3..2beb48dd7 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -369,8 +369,12 @@
+ // A tier's output goes through its counter, `go-json` or `vstest`, which passes the text on and counts its tests.
+ // The `vstest` counter reads the summary of every console logger verbosity:
+ // the minimal one's `Passed!` or `Failed!` line, and the normal and detailed ones' `Total tests:` block.
+-// After each tier the verb prints `gateslot.TierSummaryLine` to stderr
+-// and writes the run record and log through `gateslot.WriteRunRecord` under `gateslot.RunLogDir`:
++// After each tier the verb prints `gateslot.TierSummaryLine` to stderr.
++// In that line `wait` is the tier's wait for its gate slots, on the line of a rerun too.
++// Work done inside the held slots before the tier's command, such as the shared build, is no part of it.
++// Its `wall` is the run's own time without that wait.
++// The `lym` prebuild of a `--copies` run is in neither figure, while a run without copies counts it in `wall`.
++// The verb then writes the run record and log through `gateslot.WriteRunRecord` under `gateslot.RunLogDir`:
+ // the board's gate directory inside a hub, so the records outlive the worktree;
+ // else the worktree's `.lym` gate directory.
+ // A write failure is logged and decides nothing.
+diff --git a/internal/gatecli/report.go b/internal/gatecli/report.go
+index 1598d9c58..a0b66c711 100644
+--- a/internal/gatecli/report.go
++++ b/internal/gatecli/report.go
+@@ -144,9 +144,7 @@ func runReport(out io.Writer, records []gateslot.RunRecord, slug string, since t
+ 		group := groups[index]
+ 		if record.Abandoned {
+ 			group.abandonedRuns++
+-			if !record.WaitStart.IsZero() {
+-				group.abandonedWaitSeconds += record.Start.Sub(record.WaitStart).Seconds()
+-			}
++			group.abandonedWaitSeconds += record.SlotWaitSeconds()
+ 			group.abandonedWallSeconds += record.WallSec
+ 			continue
+ 		}
+@@ -160,9 +158,7 @@ func runReport(out io.Writer, records []gateslot.RunRecord, slug string, since t
+ 		} else {
+ 			group.runs++
+ 		}
+-		if !record.WaitStart.IsZero() {
+-			group.waitSeconds += record.Start.Sub(record.WaitStart).Seconds()
+-		}
++		group.waitSeconds += record.SlotWaitSeconds()
+ 		group.wallSeconds += record.WallSec
+ 		for _, launch := range record.Launches {
+ 			group.hasLaunches = true
+diff --git a/internal/gatecli/run.go b/internal/gatecli/run.go
+index 0d710ac92..163c43d76 100644
+--- a/internal/gatecli/run.go
++++ b/internal/gatecli/run.go
+@@ -580,6 +580,20 @@ type execution struct {
+ 	callID string
+ 	// failed holds the call's failed runs in plan order, its lint steps last, for the failure report.
+ 	failed []failedRun
++	// slotClock reads the times that bound a tier's wait for its slots; nil reads time.Now.
++	slotClock func() time.Time
++}
++
++// slotWait is when a tier's wait for its gate slots started, and when it ended with the tier free to run.
++type slotWait struct {
++	start, held time.Time
++}
++
++func (e *execution) slotNow() time.Time {
++	if e.slotClock != nil {
++		return e.slotClock()
++	}
++	return time.Now()
+ }
+ 
+ // printReport writes the failure report of the call's failed runs to stderr, and nothing when no run failed.
+@@ -603,7 +617,7 @@ func (e *execution) runListed(run tierRun) runEnd {
+ 	}
+ 	if len(run.invocations) == 0 && !run.buildOnly {
+ 		printLine(e.request.stderr, fmt.Sprintf("gate test: the scope is empty, so %s runs no command", tierName(run.number)))
+-		return e.runWithSlots(run, true, func(env []string, _ time.Time) tierResult {
++		return e.runWithSlots(run, true, func(env []string, _ slotWait) tierResult {
+ 			return runTier(e.ctx, e.out, run, env, e.request)
+ 		})
+ 	}
+@@ -636,7 +650,7 @@ func (e *execution) runGreenAware(run tierRun) runEnd {
+ 		}
+ 		run.invocations = plan.invocations
+ 	}
+-	end := e.runWithSlots(run, false, func(env []string, waitStart time.Time) tierResult {
++	end := e.runWithSlots(run, false, func(env []string, wait slotWait) tierResult {
+ 		if run.tier.SharedBuild && !run.guardStep && !run.vetStep && !e.buildDone {
+ 			if result, ok := e.runBuild(run, env); !ok {
+ 				return result
+@@ -646,7 +660,7 @@ func (e *execution) runGreenAware(run tierRun) runEnd {
+ 		return retryTier(e.ctx, e.request.stderr, runLabel(run), e.request.rerunDelay, func() tierResult {
+ 			return runTierChecked(e.ctx, e.out, run, env, e.request, before, listed)
+ 		}, func(first tierResult) {
+-			first.record.WaitStart = waitStart
++			first.record.WaitStart, first.record.SlotsHeld = wait.start, wait.held
+ 			e.writeRecord(first.record, first.log, tierName(run.number))
+ 		})
+ 	})
+@@ -661,18 +675,18 @@ func (e *execution) runGreenAware(run tierRun) runEnd {
+ func (e *execution) reportCarried(run tierRun) runEnd {
+ 	now := time.Now()
+ 	record := gateslot.RunRecord{Tier: run.number, ScopeForm: run.scopeForm, Slots: run.tier.Slots, GuardStep: run.guardStep, Start: now, End: now, Outcome: "passed", Carried: true}
+-	return e.report(run, tierResult{record: record}, now)
++	return e.report(run, tierResult{record: record}, slotWait{start: now, held: now})
+ }
+ 
+ // runWithSlots takes the slots of run's tier unless the call is unslotted, inherited or the run empty.
+-// It runs body inside them with the environment the slots give and the time the wait for them started.
++// It runs body inside them with the environment the slots give and the times the wait for them started and ended.
+ // It releases the slots and reports the tier's outcome.
+ // A wait that does not end with the slots held halts the call.
+ // A --copies call takes one lease of the copies' slots together and runs the copies the pool holds inside it.
+ // A vet-step or guard-step run of a copies call runs once, in the slots of its own tier.
+ // It refuses to run inside a slot an enclosing gate run holds, since it needs a lease of its own.
+-func (e *execution) runWithSlots(run tierRun, empty bool, body func(env []string, waitStart time.Time) tierResult) runEnd {
+-	waitStart := time.Now()
++func (e *execution) runWithSlots(run tierRun, empty bool, body func(env []string, wait slotWait) tierResult) runEnd {
++	wait := slotWait{start: e.slotNow()}
+ 	env := e.env
+ 	copying := e.request.copies > 0 && !empty && !run.vetStep && !run.guardStep
+ 	if copying && e.inherited {
+@@ -698,6 +712,7 @@ func (e *execution) runWithSlots(run tierRun, empty bool, body func(env []string
+ 		defer releaseSlot(lease, e.request.root)
+ 		env = lease.InheritEnv(env)
+ 	}
++	wait.held = e.slotNow()
+ 	if copying && copiesRun < e.request.copies {
+ 		printLine(e.request.stderr, copiesClampLine(e.request.copies, copiesRun, tierName(run.number)))
+ 	}
+@@ -709,7 +724,7 @@ func (e *execution) runWithSlots(run tierRun, empty bool, body func(env []string
+ 	if e.request.observer.Started != nil {
+ 		e.request.observer.Started(run.number)
+ 	}
+-	return e.report(run, body(env, waitStart), waitStart)
++	return e.report(run, body(env, wait), wait)
+ }
+ 
+ // report writes the tier's run record and log, and prints its summary line to stderr.
+@@ -718,7 +733,7 @@ func (e *execution) runWithSlots(run tierRun, empty bool, body func(env []string
+ // A refusal is answered instead, so its stdout stays one JSON envelope, and it halts the call.
+ // A run that a terminating signal cancelled halts the call as well.
+ // A record that cannot be written is logged and decides nothing.
+-func (e *execution) report(run tierRun, result tierResult, waitStart time.Time) runEnd {
++func (e *execution) report(run tierRun, result tierResult, wait slotWait) runEnd {
+ 	if result.refusal != "" {
+ 		return runEnd{code: output.Err(e.out, result.refusal), halt: true}
+ 	}
+@@ -726,16 +741,18 @@ func (e *execution) report(run tierRun, result tierResult, waitStart time.Time)
+ 		return e.reportBlocked(run)
+ 	}
+ 	record := result.record
+-	record.WaitStart = waitStart
++	record.WaitStart, record.SlotsHeld = wait.start, wait.held
++	// The summary line shows the wait the call spent on the tier's slots, a rerun's line included.
++	shown := record
+ 	if record.Rerun {
+ 		// The slot wait is on the first run's record, so the rerun's own record waited for nothing.
+-		record.WaitStart = record.Start
++		record.WaitStart, record.SlotsHeld = record.Start, time.Time{}
+ 	}
+ 	logPath := e.writeRecord(record, result.log, tierName(run.number))
+ 	if result.trimpathNote != "" {
+ 		printLine(e.request.stderr, result.trimpathNote)
+ 	}
+-	printLine(e.request.stderr, gateslot.TierSummaryLine(record, logPath))
++	printLine(e.request.stderr, gateslot.TierSummaryLine(shown, logPath))
+ 	e.printStartedLines(run, result)
+ 	if record.ExitCode != 0 {
+ 		e.addFailedRuns(run, result, logPath)
+diff --git a/internal/gatecli/slotwait_test.go b/internal/gatecli/slotwait_test.go
+new file mode 100644
+index 000000000..adeac7dca
+--- /dev/null
++++ b/internal/gatecli/slotwait_test.go
+@@ -0,0 +1,136 @@
++// slotwait_test.go covers the slot wait a tier run prints on its summary line and keeps in its run records.
++// The wait is read from a stand-in clock, so no row waits for a slot.
++
++package gatecli
++
++import (
++	"bytes"
++	"context"
++	"io"
++	"os"
++	"path/filepath"
++	"runtime"
++	"slices"
++	"strings"
++	"testing"
++	"time"
++
++	"github.com/Knatte18/loomyard/internal/gateslot"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestSummaryLineShowsTheSlotWaitAlone pins the wait a tier run's summary line shows.
++// The stand-in clock reads 300 s later once a slot is held, and 900 s later once the shared build has run.
++// So the line shows 300 s only when the wait ends where the slots are taken.
++func TestSummaryLineShowsTheSlotWaitAlone(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	if runtime.GOOS == "windows" {
++		t.Skip("the tier command is a POSIX shell command")
++	}
++
++	tests := []struct {
++		name    string
++		command string
++		// build is the shared build step the tier opts into, empty for a tier with none.
++		build   string
++		copies  int
++		carried bool
++		// wantLine opens the summary line the run prints.
++		wantLine string
++		// wantRecordWaits are the slot waits of the run records, in the order they were written.
++		wantRecordWaits []float64
++	}{
++		{
++			name: "ASlottedRun", command: "exit 0",
++			wantLine: "gate test: tier0 all wait 300.0s discovered ", wantRecordWaits: []float64{300},
++		},
++		{
++			name: "ACarriedTier", command: "exit 0", carried: true,
++			wantLine: "gate test: tier0 all carried wait 0.0s discovered ", wantRecordWaits: []float64{0},
++		},
++		{
++			name: "ATierBehindTheSharedBuild", command: "exit 0", build: ": > built",
++			wantLine: "gate test: tier0 all wait 300.0s discovered ", wantRecordWaits: []float64{0, 300},
++		},
++		{
++			name: "ARerunTier", command: "if [ ! -e ran ]; then : > ran; echo 'resource temporarily unavailable'; exit 1; fi",
++			wantLine: "gate test: tier0 all wait 300.0s discovered ", wantRecordWaits: []float64{300, 0},
++		},
++		{
++			name: "ACopiesRun", command: "exit 0", copies: 2,
++			wantLine: "gate test: tier0 all wait 300.0s discovered ", wantRecordWaits: []float64{300},
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			dir := t.TempDir()
++			pool := &gateslot.Pool{
++				Dir:    t.TempDir(),
++				Limits: func() (gateslot.Limits, error) { return gateslot.Limits{Slots: 2}, nil },
++				Poll:   time.Millisecond,
++			}
++			start := time.Date(2026, 3, 20, 12, 0, 0, 0, time.UTC)
++			var stderr bytes.Buffer
++			exe := &execution{
++				ctx: context.Background(),
++				out: io.Discard,
++				request: testRequest{
++					root: dir, stderr: &stderr, copies: tt.copies, timeoutUnit: 30 * time.Second, pipeWaitDelay: defaultPipeWaitDelay,
++				},
++				cfg:       gateslot.Config{Build: gateslot.BuildStep{Command: tt.build, Dir: dir, TimeoutMin: 1}},
++				location:  &lymcwd.Location{HubPath: t.TempDir(), WorktreeName: "work"},
++				pool:      pool,
++				env:       []string{"PATH=" + os.Getenv("PATH")},
++				runLogDir: t.TempDir(),
++				callID:    "slotwait",
++				slotClock: func() time.Time {
++					if _, err := os.Stat(filepath.Join(dir, "built")); err == nil {
++						return start.Add(900 * time.Second)
++					}
++					holders, err := pool.Holders()
++					if err != nil {
++						t.Errorf("Holders() error = %v", err)
++					}
++					if len(holders) > 0 {
++						return start.Add(300 * time.Second)
++					}
++					return start
++				},
++			}
++			run := tierRun{
++				number:      0,
++				tier:        gateslot.Tier{Command: tt.command, Counter: counterGoJSON, TimeoutMin: 1, Slots: 1, SharedBuild: tt.build != ""},
++				scopeForm:   "all",
++				invocations: []invocation{{dir: dir}},
++			}
++
++			var end runEnd
++			if tt.carried {
++				end = exe.reportCarried(run)
++			} else {
++				end = exe.runGreenAware(run)
++			}
++
++			if end.code != 0 || end.halt {
++				t.Fatalf("run = %+v, stderr %q; want exit 0 and no halt", end, stderr.String())
++			}
++			if !slices.ContainsFunc(strings.Split(stderr.String(), "\n"), func(line string) bool { return strings.HasPrefix(line, tt.wantLine) }) {
++				t.Errorf("stderr = %q; want a summary line opening %q", stderr.String(), tt.wantLine)
++			}
++			records, err := gateslot.ReadRunRecords(exe.runLogDir)
++			if err != nil {
++				t.Fatalf("ReadRunRecords() error = %v", err)
++			}
++			var waits []float64
++			for _, record := range records {
++				waits = append(waits, record.SlotWaitSeconds())
++			}
++			if !slices.Equal(waits, tt.wantRecordWaits) {
++				t.Errorf("run records' slot waits = %v; want %v", waits, tt.wantRecordWaits)
++			}
++		})
++	}
++}
+diff --git a/internal/gatecli/test_integration_test.go b/internal/gatecli/test_integration_test.go
+index bb0eeb5a2..2a22cc4e3 100644
+--- a/internal/gatecli/test_integration_test.go
++++ b/internal/gatecli/test_integration_test.go
+@@ -901,7 +901,7 @@ func TestGateTest_Scenario(t *testing.T) {
+ 			if run, _ := runRecordOf(t, second.stdout.String(), tier); !run.Carried || run.ExitCode != 0 || run.Outcome != "passed" || run.GateKey != "finalize" {
+ 				t.Errorf("tier%d run record = %+v; want a carried pass of gate key finalize", tier, run)
+ 			}
+-			if !strings.Contains(second.stdout.String(), "gate test: tier"+strconv.Itoa(tier)+" all carried discovered 0 passed 0 failed 0 skipped 0") {
++			if !strings.Contains(second.stdout.String(), "gate test: tier"+strconv.Itoa(tier)+" all carried wait 0.0s discovered 0 passed 0 failed 0 skipped 0") {
+ 				t.Errorf("stdout = %q; want tier%d's summary line marked carried", second.stdout.String(), tier)
+ 			}
+ 		}
+diff --git a/internal/gateslot/runlog.go b/internal/gateslot/runlog.go
+index f522a3e76..c5e0e09f3 100644
+--- a/internal/gateslot/runlog.go
++++ b/internal/gateslot/runlog.go
+@@ -42,6 +42,8 @@ func TimeoutKeyName(tier string) string {
+ 	return keyName("tiers." + tier + ".timeout_min")
+ }
+ 
++// The tier patterns take whatever stands between the tier and `discovered`.
++// A field added to the line goes there, so a log and a reader built from different versions still agree.
+ var (
+ 	tierSummaryPattern  = regexp.MustCompile(`^gate test: tier(\d+) .* discovered \d+ passed \d+ failed \d+ skipped \d+ wall \S+s exit (-?\d+) log .*$`)
+ 	buildSummaryPattern = regexp.MustCompile(`^gate test: build before tier(\d+) wall \S+s exit (-?\d+) log .*$`)
+@@ -64,6 +66,9 @@ type RunRecord struct {
+ 	ScopeForm string    `json:"scope_form"`
+ 	Slots     int       `json:"slots"`
+ 	WaitStart time.Time `json:"wait_start"`
++	// SlotsHeld ends the wait that began at WaitStart: the run held its slots, or was found to need none.
++	// It is zero on a record that marks no such moment, whose wait then ends at Start.
++	SlotsHeld time.Time `json:"slots_held,omitzero"`
+ 	Start     time.Time `json:"start"`
+ 	End       time.Time `json:"end"`
+ 	WallSec   float64   `json:"wall_seconds"`
+@@ -112,6 +117,20 @@ type RunRecord struct {
+ 	Rerun bool `json:"rerun,omitempty"`
+ }
+ 
++// SlotWaitSeconds returns how long the run waited for its gate slots.
++// Work done inside the held slots before the command starts is no part of it.
++// A record with no wait start waited for none and returns 0.
++func (r RunRecord) SlotWaitSeconds() float64 {
++	if r.WaitStart.IsZero() {
++		return 0
++	}
++	held := r.SlotsHeld
++	if held.IsZero() {
++		held = r.Start
++	}
++	return held.Sub(r.WaitStart).Seconds()
++}
++
+ // TestFailure is one failed test of a tier run.
+ // FirstLine is the first line the test printed other than go test's own `=== ` and `--- ` status lines, trimmed.
+ // It is where an error, a fatal or a panic states its cause, and it is empty when the test printed nothing else.
+@@ -554,13 +573,15 @@ func reportFailureLine(line string) (string, bool) {
+ 
+ // TierSummaryLine renders the one stderr line the gate prints after each tier run.
+ // A carried tier is marked with `carried` after its scope form.
++// The line shows the wait for the tier's gate slots and the run's own wall time as separate values,
++// so a caller reads the run's time without the contention for slots.
+ func TierSummaryLine(record RunRecord, logPath string) string {
+ 	scope := record.ScopeForm
+ 	if record.Carried {
+ 		scope += " carried"
+ 	}
+-	return fmt.Sprintf("gate test: tier%d %s discovered %d passed %d failed %d skipped %d wall %.1fs exit %d log %s",
+-		record.Tier, scope, record.Discovered, record.Passed, record.Failed, record.Skipped, record.WallSec, record.ExitCode, logPath)
++	return fmt.Sprintf("gate test: tier%d %s wait %.1fs discovered %d passed %d failed %d skipped %d wall %.1fs exit %d log %s",
++		record.Tier, scope, record.SlotWaitSeconds(), record.Discovered, record.Passed, record.Failed, record.Skipped, record.WallSec, record.ExitCode, logPath)
+ }
+ 
+ // BuildSummaryLine renders the one stderr line the gate prints after the build step.
+diff --git a/internal/gateslot/runlog_test.go b/internal/gateslot/runlog_test.go
+index 9c8664e2f..d14167f9a 100644
+--- a/internal/gateslot/runlog_test.go
++++ b/internal/gateslot/runlog_test.go
+@@ -28,7 +28,7 @@ func TestWriteRunRecord(t *testing.T) {
+ 		want := RunRecord{
+ 			Worktree: "/hub/slug", Slug: "slug", TierList: []int{0, 1}, GateKey: "parent-align", Tier: 1,
+ 			Command: "go test ./...", RunDir: "/hub/slug/internal/x", ScopeForm: "--all", Slots: 2,
+-			WaitStart: now.Add(-time.Minute), Start: now.Add(-30 * time.Second), End: now, WallSec: 30,
++			WaitStart: now.Add(-time.Minute), SlotsHeld: now.Add(-40 * time.Second), Start: now.Add(-30 * time.Second), End: now, WallSec: 30,
+ 			ExitCode: 1, TimedOut: false, Outcome: "failed", GuardStep: true, Carried: true,
+ 			Discovered: 9, Passed: 7, Failed: 1, Skipped: 1,
+ 			Launches: []PackageLaunch{{Package: "example.com/p", LaunchSeconds: 0.25, ElapsedSeconds: 1.5}},
+@@ -187,6 +187,7 @@ func testFailedTier(t *testing.T) {
+ 		{"a failing build line first", build(1, 1) + "\n", 1, true, true},
+ 		{"a passing build line then a failing tier line", build(0, 0) + "\n" + line(2, 1) + "\n", 2, false, true},
+ 		{"a failing build line after a failing tier line", line(1, 1) + "\n" + build(2, 1) + "\n", 1, false, true},
++		{"a failing line with no wait field", "gate test: tier1 diff discovered 3 passed 2 failed 1 skipped 0 wall 1.5s exit 1 log x\n", 1, false, true},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -219,6 +220,7 @@ func TestTierDiscovered(t *testing.T) {
+ 		{"one tier line", line(0, 4, 0) + "\n", 4, true},
+ 		{"a tier line that discovered none is found", line(0, 0, 0) + "\n", 0, true},
+ 		{"tier lines add up", line(0, 2, 0) + "\n" + line(1, 3, 1) + "\n", 5, true},
++		{"a line with no wait field is read", "gate test: tier1 diff discovered 3 passed 2 failed 1 skipped 0 wall 1.5s exit 1 log x\n", 3, true},
+ 		{"a build line and other text are no tier line", build + "\nPassed!\n", 0, false},
+ 		{"no summary line", "FAIL\n", 0, false},
+ 	}
+@@ -233,3 +235,41 @@ func TestTierDiscovered(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// TestTierSummaryLine pins that a tier's summary line shows its slot wait and its run's wall time apart.
++func TestTierSummaryLine(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++
++	start := time.Date(2026, 3, 20, 12, 0, 0, 0, time.UTC)
++	tests := []struct {
++		name   string
++		record RunRecord
++		want   string
++	}{
++		{
++			"WaitAndWallApart",
++			RunRecord{Tier: 1, ScopeForm: "diff", Discovered: 3, Passed: 2, Failed: 1, WaitStart: start.Add(-300 * time.Second), Start: start, WallSec: 12.5, ExitCode: 1},
++			"gate test: tier1 diff wait 300.0s discovered 3 passed 2 failed 1 skipped 0 wall 12.5s exit 1 log /runs/x.log",
++		},
++		{
++			"WaitEndsWhereTheSlotsWereHeld",
++			RunRecord{Tier: 1, ScopeForm: "diff", WaitStart: start.Add(-300 * time.Second), SlotsHeld: start.Add(-100 * time.Second), Start: start},
++			"gate test: tier1 diff wait 200.0s discovered 0 passed 0 failed 0 skipped 0 wall 0.0s exit 0 log /runs/x.log",
++		},
++		{
++			"NoWaitStartWaitedNone",
++			RunRecord{Tier: 0, ScopeForm: "all", Carried: true, Start: start},
++			"gate test: tier0 all carried wait 0.0s discovered 0 passed 0 failed 0 skipped 0 wall 0.0s exit 0 log /runs/x.log",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++
++			if got := TierSummaryLine(tt.record, "/runs/x.log"); got != tt.want {
++				t.Errorf("TierSummaryLine() = %q; want %q", got, tt.want)
++			}
++		})
++	}
++}
+diff --git a/internal/gateslot/startedlines_test.go b/internal/gateslot/startedlines_test.go
+index 048818de7..85e92cc4d 100644
+--- a/internal/gateslot/startedlines_test.go
++++ b/internal/gateslot/startedlines_test.go
+@@ -33,7 +33,7 @@ func TestStartedLines(t *testing.T) {
+ 		{
+ 			name: "OtherLinesAreSkipped",
+ 			output: strings.Join([]string{
+-				"gate test: tier0 diff discovered 1 passed 1 failed 0 skipped 0 wall 0.1s exit 0 log x",
++				"gate test: tier0 diff wait 0.0s discovered 1 passed 1 failed 0 skipped 0 wall 0.1s exit 0 log x",
+ 				gateslot.FormatStartedLine("tier1 copy 1", 3),
+ 				"gate test: started many test binaries in tier1",
+ 				gateslot.FormatStartedLine("tier1 copy 2", 2),
