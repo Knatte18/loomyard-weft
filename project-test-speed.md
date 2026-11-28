@@ -19,4 +19,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | At | Owner | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| T5 | **Measure the test-speed cuts side by side: the packages they changed timed before and after under the same load** | [`test-speed-effect-measure`](design-test-speed-effect-measure.md) | darn · docs | Darn-Write | neve | 45m<br>45m | gate, testkit |
+| T5 | **Measure the test-speed cuts side by side: the packages they changed timed before and after under the same load** | [`test-speed-effect-measure`](design-test-speed-effect-measure.md) | darn · docs | Darn-Write | neve | 46m<br>46m | gate, testkit |
