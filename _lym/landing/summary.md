@@ -1,26 +1,35 @@
-# Run the gofmt guard at every task's tier0 gate
+# Fail every task's tier0 run on a Go file gofmt would rewrite
 
-`TestGofmt_ModuleFilesAreFormatted` already checked every Go file of the module against its `go/format` form,
-but it sat in `cmd/lym` with `//lym:only parent-align finalize`.
-So a task's own gates skipped it, and a mis-formatted Go file passed them and failed first at landing.
+A mis-formatted Go file could pass a task's own test runs.
+The formatting guard lived in `cmd/lym` and was marked `//lym:only parent-align finalize`,
+so among `--gate` calls it ran only under those two landing keys.
+It now lives in `internal/testkit/gofmt_test.go`, keeps `//lym:guard` and drops `//lym:only`,
+so every task's tier0 gate runs it, whatever the task changed.
 
-The test moves to `internal/testkit/gofmt_test.go`, and drops the `//lym:only` marker.
-Its `//lym:guard` marker keeps it in the guard step of every narrowed gate,
-so each task's tier0 run fails on a Go file gofmt would rewrite.
-A finding now names `lym loom fmt <file>` as the way to fix it.
-The `lym loom fmt` help text and the `internal/testkit` package doc name the new location.
+The guard is also stricter and its failure says how to fix the file:
+
+- A file that differs from its gofmt form only at its end, by a missing final newline or extra trailing blank lines,
+  now fails. Before, it passed.
+- Each formatting finding names `lym loom fmt <file>` as the command that rewrites the file.
+
+The help text of `lym loom fmt` and the `internal/testkit` package doc point at the guard's new place.
 
 ## Design decisions
 
-- The guard moves out of `cmd/lym` instead of only losing its marker.
-  PATTERN-test-speed keeps every unwatched whole-repository guard of `cmd/lym` at landing, since that package's test binary is the largest and nearly every change selects it.
-  A guard of any other package stays at the task gates.
-  `internal/testkit` already holds a whole-repository guard, and its test binary imports only the test kits.
-- The check stays whole-tree: it reads every Go file of the module, not only the changed ones.
-  That covers `cmd`, `internal` and `tools`, plus the Go files under `contracts`.
-  The tree is clean today, so a whole-tree check needs no diff scope.
-- It carries no `//lym:watch`.
-  PATTERN-test-speed leaves a guard that scans all the Go code of the module unwatched.
+- The check reads the whole tree, not only changed files, so it needs no diff scope.
+  It covers every Go file of the module whatever its build tags, except under directories the shared scan skips,
+  which include `testdata` fixtures.
+- It lives in `internal/testkit` rather than `cmd/lym` so that the test binary each task has to build for it stays small.
+- It compares each file with `go/format.Source`'s output, so it needs no `gofmt` binary.
+
+## To check by hand
+
+- A file that differed from its gofmt form only by a missing final newline or extra trailing blank lines
+  passed the guard before this change and now fails.
+  Check the finding `gofmtFinding` (`internal/testkit/gofmt_test.go`) returns when no compared line differs,
+  and the table rows for those two cases.
+- No run was made with a deliberately mis-formatted file in a change that leaves `internal/testkit` untouched,
+  to see a task's tier0 gate fail on it.
 
 ## Merge danger
 
