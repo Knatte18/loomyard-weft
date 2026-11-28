@@ -1,6 +1,6 @@
 # A landing queue gates several ready runs as one batch and lands them together
 
-`landing-queue` · Task · sketch, landing, gate, batten · starting · Seed-Child
+`landing-queue` · Task · sketch, landing, gate, batten · starting · Open-Window
 
 Decision record: [Sketch](decision-landing-queue.md)
 
