@@ -1,51 +1,49 @@
-# Start no pusher, and warn nothing, for a pair whose worktree is gone
+# runpusher: start no pusher for a worktree that no longer stands
 
-Runs that had landed, and whose pairs had been removed, still had their pusher started, and each start logged a warning:
+A board sync from the prime logged one `runpusher: the pusher did not start` warning
+for each task worktree that had been removed, ending in `dotgit: not a git repository`.
+A removed pair can leave a directory behind at its path, and `runpusher` read that directory as a live worktree.
 
-`runpusher: the pusher did not start ... resolve main worktree: list git worktrees in "<hub>/<slug>": dotgit: not a git repository: no .git above <hub>/<slug>`
+A worktree now stands only while it holds its `.git` entry.
+A missing path, a file at the path and a directory without `.git` all read as gone.
+For a pair that is gone:
 
-The pusher start judged a pair present from its directory alone.
-`TargetOf` then asked git whether the path was the prime, and the start's refusal read asked for its branches.
-Both walked up from a path with no `.git` and failed.
-The failure was logged once per episode for every such pair, and the next restart logged it again.
+- `TargetOf` returns the pair target with no error, without asking whether it is the prime.
+- `Start` and `StartIfAhead` return false with no error, log nothing and write no push ledger entry.
+- `TargetRefused` returns false, since nothing pushes the pair again.
+- The parent seams read the pair as not standing.
+- A running pusher reads its worktree as gone.
+- `PruneLedger` drops its push ledger entry, unless the entry holds landings.
 
-## What changes
-
-All of it is in `internal/runpusher`:
-
-- A pair stands only while `<worktree>/.git` exists.
-  A missing path, or a directory a removal left without its `.git` entry, reads as gone.
-  The pusher body already used this read, `worktreeGone`, to stop pushing a gone pair.
-  Its directory-only check now also reads the leftover-directory case as gone, and it takes a path.
-- `Start` and `StartIfAhead` read that first for a pair.
-  A gone pair starts nothing, returns no error and reads no other condition, so it writes no ledger entry and logs no warning.
-- `TargetOf` reads a worktree that no longer stands as a pair target, with no git read.
-  The prime stands for as long as its hub does.
-  The starts that build their target through `TargetOf` now reach the silent skip instead of failing: the dobby's run reads and the status commits.
-- `TargetRefused` reads a gone pair as not refused, so the hub's refused-parent settling does not fail on one either.
-- `PruneLedger` drops the entry of a worktree left without its `.git` entry, as it already dropped that of a missing path.
-  An entry that holds landings is kept, as before.
+Closes #286
 
 ## Design decisions
 
-- **Skip at start, rather than at every caller.** Several callers start a pair's pusher, some from a ledger entry and some from a run's records.
-  The start check covers all of them, including any caller added later.
-- **The `.git` entry decides, not the git worktree list.** Listing worktrees needs the repository, which a removed pair's path no longer reaches.
-  A stat of `.git` needs nothing else, and it tells a live worktree from the directory a removal leaves holding build output.
-- **The dobby's `PairPresent` is unchanged.** It still reads the directory alone, because the dobby's leftover removal needs a leftover directory to count as present.
+- **Skip at read time.** Pair removal is unchanged.
+  The start and prune paths recognise a removed pair, so directories already left behind are covered too.
+- **The `.git` entry decides, not the git worktree list.**
+  `fabricengine.PairWorktreeStands` answers a similar question by listing worktrees from the prime.
+  The check here is one `Lstat` of `<path>/.git`, which needs no prime location and no listing.
+  A directory that keeps a `.git` entry therefore reads as standing, whether or not git still registers it.
+- **A gone path is typed as a pair.** The prime stands while its hub does, so `TargetOf` does not ask.
+- **A failed read is still an error.** Only "not found" and "not a directory" mean gone.
+  Any other failure is returned, and `PruneLedger` keeps that entry.
 
-## Tests
+## To check
 
-- `TestStart` gains rows: a gone pair reads nothing else and spawns nothing, with or without the ahead check.
-  The prime ignores the read, and a failing read is returned.
-- `TestPruneLedger` gains a leftover directory without `.git`, which is dropped.
-  Its standing worktree now holds a `.git` entry.
-- `TestWorktreeGone_ReadsWhetherTheWorktreeStands` covers the standing worktree, the missing path and the leftover directory.
-- `TestTargetOf_AWorktreeNoLongerStandingIsAPairThatStartsNoPusher` drives the real reads over both removals.
-  `TargetOf` returns the pair target with no error, and `StartIfAhead` and `TargetRefused` both answer false with no error.
-  On the code before this change, `TargetOf` fails with the error in the warning above.
+- Check that `## Merge danger` below does not understate what `PruneLedger` now deletes,
+  or which callers see the new `TargetOf`, `TargetRefused` and `Start` answers.
+- Not run by hand: a board sync on a hub that holds leftover directories of removed pairs,
+  to confirm that the warnings are gone.
 
 ## Merge danger
 
-**Door:** two-way
-**Blast radius:** runpusher
+**Door:** one-way
+**Blast radius:** pushing
+
+`PruneLedger` now also deletes the ledger entry of a path that is a file or a directory without `.git`,
+when the entry holds no landings.
+Any `HandOvers`, `Dropped` and `HeldRecords` in it go too, and a revert does not restore them.
+
+The new answers of `TargetOf`, `TargetRefused` and `Start` also reach their callers in `beamcli`, `battencli` and `loomcli`.
+A wrong "gone" reading would leave a live pair's commits unpushed, with no warning from the start path.
