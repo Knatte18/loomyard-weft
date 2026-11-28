@@ -1,6 +1,6 @@
 # The batch gate runs tier1 over the batch own packages, not their dependents
 
-`batch-gate-tier1-own-packages` · Task · enhancement, gate, webster · running · PR-Review
+`batch-gate-tier1-own-packages` · Task · enhancement, gate, webster · landing · Finalize
 
 ## Seen (`docs/research/webster/gate-time-2026-11-28.md`, lever A)
 
