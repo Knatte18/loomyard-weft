@@ -1,6 +1,6 @@
 # P0 Root: entries under no project
 
-Rendered 2026-11-28 08:28 UTC; every age below is as of then.
+Rendered 2026-11-28 08:29 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 Owner `neve`
@@ -18,9 +18,9 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T9 | **boardengine: TestDiscussedPayload crashes with concurrent map writes** | [`discussed-payload-map-race`](design-discussed-payload-map-race.md) | darn · light | landing · Finalize | neve | 10h<br>10h | board |
 | T10 | **Worktree-Create blocks on a transient git ls-remote network error, and the stop question misreads a fresh branch's absence** | [`worktree-create-transient-net`](design-worktree-create-transient-net.md) | darn · light | landing · Finalize | neve | 17h<br>17h | batten, fabric |
 | T19 | **Timing a gate test call includes the slot wait; run time needs the run record** | [`gate-call-shows-slot-wait`](design-gate-call-shows-slot-wait.md) | darn · light | Code-Burler-Fix | neve | 10h<br>10h | gate |
-| T20 | **webster reset refuses before its records push when fabricSync fails after the records commit landed** | [`reset-partial-commit-push`](design-reset-partial-commit-push.md) | darn · light | Code-Bouncer | neve | 31m<br>31m | webster, fabric |
+| T20 | **webster reset refuses before its records push when fabricSync fails after the records commit landed** | [`reset-partial-commit-push`](design-reset-partial-commit-push.md) | darn · light | Code-Burler-Review | neve | 32m<br>32m | webster, fabric |
 | T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | Code-Burler-Fix | neve | 1d<br>14h | fabric, cleanup, batten |
-| T22 | **internal/shedcli.names is reached by no main package**<br>• Remove the function or give it a caller; TestTestOnlyCode fails on it in the upkeep gate | [`shedcli-names-unreached`](design-shedcli-names-unreached.md) | darn · light | landing · Finalize | neve | 10h<br>30m | shed |
+| T22 | **internal/shedcli.names is reached by no main package**<br>• Remove the function or give it a caller; TestTestOnlyCode fails on it in the upkeep gate | [`shedcli-names-unreached`](design-shedcli-names-unreached.md) | darn · light | landing · Finalize | neve | 11h<br>30m | shed |
 
 ## Layer A (7)
 
@@ -56,7 +56,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Prio | Note | Slug | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- |
-| E1 |  | **PR-Review session tests still hand-write MailAgent closures and envkit session stand-ins**<br>• Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins | [`pr-session-mail-stand-ins`](design-pr-session-mail-stand-ins.md) | 13h<br>10h | testkit, landing |
+| E1 |  | **PR-Review session tests still hand-write MailAgent closures and envkit session stand-ins**<br>• Move the MailAgent rows to a tier1 test over a real creel daemon and drop the envkit stand-ins | [`pr-session-mail-stand-ins`](design-pr-session-mail-stand-ins.md) | 13h<br>11h | testkit, landing |
 | E2 |  | **Arras still shows in seeded profiles and in the overview and glossary**<br>• The landed design-first route left arras keys in the profile template and descriptions in two docs | [`arras-visible-leftovers`](design-arras-visible-leftovers.md) | 12h<br>12h | board, docs |
 | E3 |  | **The recorded tmux kit cannot replay a pasted call, so no scenario that pastes runs over it**<br>• tmuxrec neither records nor matches stdin, and each paste names a fresh random buffer, so a replayed paste fails as unanswered | [`tmuxrec-paste-replay`](design-tmuxrec-paste-replay.md) | 12h<br>12h | testkit, reed |
 | E4 | L | **A landing queue gates several ready runs as one batch and lands them together** | [`landing-queue`](design-landing-queue.md) | 1d<br>14h | landing, gate, batten |
