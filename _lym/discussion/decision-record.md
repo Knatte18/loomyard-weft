@@ -32,4 +32,12 @@ Provenance: task `push-retry-not-halt`, note `12-finalize-local-landing.md`.
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 1: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-1-review.md; fixer report: _lym/reviews/code/round-1-fixer-report.md.
+  - finalize-ahead-parent-upstream-fallbacks-untested (class design, severity MEDIUM, open in rounds 1)
+  - owed-only-check-not-rechecked-under-lock (class design, severity MEDIUM, open in rounds 1)
+  - parent-align-owed-ahead-upstream-tip-unpinned (class design, severity MEDIUM, open in rounds 1)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
