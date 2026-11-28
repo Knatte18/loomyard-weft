@@ -1,6 +1,6 @@
 # P3 Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack
 
-Rendered 2026-11-28 12:19 UTC; every age below is as of then.
+Rendered 2026-11-28 12:20 UTC; every age below is as of then.
 Under: [Board](README.md).
 
 [`self-healing-autonomy`](design-self-healing-autonomy.md) · Age 2h · Owner `neve`
@@ -26,7 +26,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
-| T33 | **The driver and the arbiter settle known stops and budget escalations themselves within the table's bound** | [`driver-settles-stops`](design-driver-settles-stops.md)<br>[Sketch](decision-driver-settles-stops.md) | darn · solid | T12<br>T11 | 2h<br>2h | shed, board, batten, shuttle, webster, arbiter, loom, stencil |
+| T33 | **The driver and the arbiter settle known stops and budget escalations themselves within the table's bound** | [`driver-settles-stops`](design-driver-settles-stops.md)<br>[Sketch](decision-driver-settles-stops.md) | darn · solid | T12 | 2h<br>2h | shed, board, batten, shuttle, webster, arbiter, loom, stencil |
 
 ## Layer D (1)
 
