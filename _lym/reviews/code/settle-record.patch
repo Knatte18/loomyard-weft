@@ -1,0 +1,718 @@
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index bec9e56ac..fc8e9d3d4 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -1074,7 +1074,7 @@ func stepProfiles(t *testing.T, f *cliFixture) {
+ 	if want := []string{"docs", "light", "solid", "speed", "wide"}; !slices.Equal(names, want) {
+ 		t.Errorf("profile names = %v, want %v", names, want)
+ 	}
+-	if want := map[string]any{"tapestry": "solid", "motif": "solid", "darn": "light", "pawl": "light", "raddle": "light"}; !reflect.DeepEqual(result["defaults"], want) {
++	if want := map[string]any{"tapestry": "solid", "motif": "solid", "jacquard": "solid", "darn": "light", "pawl": "light", "raddle": "light"}; !reflect.DeepEqual(result["defaults"], want) {
+ 		t.Errorf("defaults = %v, want %v", result["defaults"], want)
+ 	}
+ 
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index c4a78cbb9..30bd1a8c4 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -168,7 +168,7 @@ func Modules() []Module {
+ 		{Name: "loom", Template: loomengine.ConfigTemplate, OpenMaps: loomengine.ConfigOpenMaps(), CheckValues: loomengine.ValidateLocalValues, CheckLoad: checkLoadNamed(loomengine.LoadConfig, "loom"), Reinterpretations: []Reinterpretation{{ID: loomengine.CodeAutoAcceptBlockingReinterpretationID, Rewrite: loomengine.FlagCodeAutoAccept, RunsWithoutFile: true}}, Spec: loomengine.ConfigSpec},
+ 		{Name: "models", Template: modelspec.ConfigTemplate, SeedOnly: true, CheckLoad: checkLoad(modelspec.LoadRegistry), Spec: modelspec.ConfigSpec},
+ 		{Name: "orch", Template: orchengine.ConfigTemplate, CheckLoad: checkLoadNamed(orchengine.LoadConfig, "orch"), Reinterpretations: []Reinterpretation{{ID: orchengine.RemoteControlOffReinterpretationID, Rewrite: orchengine.FlagRemoteControlDefault}}, Spec: orchengine.ConfigSpec},
+-		{Name: runprofile.ModuleName, Template: runprofile.ConfigTemplate, HubWide: true, SeedOnly: true, RunSettingsBlocks: true, CheckLoad: checkProfiles, Reinterpretations: []Reinterpretation{{ID: dobbyengine.ProfilePullRequestModesReinterpretationID, Rewrite: dobbyengine.ReinterpretProfilePullRequestModes}, {ID: runprofile.ArrasDefaultReinterpretationID, Rewrite: runprofile.ReinterpretArrasDefault}}, Spec: runprofile.ConfigSpec},
++		{Name: runprofile.ModuleName, Template: runprofile.ConfigTemplate, HubWide: true, SeedOnly: true, RunSettingsBlocks: true, CheckLoad: checkProfiles, Reinterpretations: []Reinterpretation{{ID: dobbyengine.ProfilePullRequestModesReinterpretationID, Rewrite: dobbyengine.ReinterpretProfilePullRequestModes}, {ID: runprofile.ArrasDefaultReinterpretationID, Rewrite: runprofile.ReinterpretArrasDefault}, {ID: runprofile.JacquardBlocksReinterpretationID, Rewrite: runprofile.ReinterpretJacquardBlocks}}, Spec: runprofile.ConfigSpec},
+ 		{Name: "reed", Template: reedengine.ConfigTemplate, OpenMaps: reedengine.ConfigOpenMaps(), CheckLoad: checkLoadNamed(reedengine.LoadConfig, "reed"), Spec: reedengine.ConfigSpec},
+ 		{Name: "report", Template: reportconfig.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(reportconfig.LoadConfig), Spec: reportconfig.ConfigSpec},
+ 		{Name: "sampler", Template: samplerengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoadNamed(samplerengine.LoadConfig, "sampler"), Spec: samplerengine.ConfigSpec},
+diff --git a/internal/configreg/configreg_test.go b/internal/configreg/configreg_test.go
+index 15f8f5b4d..20e083e03 100644
+--- a/internal/configreg/configreg_test.go
++++ b/internal/configreg/configreg_test.go
+@@ -45,6 +45,31 @@ func TestLookup_BeamCarriesThePullRequestModesReinterpretationAfterThePerTaskOne
+ 	}
+ }
+ 
++// TestLookup_ProfilesCarriesTheJacquardBlocksReinterpretationAfterTheArrasOne pins the profiles reinterpretations.
++// The jacquard blocks' carry runs last, so it judges the defaults the arras drop left.
++// Dropping it gives a tuned profile's jacquard runs the template's values instead of the hub's tapestry ones.
++//
++//testtiming:keep pins the order of the profiles module's Reinterpretations entries, which no walk test reads
++func TestLookup_ProfilesCarriesTheJacquardBlocksReinterpretationAfterTheArrasOne(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	module, ok := Lookup("profiles")
++	if !ok {
++		t.Fatal("Lookup(profiles) found = false; want true")
++	}
++	var ids []string
++	for _, change := range module.Reinterpretations {
++		ids = append(ids, change.ID)
++		if change.Rewrite == nil {
++			t.Errorf("reinterpretation %q has no Rewrite; want one", change.ID)
++		}
++	}
++	want := []string{"profiles-pull-request-modes", "profiles-arras-default-dropped", "profiles-jacquard-blocks"}
++	if !slices.Equal(ids, want) {
++		t.Errorf("Lookup(profiles).Reinterpretations IDs = %q; want %q", ids, want)
++	}
++}
++
+ // TestNames pins the registry's ORDER and shape: every `lym config` surface renders it in registry order,
+ // so an out-of-sort or repeated entry is user-visible, and every module carries a template and a load check.
+ // Membership is pinned by TestRegistration_MatchesDeclarers.
+diff --git a/internal/runprofile/doc.go b/internal/runprofile/doc.go
+index fa80495e5..08096a813 100644
+--- a/internal/runprofile/doc.go
++++ b/internal/runprofile/doc.go
+@@ -23,6 +23,14 @@
+ // The reconcile drops a starting profile's arras block that the hub left as shipped.
+ // A `defaults.arras` naming a profile left with no arras block would then keep the file from loading.
+ // A one-time reinterpretation drops that default.
++// Each profile holding a `tapestry` block also holds a `jacquard` block.
++// The two hold the same settings, except that the jacquard block holds no `loom.discussion`.
++// The reason is that a jacquard run holds tapestry's rows after Discussion.
++// The reconcile would give a starting profile the template's jacquard block whatever the hub tuned in its tapestry block.
++// A one-time reinterpretation therefore sets each profile's jacquard block from its tapestry block.
++// It also sets `defaults.jacquard` to the profile `defaults.tapestry` names.
++// It drops that default when the profile holds no jacquard block.
++// Once written, a derived block that differs from `profiles.template-base` is the hub's own on later reconciles.
+ // A round count of 0 turns a perch off, since its Bouncer then settles approved with no review round.
+ // A darn run has no Discussion or Plan review,
+ // so its Code-Review reviewer also judges whether the run did what the entry asks.
+diff --git a/internal/runprofile/reinterpret.go b/internal/runprofile/reinterpret.go
+index 0c6c83e73..55646eb29 100644
+--- a/internal/runprofile/reinterpret.go
++++ b/internal/runprofile/reinterpret.go
+@@ -1,10 +1,14 @@
+-// reinterpret.go carries a hub's profiles.yaml across the template's drop of the starting profiles' arras blocks.
++// reinterpret.go carries a hub's profiles.yaml across template changes the reconcile's follow alone gets wrong:
++// the drop of the starting profiles' arras blocks,
++// and the jacquard blocks the profiles gained beside their tapestry blocks.
+ 
+ package runprofile
+ 
+ import (
+ 	"bytes"
+ 	"fmt"
++	"maps"
++	"reflect"
+ 	"slices"
+ 
+ 	"gopkg.in/yaml.v3"
+@@ -16,6 +20,19 @@ import (
+ // ArrasDefaultReinterpretationID names the change that stopped the starting profiles covering the arras recipe.
+ const ArrasDefaultReinterpretationID = "profiles-arras-default-dropped"
+ 
++// JacquardBlocksReinterpretationID names the change that gave each profile holding a tapestry block a jacquard block.
++const JacquardBlocksReinterpretationID = "profiles-jacquard-blocks"
++
++// jacquardRecipe names the jacquard recipe, the run of tapestry's rows after Discussion, as a profile block key.
++const jacquardRecipe = "jacquard"
++
++// loomModule and discussionArea name the loom module and its Discussion perch's area in a recipe block.
++// A jacquard block holds no Discussion area, since a jacquard run has no Discussion row.
++const (
++	loomModule     = "loom"
++	discussionArea = "discussion"
++)
++
+ // ReinterpretArrasDefault repairs the bytes of a hub profiles.yaml that its arras default keeps from loading.
+ // It drops defaults.arras when the profile it names holds no arras block.
+ // It keeps comments and every other key.
+@@ -45,26 +62,189 @@ func ReinterpretArrasDefault(existing []byte, _ []configengine.HubWorktree) (rew
+ 	if _, covered := profile[shedrun.RecipeArras]; covered {
+ 		return existing, nil, nil, nil
+ 	}
+-	if !removeMappingKey(mappingValue(document.Content[0], DefaultsEntry), shedrun.RecipeArras) {
++	defaultsNode := mappingValue(document.Content[0], DefaultsEntry)
++	if defaultsNode == nil || holdsBesideOwnKey(defaultsNode, shedrun.RecipeArras) || !removeMappingKey(defaultsNode, shedrun.RecipeArras) {
+ 		line := fmt.Sprintf("%s.%s: %s names a profile with no %s block, so the file does not load, and it is written through an alias or a merge key; "+
+ 			"way forward: remove that default by hand with `lym config profiles`", DefaultsEntry, shedrun.RecipeArras, name, shedrun.RecipeArras)
+ 		return existing, nil, []string{line}, nil
+ 	}
++	rewritten, err = encodeDocument(&document)
++	if err != nil {
++		return nil, nil, nil, err
++	}
++	line := fmt.Sprintf("%s.%s: %s is dropped, even where another notice lists it as kept, since profile %s holds no %s block, "+
++		"so such a task naming no profile now runs on the hub's own config; "+
++		"way forward: to keep a default, add the block with `lym config profiles --set %s.%s='<json object>'`, then set the default again",
++		DefaultsEntry, shedrun.RecipeArras, name, name, shedrun.RecipeArras, name, shedrun.RecipeArras)
++	return rewritten, nil, []string{line}, nil
++}
++
++// ReinterpretJacquardBlocks gives the jacquard blocks of a hub profiles.yaml the values the hub set for tapestry runs.
++// Each profile holding a tapestry block gets a jacquard block holding that block's settings but loom.discussion.
++// That block replaces any jacquard block that differs.
++// A profile whose tapestry block the operator tuned so keeps that tuning for jacquard runs.
++// defaults.jacquard is set to the profile defaults.tapestry names when that profile then holds a jacquard block.
++// It is dropped otherwise.
++// It keeps comments and every other key, and returns one rewrote line per changed block or default.
++// An aliased profile or defaults entry is rewritten in the mapping its alias names.
++// One supplied through a merge key is flagged for a hand edit and left as it is.
++// So is a jacquard block or default that would change and holds a YAML anchor.
++// Replacing it could leave an alias with no anchor.
++// A file whose jacquard blocks and default already match is returned unchanged, with no line.
++// The worktrees argument is unused, as the rewrite judges the file alone.
++func ReinterpretJacquardBlocks(existing []byte, _ []configengine.HubWorktree) (rewritten []byte, rewrote, flagged []string, err error) {
++	var document yaml.Node
++	if err := yaml.Unmarshal(existing, &document); err != nil {
++		return nil, nil, nil, fmt.Errorf("parse the profiles config: %w", err)
++	}
++	if document.Kind != yaml.DocumentNode || len(document.Content) == 0 {
++		return existing, nil, nil, nil
++	}
++	// The values are judged decoded, so a block reached through an alias or a merge key counts.
++	var entries map[string]any
++	if err := document.Decode(&entries); err != nil {
++		return nil, nil, nil, fmt.Errorf("decode the profiles config: %w", err)
++	}
++	root := document.Content[0]
++	holdsJacquard := map[string]bool{}
++	for _, name := range slices.Sorted(maps.Keys(entries)) {
++		if name == DefaultsEntry {
++			continue
++		}
++		profile, _ := entries[name].(map[string]any)
++		current, held := profile[jacquardRecipe]
++		holdsJacquard[name] = held
++		tapestry, ok := profile[shedrun.RecipeTapestry].(map[string]any)
++		if !ok {
++			continue
++		}
++		want := jacquardSettings(tapestry)
++		if reflect.DeepEqual(current, want) {
++			continue
++		}
++		blockKey := configengine.KeyName(ModuleName, name+"."+jacquardRecipe)
++		profileNode := ownMapping(root, name)
++		if profileNode == nil {
++			flagged = append(flagged, fmt.Sprintf("%s: profile %s holds a %s block but is supplied through a merge key, so it gained no %s block from it; "+
++				"way forward: add the block by hand with `lym config profiles --set %s.%s='<json object>'`",
++				blockKey, name, shedrun.RecipeTapestry, jacquardRecipe, name, jacquardRecipe))
++			continue
++		}
++		if old := mappingValue(profileNode, jacquardRecipe); old != nil && holdsAnchor(old) {
++			flagged = append(flagged, fmt.Sprintf("%s: profile %s's %s block carries a YAML anchor another entry may alias, so it is left as it is; "+
++				"way forward: in the editor `lym config profiles` opens, write out the anchor and each alias of it, then set the block there",
++				blockKey, name, jacquardRecipe))
++			continue
++		}
++		var block yaml.Node
++		if err := block.Encode(want); err != nil {
++			return nil, nil, nil, fmt.Errorf("encode the %s block of profile %s: %w", jacquardRecipe, name, err)
++		}
++		setMappingValue(profileNode, jacquardRecipe, &block)
++		holdsJacquard[name] = true
++		rewrote = append(rewrote, fmt.Sprintf("%s: set to the profile's %s block without loom.%s, so its %s runs take the values its %s runs took; "+
++			"way forward: none needed, or tune the block apart with `lym config profiles`",
++			blockKey, shedrun.RecipeTapestry, discussionArea, jacquardRecipe, shedrun.RecipeTapestry))
++	}
++
++	defaultLines, defaultFlags := reinterpretJacquardDefault(ownMapping(root, DefaultsEntry), entries[DefaultsEntry], holdsJacquard)
++	rewrote = append(rewrote, defaultLines...)
++	flagged = append(flagged, defaultFlags...)
++	if len(rewrote) == 0 {
++		return existing, nil, flagged, nil
++	}
++	rewritten, err = encodeDocument(&document)
++	if err != nil {
++		return nil, nil, nil, err
++	}
++	return rewritten, rewrote, flagged, nil
++}
+ 
++// reinterpretJacquardDefault sets or drops defaults.jacquard in defaultsNode.
++// It sets it to the profile defaults.tapestry names when holdsJacquard says that profile holds a jacquard block.
++// It drops it otherwise.
++// holdsJacquard describes the profiles after the blocks' rewrite.
++// defaults is the decoded defaults entry.
++// A nil defaultsNode stands for a defaults entry supplied through a merge key.
++// It returns one rewrote line for a change.
++// It returns one flagged line for a change it leaves to a hand edit:
++// a default supplied through a merge key or holding a YAML anchor.
++func reinterpretJacquardDefault(defaultsNode *yaml.Node, defaults any, holdsJacquard map[string]bool) (rewrote, flagged []string) {
++	entries, _ := defaults.(map[string]any)
++	tapestryDefault, named := entries[shedrun.RecipeTapestry].(string)
++	current, held := entries[jacquardRecipe]
++	defaultKey := configengine.KeyName(ModuleName, DefaultsEntry+"."+jacquardRecipe)
++	mergeFlag := fmt.Sprintf("%s: the default is supplied through a merge key, so it is left as it is; "+
++		"way forward: set it by hand with `lym config profiles` to the profile %s names, or remove it when that profile holds no %s block",
++		defaultKey, configengine.KeyName(ModuleName, DefaultsEntry+"."+shedrun.RecipeTapestry), jacquardRecipe)
++	anchorFlag := fmt.Sprintf("%s: the default carries a YAML anchor another entry may alias, so it is left as it is; "+
++		"way forward: in the editor `lym config profiles` opens, write out the anchor and each alias of it, then set or remove the default there",
++		defaultKey)
++	var own *yaml.Node
++	if defaultsNode != nil {
++		own = mappingValue(defaultsNode, jacquardRecipe)
++	}
++	anchored := own != nil && holdsAnchor(own)
++	if named && holdsJacquard[tapestryDefault] {
++		if current == tapestryDefault {
++			return nil, nil
++		}
++		if defaultsNode == nil {
++			return nil, []string{mergeFlag}
++		}
++		if anchored {
++			return nil, []string{anchorFlag}
++		}
++		setMappingValue(defaultsNode, jacquardRecipe, &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!str", Value: tapestryDefault})
++		return []string{fmt.Sprintf("%s: set to %s, the profile a %s task naming no profile takes; way forward: none needed",
++			defaultKey, tapestryDefault, shedrun.RecipeTapestry)}, nil
++	}
++	if !held {
++		return nil, nil
++	}
++	// Dropping an own key a merge key also supplies would leave the merged default in force.
++	if defaultsNode == nil || holdsBesideOwnKey(defaultsNode, jacquardRecipe) {
++		return nil, []string{mergeFlag}
++	}
++	if anchored {
++		return nil, []string{anchorFlag}
++	}
++	removeMappingKey(defaultsNode, jacquardRecipe)
++	return []string{fmt.Sprintf("%s: dropped, since %s names no profile holding a %s block, so a %s task naming no profile runs on the hub's own config; "+
++		"way forward: to keep a default, set it with `lym config profiles` to a profile holding a %s block",
++		defaultKey, configengine.KeyName(ModuleName, DefaultsEntry+"."+shedrun.RecipeTapestry), jacquardRecipe, jacquardRecipe, jacquardRecipe)}, nil
++}
++
++// jacquardSettings returns a jacquard block's settings for a profile whose tapestry block holds tapestry:
++// every module's keys but the loom module's Discussion area, and no loom module when that area was its only key.
++func jacquardSettings(tapestry map[string]any) map[string]any {
++	settings := maps.Clone(tapestry)
++	loom, ok := settings[loomModule].(map[string]any)
++	if !ok {
++		return settings
++	}
++	loom = maps.Clone(loom)
++	delete(loom, discussionArea)
++	if len(loom) == 0 {
++		delete(settings, loomModule)
++	} else {
++		settings[loomModule] = loom
++	}
++	return settings
++}
++
++// encodeDocument writes document back to YAML bytes at the template's two-space indent.
++func encodeDocument(document *yaml.Node) ([]byte, error) {
+ 	var out bytes.Buffer
+ 	encoder := yaml.NewEncoder(&out)
+ 	encoder.SetIndent(2)
+-	if err := encoder.Encode(&document); err != nil {
+-		return nil, nil, nil, fmt.Errorf("write the profiles config: %w", err)
++	if err := encoder.Encode(document); err != nil {
++		return nil, fmt.Errorf("write the profiles config: %w", err)
+ 	}
+ 	if err := encoder.Close(); err != nil {
+-		return nil, nil, nil, fmt.Errorf("write the profiles config: %w", err)
++		return nil, fmt.Errorf("write the profiles config: %w", err)
+ 	}
+-	line := fmt.Sprintf("%s.%s: %s is dropped, even where another notice lists it as kept, since profile %s holds no %s block, "+
+-		"so such a task naming no profile now runs on the hub's own config; "+
+-		"way forward: to keep a default, add the block with `lym config profiles --set %s.%s='<json object>'`, then set the default again",
+-		DefaultsEntry, shedrun.RecipeArras, name, name, shedrun.RecipeArras, name, shedrun.RecipeArras)
+-	return out.Bytes(), nil, []string{line}, nil
++	return out.Bytes(), nil
+ }
+ 
+ // mappingValue returns the value node mapping holds under key, nil when it holds none.
+@@ -77,6 +257,50 @@ func mappingValue(mapping *yaml.Node, key string) *yaml.Node {
+ 	return nil
+ }
+ 
++// holdsAnchor reports whether node or any node under it defines a YAML anchor.
++func holdsAnchor(node *yaml.Node) bool {
++	return node.Anchor != "" || slices.ContainsFunc(node.Content, holdsAnchor)
++}
++
++// holdsBesideOwnKey reports whether mapping still holds key once its own key is left out, as through a merge key.
++// mapping must be part of a document that decodes.
++func holdsBesideOwnKey(mapping *yaml.Node, key string) bool {
++	rest := *mapping
++	rest.Content = slices.Clone(mapping.Content)
++	removeMappingKey(&rest, key)
++	var entries map[string]any
++	// The whole document decoded, so this part of it does.
++	_ = rest.Decode(&entries)
++	_, held := entries[key]
++	return held
++}
++
++// ownMapping returns the mapping node root holds under key as its own key, following an alias to its anchored mapping.
++// A write to an anchored mapping reaches every entry aliasing it, as each holds the same values.
++// It returns nil when root holds key only through a merge key, or holds no mapping under it.
++func ownMapping(root *yaml.Node, key string) *yaml.Node {
++	node := mappingValue(root, key)
++	if node != nil && node.Kind == yaml.AliasNode {
++		node = node.Alias
++	}
++	if node == nil || node.Kind != yaml.MappingNode {
++		return nil
++	}
++	return node
++}
++
++// setMappingValue sets key's value in mapping to value.
++// It writes in place when mapping holds key as its own key, and appends the pair otherwise.
++func setMappingValue(mapping *yaml.Node, key string, value *yaml.Node) {
++	for i := 0; i+1 < len(mapping.Content); i += 2 {
++		if mapping.Content[i].Value == key {
++			mapping.Content[i+1] = value
++			return
++		}
++	}
++	mapping.Content = append(mapping.Content, &yaml.Node{Kind: yaml.ScalarNode, Tag: "!!str", Value: key}, value)
++}
++
+ // removeMappingKey removes key and its value from mapping, and reports whether mapping held it as its own key.
+ // A nil mapping holds none.
+ func removeMappingKey(mapping *yaml.Node, key string) bool {
+diff --git a/internal/runprofile/reinterpret_test.go b/internal/runprofile/reinterpret_test.go
+new file mode 100644
+index 000000000..90b79094f
+--- /dev/null
++++ b/internal/runprofile/reinterpret_test.go
+@@ -0,0 +1,221 @@
++// reinterpret_test.go tests the one-time rewrites of a hub's profiles file over files held as strings.
++
++package runprofile_test
++
++import (
++	"reflect"
++	"slices"
++	"strings"
++	"testing"
++
++	"gopkg.in/yaml.v3"
++
++	"github.com/Knatte18/loomyard/internal/runprofile"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++)
++
++// TestReinterpretJacquardBlocks pins the one-time carry of a hub's tapestry values into its jacquard blocks and default.
++// The shipped template comes back unchanged.
++// A tuned or operator-added tapestry block yields a jacquard block without loom.discussion,
++// and the jacquard default follows the tapestry one or is dropped.
++func TestReinterpretJacquardBlocks(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	tests := []struct {
++		name     string
++		existing string
++		// wantJacquard maps a profile name to its jacquard block after the rewrite, nil for none.
++		wantJacquard map[string]any
++		// wantDefault is defaults.jacquard after the rewrite, empty for none.
++		wantDefault string
++		// wantRewrote and wantFlagged hold the opening of each line, in order.
++		wantRewrote, wantFlagged []string
++		wantKept                 []string
++		// wantUnchanged asks for the file back byte for byte.
++		wantUnchanged bool
++	}{
++		{
++			name: "a shipped profile's tuned tapestry block carries into its jacquard block",
++			existing: "defaults: {tapestry: solid, jacquard: solid}\n" +
++				"solid:\n  tapestry:\n    loom: {discussion: {max_bounces: 2}, code: {max_bounces: 4}}\n    tapestry: {plan: {max_bounces: 5}}\n" +
++				"  jacquard:\n    loom: {code: {max_bounces: 1}}\n    tapestry: {plan: {max_bounces: 2}}\n",
++			wantJacquard: map[string]any{"solid": map[string]any{
++				"loom":     map[string]any{"code": map[string]any{"max_bounces": 4}},
++				"tapestry": map[string]any{"plan": map[string]any{"max_bounces": 5}},
++			}},
++			wantDefault: "solid",
++			wantRewrote: []string{"profiles.solid.jacquard: set to the profile's tapestry block"},
++		},
++		{
++			name:         "an operator-added profile gains a jacquard block and comments stay",
++			existing:     "# my profiles\nbroad:\n  tapestry:\n    loom: {discussion: {max_bounces: 1}} # one round\n    drift: {scope: \"off\"}\n",
++			wantJacquard: map[string]any{"broad": map[string]any{"drift": map[string]any{"scope": "off"}}},
++			wantRewrote:  []string{"profiles.broad.jacquard: set to the profile's tapestry block"},
++			wantKept:     []string{"# my profiles", "# one round"},
++		},
++		{
++			name: "a changed tapestry default carries into the jacquard default",
++			existing: "defaults: {tapestry: light, jacquard: solid}\n" +
++				"light:\n  tapestry:\n    tapestry: {plan: {max_bounces: 1}}\n  jacquard:\n    tapestry: {plan: {max_bounces: 1}}\n" +
++				"solid:\n  tapestry:\n    tapestry: {plan: {max_bounces: 2}}\n  jacquard:\n    tapestry: {plan: {max_bounces: 2}}\n",
++			wantJacquard: map[string]any{
++				"light": map[string]any{"tapestry": map[string]any{"plan": map[string]any{"max_bounces": 1}}},
++				"solid": map[string]any{"tapestry": map[string]any{"plan": map[string]any{"max_bounces": 2}}},
++			},
++			wantDefault: "light",
++			wantRewrote: []string{"profiles.defaults.jacquard: set to light"},
++		},
++		{
++			name: "a jacquard default is dropped when tapestry has none",
++			existing: "defaults: {darn: docs, jacquard: solid}\n" +
++				"solid:\n  tapestry:\n    tapestry: {plan: {max_bounces: 2}}\n  jacquard:\n    tapestry: {plan: {max_bounces: 2}}\n" +
++				"docs:\n  darn:\n    darn: {writer: opus}\n",
++			wantJacquard: map[string]any{
++				"solid": map[string]any{"tapestry": map[string]any{"plan": map[string]any{"max_bounces": 2}}},
++				"docs":  nil,
++			},
++			wantRewrote: []string{"profiles.defaults.jacquard: dropped"},
++		},
++		{
++			name:     "an aliased profile gains its block in the mapping it aliases",
++			existing: "base: &b\n  tapestry:\n    tapestry: {plan: {max_bounces: 1}}\nquick: *b\n",
++			wantJacquard: map[string]any{
++				"base":  map[string]any{"tapestry": map[string]any{"plan": map[string]any{"max_bounces": 1}}},
++				"quick": map[string]any{"tapestry": map[string]any{"plan": map[string]any{"max_bounces": 1}}},
++			},
++			wantRewrote: []string{"profiles.base.jacquard: set", "profiles.quick.jacquard: set"},
++		},
++		{
++			name: "a profile supplied through a merge key is flagged and the default naming it dropped",
++			existing: "defaults: {tapestry: quick, jacquard: quick}\n" +
++				"<<: {quick: {tapestry: {tapestry: {plan: {max_bounces: 1}}}}}\n",
++			wantJacquard: map[string]any{"quick": nil},
++			wantRewrote:  []string{"profiles.defaults.jacquard: dropped"},
++			wantFlagged:  []string{"profiles.quick.jacquard: profile quick holds a tapestry block but is supplied through a merge key"},
++		},
++		{
++			name:         "a defaults entry supplied through a merge key is flagged when the default would be set",
++			existing:     "<<: {defaults: {tapestry: solid}}\nsolid:\n  tapestry:\n    tapestry: {plan: {max_bounces: 2}}\n",
++			wantJacquard: map[string]any{"solid": map[string]any{"tapestry": map[string]any{"plan": map[string]any{"max_bounces": 2}}}},
++			wantRewrote:  []string{"profiles.solid.jacquard: set"},
++			wantFlagged:  []string{"profiles.defaults.jacquard: the default is supplied through a merge key"},
++		},
++		{
++			name:          "a defaults entry supplied through a merge key is flagged when the default would be dropped",
++			existing:      "<<: {defaults: {jacquard: solid}}\nsolid:\n  darn:\n    darn: {writer: opus}\n",
++			wantDefault:   "solid",
++			wantFlagged:   []string{"profiles.defaults.jacquard: the default is supplied through a merge key"},
++			wantUnchanged: true,
++		},
++		{
++			name:          "a default held as an own key and through a merge key is flagged, not half dropped",
++			existing:      "defaults: {<<: {jacquard: solid}, jacquard: solid}\nsolid:\n  darn:\n    darn: {writer: opus}\n",
++			wantDefault:   "solid",
++			wantFlagged:   []string{"profiles.defaults.jacquard: the default is supplied through a merge key"},
++			wantUnchanged: true,
++		},
++		{
++			name:        "an own default beside a merge key supplying other keys is dropped",
++			existing:    "defaults: {<<: {darn: docs}, jacquard: solid}\ndocs:\n  darn:\n    darn: {writer: opus}\n",
++			wantRewrote: []string{"profiles.defaults.jacquard: dropped"},
++		},
++		{
++			name:          "a jacquard block on a profile holding no tapestry block is left as it is",
++			existing:      "solo:\n  jacquard:\n    tapestry: {plan: {max_bounces: 1}}\n",
++			wantJacquard:  map[string]any{"solo": map[string]any{"tapestry": map[string]any{"plan": map[string]any{"max_bounces": 1}}}},
++			wantUnchanged: true,
++		},
++		{
++			name: "an anchored jacquard block that differs is flagged, so its aliases keep their anchor",
++			existing: "solid:\n  tapestry:\n    tapestry: {plan: {max_bounces: 5}}\n  jacquard: &j\n    tapestry: {plan: {max_bounces: 2}}\n" +
++				"wide:\n  tapestry:\n    tapestry: {plan: {max_bounces: 2}}\n  jacquard: *j\n",
++			wantFlagged:   []string{"profiles.solid.jacquard: profile solid's jacquard block carries a YAML anchor"},
++			wantUnchanged: true,
++		},
++		{
++			name: "an anchored default that would be set is flagged",
++			existing: "defaults: {tapestry: light, jacquard: &d solid, darn: *d}\n" +
++				"light:\n  tapestry:\n    tapestry: {plan: {max_bounces: 1}}\n  jacquard:\n    tapestry: {plan: {max_bounces: 1}}\n",
++			wantDefault:   "solid",
++			wantFlagged:   []string{"profiles.defaults.jacquard: the default carries a YAML anchor"},
++			wantUnchanged: true,
++		},
++		{
++			name:          "an anchored default that would be dropped is flagged",
++			existing:      "defaults: {jacquard: &d docs, darn: *d}\ndocs:\n  darn:\n    darn: {writer: opus}\n",
++			wantDefault:   "docs",
++			wantFlagged:   []string{"profiles.defaults.jacquard: the default carries a YAML anchor"},
++			wantUnchanged: true,
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			got, rewrote, flagged, err := runprofile.ReinterpretJacquardBlocks([]byte(tt.existing), nil)
++			if err != nil {
++				t.Fatalf("ReinterpretJacquardBlocks() error = %v; want none", err)
++			}
++			if !slices.EqualFunc(rewrote, tt.wantRewrote, strings.HasPrefix) {
++				t.Errorf("rewrote = %q; want lines opening %q", rewrote, tt.wantRewrote)
++			}
++			if !slices.EqualFunc(flagged, tt.wantFlagged, strings.HasPrefix) {
++				t.Errorf("flagged = %q; want lines opening %q", flagged, tt.wantFlagged)
++			}
++			var entries map[string]map[string]any
++			if err := yaml.Unmarshal(got, &entries); err != nil {
++				t.Fatalf("parse the rewritten file: %v\n%s", err, got)
++			}
++			for profile, want := range tt.wantJacquard {
++				if block := entries[profile]["jacquard"]; !reflect.DeepEqual(block, want) {
++					t.Errorf("%s.jacquard = %v; want %v\n%s", profile, block, want, got)
++				}
++			}
++			if gotDefault, _ := entries["defaults"]["jacquard"].(string); gotDefault != tt.wantDefault {
++				t.Errorf("defaults.jacquard = %q; want %q\n%s", gotDefault, tt.wantDefault, got)
++			}
++			if tt.wantUnchanged && string(got) != tt.existing {
++				t.Errorf("output = %q; want the file unchanged", got)
++			}
++			for _, kept := range tt.wantKept {
++				if !strings.Contains(string(got), kept) {
++					t.Errorf("output = %q; want it to keep %q", got, kept)
++				}
++			}
++		})
++	}
++}
++
++// TestReinterpretArrasDefault_HalfMergedDefaultIsFlagged pins the flag on an arras default a merge key also supplies.
++// The file is left as it is, since dropping the own key alone would not drop the default.
++func TestReinterpretArrasDefault_HalfMergedDefaultIsFlagged(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	existing := "defaults: {<<: {arras: docs}, arras: docs}\ndocs:\n  darn:\n    darn: {writer: opus}\n"
++	got, rewrote, flagged, err := runprofile.ReinterpretArrasDefault([]byte(existing), nil)
++	if err != nil || len(rewrote) != 0 {
++		t.Fatalf("ReinterpretArrasDefault() rewrote %q, error %v; want none", rewrote, err)
++	}
++	want := []string{"defaults.arras: docs names a profile with no arras block"}
++	if !slices.EqualFunc(flagged, want, strings.HasPrefix) {
++		t.Errorf("flagged = %q; want lines opening %q", flagged, want)
++	}
++	if string(got) != existing {
++		t.Errorf("output = %q; want the file unchanged", got)
++	}
++}
++
++// TestReinterpretJacquardBlocks_ShippedTemplateUnchanged pins the shipped template as a fixed point of the rewrite.
++// Its jacquard blocks and default are what the rewrite derives.
++// A hub left as shipped therefore comes back byte for byte, with no line.
++func TestReinterpretJacquardBlocks_ShippedTemplateUnchanged(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	template := runprofile.ConfigTemplate()
++	got, rewrote, flagged, err := runprofile.ReinterpretJacquardBlocks([]byte(template), nil)
++	if err != nil || len(rewrote) != 0 || len(flagged) != 0 {
++		t.Fatalf("ReinterpretJacquardBlocks(template) rewrote %q, flagged %q, error %v; want none", rewrote, flagged, err)
++	}
++	if string(got) != template {
++		t.Errorf("ReinterpretJacquardBlocks(template) = %q; want the template unchanged", got)
++	}
++}
+diff --git a/internal/runprofile/runprofile_test.go b/internal/runprofile/runprofile_test.go
+index 0e09c3a47..27470e44d 100644
+--- a/internal/runprofile/runprofile_test.go
++++ b/internal/runprofile/runprofile_test.go
+@@ -45,7 +45,7 @@ func TestLoad(t *testing.T) {
+ 		{
+ 			name:         "no file reads the template's ladder, docs and defaults",
+ 			wantNames:    []string{"docs", "light", "solid", "speed", "wide"},
+-			wantDefaults: map[string]string{"tapestry": "solid", "motif": "solid", "darn": "light", "pawl": "light", "raddle": "light"},
++			wantDefaults: map[string]string{"tapestry": "solid", "motif": "solid", "jacquard": "solid", "darn": "light", "pawl": "light", "raddle": "light"},
+ 		},
+ 		{
+ 			name:         "a removed starting profile stays removed",
+@@ -100,6 +100,7 @@ func TestLoad(t *testing.T) {
+ // sampler.code_review is on from light up, and sampler has no default profile.
+ // Only the darn block sets the Code-Review reviewer, to opus[medium].
+ // Each profile's motif block holds its tapestry block's Discussion perch and nothing else.
++// Each profile's jacquard block holds its tapestry block's Plan and Code perches and no Discussion perch.
+ // No profile holds an arras block, since the arras recipe is not offered.
+ //
+ //testtiming:keep pins the template's per-block loom.code.reviewer_model values, which the lookup tests over a fixture file cannot see
+@@ -128,7 +129,7 @@ func TestTemplateLadder(t *testing.T) {
+ 		darnCode               int
+ 		solo                   []string
+ 	}{
+-		{"speed", 0, 0, 1, 0, []string{"tapestry"}},
++		{"speed", 0, 0, 1, 0, []string{"tapestry", "jacquard"}},
+ 		{"light", 1, 1, 1, 1, nil},
+ 		{"solid", 2, 2, 1, 2, nil},
+ 		{"wide", 3, 2, 1, 3, nil},
+@@ -169,6 +170,18 @@ func TestTemplateLadder(t *testing.T) {
+ 			samplerLoom := sampler["loom"].(map[string]any)
+ 			got["sampler code"] = areaRounds(samplerLoom, "code")
+ 			want["sampler code"] = perch(tt.darnCode)
++			jacquard, err := profiles.Settings(tt.profile, "jacquard")
++			if err != nil {
++				t.Fatal(err)
++			}
++			jacquardLoom := jacquard["loom"].(map[string]any)
++			got["jacquard code"] = areaRounds(jacquardLoom, "code")
++			got["jacquard plan"] = areaRounds(jacquard["tapestry"], "plan")
++			want["jacquard code"] = perch(tt.code)
++			want["jacquard plan"] = perch(tt.plan)
++			if _, held := jacquardLoom["discussion"]; held || len(jacquard) != 2 {
++				t.Errorf("Settings(%s, jacquard) = %v; want the loom and tapestry modules only, with no loom.discussion", tt.profile, jacquard)
++			}
+ 			if !reflect.DeepEqual(got, want) {
+ 				t.Errorf("Settings(%s) rounds = %v; want %v", tt.profile, got, want)
+ 			}
+@@ -194,7 +207,7 @@ func TestTemplateLadder(t *testing.T) {
+ 			if !wantReview && sampler["sampler"] != nil {
+ 				t.Errorf("Settings(%s, sampler) sampler = %v; want no sampler key, leaving code_review false", tt.profile, sampler["sampler"])
+ 			}
+-			blockKeys := map[string]map[string]any{"tapestry": tapestry["loom"].(map[string]any), "darn": darnKeys, "pawl": pawlKeys, "sampler": samplerLoom}
++			blockKeys := map[string]map[string]any{"tapestry": tapestry["loom"].(map[string]any), "jacquard": jacquardLoom, "darn": darnKeys, "pawl": pawlKeys, "sampler": samplerLoom}
+ 			for block, keys := range blockKeys {
+ 				code := keys["code"].(map[string]any)
+ 				fan, present := code["reviewer_fan"]
+diff --git a/internal/runprofile/template.yaml b/internal/runprofile/template.yaml
+index c1145ae0e..cf63e2d16 100644
+--- a/internal/runprofile/template.yaml
++++ b/internal/runprofile/template.yaml
+@@ -2,7 +2,8 @@
+ # Each top-level key but defaults is a profile name, and its value holds one block per recipe it configures;
+ # a raddle block sets loom.raddle.auto_approve, which tells a raddle run to file its proposal without waiting for the operator's approval, and which a run whose recipe rows hold a split perch never reads;
+ # a block has the shape of a board task's run_settings: module name to that module's config keys;
+-# a tapestry block sets the plan perch's keys under the tapestry module and the other perches' keys under loom.
++# a tapestry block sets the plan perch's keys under the tapestry module and the other perches' keys under loom;
++# a jacquard block holds its profile's tapestry block but loom.discussion, since a jacquard run has no Discussion.
+ # A task names a profile in its board entry's profile field, or takes its recipe's entry under defaults when it names none;
+ # batten's Seed-Child writes the block of the recipe the task runs into the pair's local config, with the task's own run_settings layered on top.
+ # Each perch's hard cap is its rounds plus one, so `lym loom circling continue` can grant one more round.
+@@ -19,6 +20,7 @@
+ defaults:
+   tapestry: solid
+   motif: solid
++  jacquard: solid
+   darn: light
+   pawl: light
+   raddle: light
+@@ -26,6 +28,9 @@ speed:
+   tapestry:
+     loom: {discussion: {max_bounces: 0, hard_max_bounces: 1}, code: {max_bounces: 1, hard_max_bounces: 2, reviewer_fan: ""}}
+     tapestry: {plan: {max_bounces: 0, hard_max_bounces: 1}}
++  jacquard:
++    loom: {code: {max_bounces: 1, hard_max_bounces: 2, reviewer_fan: ""}}
++    tapestry: {plan: {max_bounces: 0, hard_max_bounces: 1}}
+   motif:
+     loom: {discussion: {max_bounces: 0, hard_max_bounces: 1}}
+   darn:
+@@ -40,6 +45,9 @@ light:
+   tapestry:
+     loom: {discussion: {max_bounces: 1, hard_max_bounces: 2}, code: {max_bounces: 1, hard_max_bounces: 2}}
+     tapestry: {plan: {max_bounces: 1, hard_max_bounces: 2}}
++  jacquard:
++    loom: {code: {max_bounces: 1, hard_max_bounces: 2}}
++    tapestry: {plan: {max_bounces: 1, hard_max_bounces: 2}}
+   motif:
+     loom: {discussion: {max_bounces: 1, hard_max_bounces: 2}}
+   darn:
+@@ -55,6 +63,9 @@ solid:
+   tapestry:
+     loom: {discussion: {max_bounces: 2, hard_max_bounces: 3}, code: {max_bounces: 1, hard_max_bounces: 2}}
+     tapestry: {plan: {max_bounces: 2, hard_max_bounces: 3}}
++  jacquard:
++    loom: {code: {max_bounces: 1, hard_max_bounces: 2}}
++    tapestry: {plan: {max_bounces: 2, hard_max_bounces: 3}}
+   motif:
+     loom: {discussion: {max_bounces: 2, hard_max_bounces: 3}}
+   darn:
+@@ -70,6 +81,9 @@ wide:
+   tapestry:
+     loom: {discussion: {max_bounces: 3, hard_max_bounces: 4}, code: {max_bounces: 1, hard_max_bounces: 2}}
+     tapestry: {plan: {max_bounces: 2, hard_max_bounces: 3}}
++  jacquard:
++    loom: {code: {max_bounces: 1, hard_max_bounces: 2}}
++    tapestry: {plan: {max_bounces: 2, hard_max_bounces: 3}}
+   motif:
+     loom: {discussion: {max_bounces: 3, hard_max_bounces: 4}}
+   darn:
