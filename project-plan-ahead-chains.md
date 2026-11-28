@@ -3,7 +3,7 @@
 Rendered 2026-11-28 12:32 UTC; every age below is as of then.
 Under: [Board](README.md).
 
-[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 38m · Owner `neve`
+[`plan-ahead-chains`](design-plan-ahead-chains.md) · Age 39m · Owner `neve`
 
 ## Aim (operator, 2026-11-28)
 
@@ -30,4 +30,4 @@ An entry waits only on the open entries it names under After, so the entries in 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
 | F2 |  | **A dependent task plans ahead from its dependency's record and plan, and waits only to build** | [`pipelined-chain-planning`](design-pipelined-chain-planning.md) | T6 | 1h<br>38m | loom, batten, shed |
-| F3 |  | **Plan and build become recipes of their own, so a planned task waits for its dependencies with no run held** | [`plan-and-build-recipes`](design-plan-and-build-recipes.md) |  | 21m<br>14m | shed, loom, batten, board, dobby |
+| F3 |  | **Plan and build become recipes of their own, so a planned task waits for its dependencies with no run held** | [`plan-and-build-recipes`](design-plan-and-build-recipes.md) |  | 22m<br>14m | shed, loom, batten, board, dobby |
