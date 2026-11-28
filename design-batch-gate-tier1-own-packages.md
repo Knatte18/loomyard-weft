@@ -1,6 +1,6 @@
 # The batch gate runs tier1 over the batch own packages, not their dependents
 
-`batch-gate-tier1-own-packages` · Task · enhancement, gate, webster · starting · Open-IDE
+`batch-gate-tier1-own-packages` · Task · enhancement, gate, webster · running · Record-Write
 
 ## Seen (`docs/research/webster/gate-time-2026-11-28.md`, lever A)
 
