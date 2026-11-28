@@ -1,0 +1,2836 @@
+diff --git a/docs/research/no-fake-other-modules/loom-landing.md b/docs/research/no-fake-other-modules/loom-landing.md
+index 7ee5419e7..eeb846670 100644
+--- a/docs/research/no-fake-other-modules/loom-landing.md
++++ b/docs/research/no-fake-other-modules/loom-landing.md
+@@ -100,7 +100,7 @@ The rule and its terms are in [PATTERN-test-stand-ins](../../../pattern/PATTERN-
+ | `fakePRSessions` | `prreview_session_test.go` and the PR review files | Session start, stop and liveness (`shuttleengine`) | `real` | `shuttleengine.Runner` over the session stand-in; tier2 |
+ | `shedfake.MergeShuttle` | `finalize_integration_test.go`, `finalize_gate_test.go` | Conflict agent (`shuttleengine`) | `real` | The real runner over the session stand-in; tier2 |
+ | `waitWorld` seams, `newFinalizeGateFixture` and `newMergeInFixture` git closures (`TaskHead`, `LineChange`, `HoldsWork`, `TaskRemoteTip`, `ReadParentTips`, `DirtyPaths`, `PushTask`) | `prreview_wait_test.go`, `finalize_gate_test.go`, `parentalign_test.go`, `fixerrun_test.go`, `newTestDeps` in `publish_test.go` | Git reads and pushes (`fabricengine`) | `real` | Production closures over a hub pair; tier1. The clock and sleep stay |
+-| `MailAgent`, `PauseCovered`, `ShedStatus`, `VerifyWaitMark`, `RowEntry`, `CodeReviewOff`, `MarkTaskDone`, `RecordChanges` closures | `prreview_wait_test.go`, `parentalign_test.go`, `finalize_*_test.go` | Mail, pause record, run status, status pane, board and review settings (`creelengine`, `pauserecord`, `shedengine`, `reedengine`, `boardengine`, `loomcli`) | `real` | The owners over a hub; tier1, tier2 for the pane. `RecordChanges` as a file watch stays real |
++| `MailAgent`, `PauseCovered`, `ShedStatus`, `VerifyWaitMark`, `RowEntry`, `CodeReviewOff`, `MarkTaskDone`, `RecordChanges` closures | `prreview_wait_test.go`, `parentalign_test.go`, `finalize_*_test.go` | Mail, pause record, run status, status pane, board and review settings (`creelengine`, `pauserecord`, `shedengine`, `reedengine`, `boardengine`, `loomcli`) | `real` | The owners over a hub; tier1, tier2 for the pane. `RecordChanges` as a file watch stays real. Done for `prreview_wait_test.go`'s `MailAgent`: `internal/loomcli/prreview_mail_integration_test.go` drives the mail rows over loomcli's wired mail seam |
+ | `BeamCommit` literals with entry and commit seams | `beamdescribe_test.go` | Beam history (`fabricengine`) and board entry (`boardengine`) | `real` | A repository with those commits; tier1 |
+ | `describeStencilFixture`, `finalizeConflictStencilFixture` | `describe_test.go`, `finalize_integration_test.go` | Stencil text (`stencils`) | `real` | `stencilkit` seeding of the shipped stencils |
+ | `writeSummary` text, webster `summary.md` | `publish_test.go`, `describe_test.go`, `prreview_test.go`, `fixaccept_test.go` | Description and run summary formats (`summaryparser`) | `real` | A writer in `summaryparser`; malformed rows move there |
+@@ -197,7 +197,7 @@ The rule and its terms are in [PATTERN-test-stand-ins](../../../pattern/PATTERN-
+ | Stand-in | Test files | Simulates (owner) | Verdict | What replaces it |
+ | --- | --- | --- | --- | --- |
+ | `FullEnv`, `LandingDeps`, `ReworkDeps`, `driftDeps`, `raddleWriteEnv`, `raddleFileDeps`, `hardenCampaign`: canned closures and literals for every seam | `envkit.go` | `fabricengine`, `verifytree`, `websterengine`, `boardengine` and the other seam fillers | `real` | Production wiring over a `hubforge` hub; tier1 |
+-| `noopSamplerSessions`, `noFindingsIndex`, `noopFixerSeats`, `noopSessions`, `shedfake` runners | `envkit.go` | `shuttleengine`, `planglyph`, `seatengine`, `burlerengine` | `real` | The real index and runners over the session stand-in; tier2 for tests that call them |
++| `noopSamplerSessions`, `noFindingsIndex`, `noopFixerSeats`, `noopSessions`, `shedfake` runners | `envkit.go` | `shuttleengine`, `planglyph`, `seatengine`, `burlerengine` | `real` | The real index and runners over the session stand-in; tier2 for tests that call them. Done for `noopSamplerSessions`: `envkit.go`'s sessions run a real runner over the `session-start-stop` recording |
+ | `TemplateSetting` | `envkit.go` | Setting lookup (`configengine`) | `real` | The production lookup over seeded config |
+ | `NilSeams`, `testFuncInfo` scan | `envkit.go`, `envkit_test.go` | Nothing; reflection over the Env | `own` | Stays |
+ 
+diff --git a/internal/landingshed/prreview_test.go b/internal/landingshed/prreview_test.go
+index 36031d39c..223871157 100644
+--- a/internal/landingshed/prreview_test.go
++++ b/internal/landingshed/prreview_test.go
+@@ -672,7 +672,8 @@ const testVerdict = "## Regression check\n\n- Scope: full.\n- Compare: passed at
+ // The credit is on, and claude is the one engine that ran.
+ // Every PullRequest seam is filled.
+ // The sessions run in a fresh session world.
+-// The PR-Review model-spec is claude:fixture-model, and a gate failure's mail is dropped.
++// The PR-Review model-spec is claude:fixture-model.
++// A mail to the session fails the test: the mail goes through creel, which this package cannot reach.
+ // The origin is a GitHub one, beam.yaml's pull_request is review, the task head is "head-new", and the worktree is clean.
+ // No pause covers the run, and the clock moves only when the wait sleeps.
+ // A test replaces the seams it scripts.
+@@ -713,9 +714,12 @@ func prReviewTestDeps(t *testing.T, api *fakePullRequestAPI) Deps {
+ 			CommitsMissing: func(string, string) ([]string, error) { return nil, nil },
+ 			TaskHasCommits: func() (bool, error) { return true, nil },
+ 			DirtyPaths:     func() ([]string, error) { return nil, nil },
+-			MailAgent:      func(string, string) error { return nil },
+-			PauseCovered:   func() (bool, error) { return false, nil },
+-			Now:            func() time.Time { return now },
++			MailAgent: func(strand, line string) error {
++				t.Errorf("MailAgent(%q, %q) called; want no mail from a test of this package", strand, line)
++				return errors.New("landingshed test: no creel to mail through")
++			},
++			PauseCovered: func() (bool, error) { return false, nil },
++			Now:          func() time.Time { return now },
+ 			Sleep: func(_ context.Context, d time.Duration) error {
+ 				now = now.Add(d)
+ 				return nil
+diff --git a/internal/landingshed/prreview_wait_test.go b/internal/landingshed/prreview_wait_test.go
+index bf9a79bc0..43ee9f28a 100644
+--- a/internal/landingshed/prreview_wait_test.go
++++ b/internal/landingshed/prreview_wait_test.go
+@@ -27,7 +27,7 @@ import (
+ 
+ // waitWorld is the world a PR-Review wait runs in.
+ // It scripts the heads and dirty paths, and it runs a clock that moves only when the wait sleeps.
+-// It also records every push, mail, mark and sleep.
++// It also records every push, mark and sleep.
+ // onSleep runs after each sleep with its 1-based count, so a test changes the world between two wakes.
+ type waitWorld struct {
+ 	deps   Deps
+@@ -41,8 +41,6 @@ type waitWorld struct {
+ 	dirty  []string
+ 	pushes []string
+ 	marks  []string
+-	// mails records each post to the session as "<strand name>|<line>".
+-	mails []string
+ 	// sessions is the session world; a row whose record names firstGUID finds that strand started and live.
+ 	sessions *prSessionWorld
+ 	// missing is what the CommitsMissing seam answers, and missingErr is the error it fails with.
+@@ -88,10 +86,6 @@ func newWaitWorld(t *testing.T, scripts map[string][]scriptedCall) (*waitWorld,
+ 		w.pushes = append(w.pushes, w.head)
+ 		return nil
+ 	}
+-	pr.MailAgent = func(strand, line string) error {
+-		w.mails = append(w.mails, strand+"|"+line)
+-		return nil
+-	}
+ 	pr.CommitsMissing = func(merged, task string) ([]string, error) {
+ 		w.missingCalls = append(w.missingCalls, merged+"|"+task)
+ 		return w.missing, w.missingErr
+@@ -441,75 +435,11 @@ func TestPRReview_Wait(t *testing.T) {
+ 				}
+ 			},
+ 		},
+-		{
+-			name: "AFailingGateOnAHandCommitMailsTheSessionOncePerHeadAndPushesNothing", record: seed("h1", withStrand), scripts: statusScript(open), head: "h2", noEntryPush: true,
+-			// Three wakes see the failing head, and the second and third must not gate it again.
+-			setup:      func(w *waitWorld) { failingGate(w); w.cancelAfter(3) },
+-			wantErr:    context.Canceled,
+-			wantRecord: recorded("h1", withStrand, func(r *pullrequest.Record) { r.MailedHead = "h2" }),
+-			check: func(t *testing.T, w *waitWorld, _ string) {
+-				wantMails := []string{"pr-strand|the pr-review gate refused task head h2 of pull request #7, so it is not pushed: " +
+-					"the pr-review gate failed at tier 1; output: /logs/gate.log; fix it in a new commit" +
+-					"; when the failure lies outside the change, such as a file another process held open, " +
+-					"lym loom pr-continue gates this head again, but it also ends the review once a head passes the gate, " +
+-					"so run it only on the operator's word"}
+-				if diff := cmp.Diff(wantMails, w.mails); diff != "" {
+-					t.Errorf("mails mismatch (-want +got):\n%s", diff)
+-				}
+-				if w.tree.verifyCalls != 1 {
+-					t.Errorf("the gate ran %d times; want once for the failing head", w.tree.verifyCalls)
+-				}
+-			},
+-		},
+-		{
+-			name: "AClearedMailedHeadIsGatedAndMailedAgain", record: seed("h1", withStrand), scripts: statusScript(open), head: "h2", noEntryPush: true,
+-			setup: func(w *waitWorld) {
+-				failingGate(w)
+-				w.onSleep = func(w *waitWorld, n int) {
+-					if n == 1 {
+-						err := pullrequest.UpdateRecord(w.deps.PullRequest.RecordPath, w.deps.PullRequest.RecordLockPath, func(r *pullrequest.Record) error {
+-							r.MailedHead = ""
+-							return nil
+-						})
+-						if err != nil {
+-							t.Errorf("clear the mailed head: %v", err)
+-						}
+-					}
+-					if n >= 3 {
+-						w.cancel()
+-					}
+-				}
+-			},
+-			wantErr: context.Canceled,
+-			check: func(t *testing.T, w *waitWorld, _ string) {
+-				if w.tree.verifyCalls != 2 || len(w.mails) != 2 {
+-					t.Errorf("gate runs = %d, mails = %d; want two of each", w.tree.verifyCalls, len(w.mails))
+-				}
+-			},
+-		},
+-		{
+-			name: "AGateFailureWhoseMailFailsHaltsAndRecordsNoMailedHead", record: seed("h1", withStrand), scripts: statusScript(open), head: "h2", noEntryPush: true,
+-			setup: func(w *waitWorld) {
+-				failingGate(w)
+-				w.deps.PullRequest.MailAgent = func(string, string) error { return errors.New("no such strand") }
+-			},
+-			wantOutcome: shedengine.Stuck, wantHalt: true,
+-			wantReasonExact: "the pr-review gate refused task head h2 of pull request #7, committed in the task worktree while the review waited: " +
+-				"the pr-review gate failed at tier 1; output: /logs/gate.log; fix it in a new commit; " +
+-				"way forward: commit a fix in the task worktree, or leave the head as it is when the failure lies outside the change, " +
+-				"then run lym loom resume, which gates the task head again before the row pushes it",
+-			wantRecord: recorded("h1", withStrand),
+-		},
+ 		{
+ 			name: "AGateFailureOnAPullRequestClosedWithNoFlagHaltsAndMailsNothing", record: seed("h1", withStrand), scripts: statusScript(closed), head: "h2", noEntryPush: true,
+ 			setup:       failingGate,
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"refused task head h2", "lym loom resume"},
+ 			wantRecord: seed("h1", withStrand),
+-			check: func(t *testing.T, w *waitWorld, _ string) {
+-				if len(w.mails) != 0 {
+-					t.Errorf("mails = %q; want none for a closed pull request", w.mails)
+-				}
+-			},
+ 		},
+ 		{
+ 			name: "AGateFailureInAnEndedReviewHaltsAndMailsNothing", record: seed("h1", withStrand, withReviewEnded), scripts: statusScript(open),
+@@ -526,11 +456,6 @@ func TestPRReview_Wait(t *testing.T) {
+ 				}
+ 			},
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{"refused task head h2", "lym loom resume"},
+-			check: func(t *testing.T, w *waitWorld, _ string) {
+-				if len(w.mails) != 0 {
+-					t.Errorf("mails = %q; want none for an ended review", w.mails)
+-				}
+-			},
+ 		},
+ 		{
+ 			// The 7th and 8th wakes are the polls after the entry's, and both fail to read the session.
+@@ -562,11 +487,6 @@ func TestPRReview_Wait(t *testing.T) {
+ 				w.tree.result = verifytree.Result{Status: verifytree.StatusFailed, ExitCode: 134, RunnerCrash: true, Detail: "gate test runner crashed with no failing test: tier1 (exit 134, SIGABRT)", Log: "/logs/gate.log"}
+ 			},
+ 			wantOutcome: shedengine.Stuck, wantHalt: true, wantReason: []string{LandingStopPrefix, "tier1 (exit 134, SIGABRT)", "/logs/gate.log", "`lym loom resume`"},
+-			check: func(t *testing.T, w *waitWorld, _ string) {
+-				if len(w.mails) != 0 {
+-					t.Errorf("mails = %q; want none, a crash halting the row instead of telling the session", w.mails)
+-				}
+-			},
+ 		},
+ 		{
+ 			name: "AForeignGitHubHeadAtEntryHaltsNamingItsCommitsAndPushesNothing", record: seed("h1"), scripts: statusScript(openAtGitHubHead("x9")), entryHalt: true,
+diff --git a/internal/loomcli/prreview_mail_integration_test.go b/internal/loomcli/prreview_mail_integration_test.go
+new file mode 100644
+index 000000000..307cae57d
+--- /dev/null
++++ b/internal/loomcli/prreview_mail_integration_test.go
+@@ -0,0 +1,263 @@
++// prreview_mail_integration_test.go pins how the PR-Review row mails a refused head to its session.
++// The row's wired mail seam posts to a real creel daemon, which runs in process on a fake delivery.
++// The wired seams that read config, git and the run's records read a real task pair.
++// The session runs over real reed on a recorded tmux, and the gate runs a failing command in that pair.
++
++package loomcli
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"os"
++	"path/filepath"
++	"testing"
++	"time"
++
++	"github.com/google/go-cmp/cmp"
++
++	"github.com/Knatte18/loomyard/internal/agentname"
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/dobbyengine"
++	"github.com/Knatte18/loomyard/internal/fabricengine"
++	"github.com/Knatte18/loomyard/internal/gitkit"
++	"github.com/Knatte18/loomyard/internal/hubforge"
++	"github.com/Knatte18/loomyard/internal/landingshed"
++	"github.com/Knatte18/loomyard/internal/lymcwd"
++	"github.com/Knatte18/loomyard/internal/modelspec"
++	"github.com/Knatte18/loomyard/internal/pullrequest"
++	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/runproc"
++	"github.com/Knatte18/loomyard/internal/shedengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++	"github.com/Knatte18/loomyard/internal/shuttleengine"
++	"github.com/Knatte18/loomyard/internal/testkit/creelfake"
++	"github.com/Knatte18/loomyard/internal/testkit/envkit"
++	"github.com/Knatte18/loomyard/internal/testkit/prkit"
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxrec"
++	"github.com/Knatte18/loomyard/internal/websterengine"
++	"github.com/Knatte18/loomyard/internal/yamlengine"
++)
++
++// reviewWakes is how many wakes a PR-Review mail row's wait runs before its context is cancelled.
++const reviewWakes = 3
++
++// refusedMail is the mail of the pr-review gate refusing the task head, whose failed run wrote log.
++func refusedMail(head, log string) string {
++	return fmt.Sprintf("the pr-review gate refused task head %s of pull request #7, so it is not pushed: "+
++		"the pr-review gate failed at tier 1; output: %s; fix it in a new commit"+
++		"; when the failure lies outside the change, such as a file another process held open, "+
++		"lym loom pr-continue gates this head again, but it also ends the review once a head passes the gate, "+
++		"so run it only on the operator's word", head, log)
++}
++
++// TestPRReviewGateFailureMail pins the mail of a refused head over the wakes of the PR-Review wait.
++// A refusal is mailed to the session once per head, and a cleared mailed head is gated and mailed again.
++// A mail creel refuses halts the row and records no mailed head.
++// No row pushes the refused head, moves the record's gated head or takes a parent lock,
++// and every sleep of the wait lasts from a second to a minute.
++// It runs without t.Parallel: the strand and git environment variables are process-global.
++func TestPRReviewGateFailureMail(t *testing.T) {
++	tiergate.Require(t, 1)
++	t.Setenv(agentname.StrandNameEnv, "")
++	// The pair's origin is a GitHub URL, so a git command that reaches for it must fail at once and ask for no credentials.
++	t.Setenv("GIT_ALLOW_PROTOCOL", "file")
++	t.Setenv("GIT_TERMINAL_PROMPT", "0")
++	t.Setenv("GIT_ASKPASS", "")
++
++	h := hubforge.CopyHub(t, pairHubShape)
++	const slug = hubforge.TemplatePairSlug
++	once := hubforge.TestShortname + ":pr-once"
++	again := hubforge.TestShortname + ":pr-again"
++	startNoticeOrch(t, h, creelfake.LiveStrand(once), creelfake.LiveStrand(again))
++	pair, err := lymcwd.ResolveWorktree(h.PairCodeWorktree(slug))
++	if err != nil {
++		t.Fatalf("lymcwd.ResolveWorktree(%s) = %v; want nil", slug, err)
++	}
++	mode := []yamlengine.KV{{Key: dobbyengine.PullRequestKey, Value: dobbyengine.PullRequestReview}}
++	if _, err := configengine.Set(fabricengine.ConfigDirs(pair), dobbyengine.ConfigSpec(), configengine.LayerWorktree, mode); err != nil {
++		t.Fatalf("configengine.Set(beam) = %v; want nil", err)
++	}
++	gitkit.Git(t, pair.WorktreePath(), "remote", "set-url", "origin", "https://github.com/acme/widgets.git")
++	wired := landingDeps(pair, shedrun.RecipeTapestry, websterengine.Geometry{}, slug, "main",
++		false, modelspec.Registry{}, &shuttleengine.Runner{}, landingshed.Config{}, "", nil, nil, nil, planVerifySource(pair), parentLockDeps(pair, shedrun.SelfRunID, "", ""))
++	// The row reads whether the task branch holds a commit its parent branch lacks.
++	head := gitkit.CommitFile(t, pair.WorktreePath(), "task.txt", "task work\n", "task: work")
++
++	tests := []struct {
++		name string
++		// strand is the session strand the record names, which creel lists or not.
++		strand string
++		// clearAtSleep clears the record's mailed head at that 1-based sleep; 0 clears nothing.
++		clearAtSleep int
++		// wantGates is how many times the gate runs; each run writes the next verify log.
++		wantGates int
++		// wantMailed says whether creel takes each run's mail, and the record then names the task head as mailed.
++		wantMailed bool
++		wantHalt   bool
++	}{
++		{name: "ARefusalIsMailedToTheSessionOncePerHead", strand: once, wantGates: 1, wantMailed: true},
++		{name: "AClearedMailedHeadIsGatedAndMailedAgain", strand: again, clearAtSleep: 1, wantGates: 2, wantMailed: true},
++		{name: "AMailCreelRefusesHaltsAndRecordsNoMailedHead", strand: hubforge.TestShortname + ":pr-gone", wantGates: 1, wantHalt: true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			deps, gates, pushes := prReviewMailDeps(t, pair, wired, tt.strand)
++			pr := &deps.PullRequest
++			ctx, cancel := context.WithCancel(context.Background())
++			t.Cleanup(cancel)
++			now := time.Date(2026, 10, 30, 12, 0, 0, 0, time.UTC)
++			sleeps := 0
++			pr.Now = func() time.Time { return now }
++			pr.Sleep = func(ctx context.Context, d time.Duration) error {
++				sleeps++
++				if d < time.Second || d > time.Minute {
++					t.Errorf("sleep %d lasts %s; want from a second to a minute", sleeps, d)
++				}
++				now = now.Add(d)
++				if sleeps == tt.clearAtSleep {
++					err := pullrequest.UpdateRecord(pr.RecordPath, pr.RecordLockPath, func(r *pullrequest.Record) error {
++						r.MailedHead = ""
++						return nil
++					})
++					if err != nil {
++						t.Errorf("clear the mailed head: %v", err)
++					}
++				}
++				if sleeps >= reviewWakes {
++					cancel()
++				}
++				return ctx.Err()
++			}
++
++			outcome, pointer, err := landingshed.NewPRReview("PR-Review", deps).Call(ctx)
++
++			var logs []string
++			for n := 1; n <= tt.wantGates; n++ {
++				logs = append(logs, filepath.Join(deps.VerifyDir, fmt.Sprintf("verify-%d.log", n)))
++			}
++			if tt.wantHalt {
++				wantReason := "the pr-review gate refused task head " + head + " of pull request #7, committed in the task worktree while the review waited: " +
++					"the pr-review gate failed at tier 1; output: " + logs[0] + "; fix it in a new commit; " +
++					"way forward: commit a fix in the task worktree, or leave the head as it is when the failure lies outside the change, " +
++					"then run lym loom resume, which gates the task head again before the row pushes it"
++				if err != nil || outcome != shedengine.Stuck || !pointer.Halt || pointer.Reason != wantReason {
++					t.Errorf("Call() = %q, halt %v, error %v, reason:\n%s\nwant Stuck with halt and reason:\n%s", outcome, pointer.Halt, err, pointer.Reason, wantReason)
++				}
++			} else if !errors.Is(err, context.Canceled) {
++				t.Errorf("Call() = %q, %+v, error %v; want the wait cancelled after %d wakes", outcome, pointer, err, reviewWakes)
++			}
++			if *gates != tt.wantGates {
++				t.Errorf("the gate ran %d times; want %d", *gates, tt.wantGates)
++			}
++			if *pushes != 0 {
++				t.Errorf("the task branch was pushed %d times; want no push of a refused head", *pushes)
++			}
++			if held, err := deps.Lock.Store.List(); err != nil || len(held) != 0 {
++				t.Errorf("parent locks = %+v, error %v; want none, since the wait takes no parent lock", held, err)
++			}
++			var wantMails []string
++			wantMailedHead := ""
++			if tt.wantMailed {
++				for _, log := range logs {
++					wantMails = append(wantMails, refusedMail(head, log))
++				}
++				wantMailedHead = head
++			}
++			var mails []string
++			for _, entry := range postedEntries(t, h) {
++				if entry.To == tt.strand {
++					mails = append(mails, entry.Subject)
++				}
++			}
++			if diff := cmp.Diff(wantMails, mails); diff != "" {
++				t.Errorf("mails posted to %s mismatch (-want +got):\n%s", tt.strand, diff)
++			}
++			wantRecord := pullrequest.Record{
++				Number: 7, URL: "https://github.com/acme/widgets/pull/7", Base: "fixture-parent", Head: "task-branch", GatedHead: "h1",
++				StrandGUID: tmuxrec.GUIDPrefix + "1", StrandName: tt.strand, SessionID: tmuxrec.SessionID, MailedHead: wantMailedHead,
++			}
++			rec, found, err := pullrequest.ReadRecord(pr.RecordPath, pr.RecordLockPath)
++			if err != nil || !found {
++				t.Fatalf("ReadRecord() found %v, error %v; want the record", found, err)
++			}
++			if diff := cmp.Diff(wantRecord, rec); diff != "" {
++				t.Errorf("record mismatch (-want +got):\n%s", diff)
++			}
++		})
++	}
++}
++
++// prReviewMailDeps returns the deps of a PR-Review row that gates in pair's worktree.
++// The row mails, and reads config, git and the run's records, through the seams and record paths of wired.
++// The gate runs a command that fails; the second result counts its runs, and the third the pushes of the task branch.
++// The pull request is open on GitHub, and its record names a live session on strand that has not gated the task head.
++func prReviewMailDeps(t *testing.T, pair *lymcwd.Location, wired landingshed.Deps, strand string) (landingshed.Deps, *int, *int) {
++	t.Helper()
++	deps := envkit.LandingDeps(t, t.TempDir())
++	gates, pushes := 0, 0
++	deps.GateKey = "pr-review"
++	deps.WorktreeRoot = pair.WorktreePath()
++	deps.VerifyDir = t.TempDir()
++	deps.VerifyHold = nil
++	deps.VerifyCommand = func(string) (string, error) {
++		gates++
++		return "exit 1", nil
++	}
++	deps.TaskHead = wired.TaskHead
++	deps.DriftVerdict = wired.DriftVerdict
++	if err := os.MkdirAll(filepath.Dir(deps.DescriptionPath), 0o755); err != nil {
++		t.Fatalf("create the description's directory: %v", err)
++	}
++	if err := os.WriteFile(deps.DescriptionPath, []byte("# Change title\n\nChange body\n"), 0o644); err != nil {
++		t.Fatalf("write the change description: %v", err)
++	}
++
++	pr := &deps.PullRequest
++	pr.MailAgent = wired.PullRequest.MailAgent
++	pr.Mode = wired.PullRequest.Mode
++	pr.Origin = wired.PullRequest.Origin
++	pr.DirtyPaths = wired.PullRequest.DirtyPaths
++	pr.CommitsMissing = wired.PullRequest.CommitsMissing
++	pr.TaskHasCommits = wired.PullRequest.TaskHasCommits
++	pr.PauseCovered = wired.PullRequest.PauseCovered
++	pr.RecordPath = wired.PullRequest.RecordPath
++	pr.RecordLockPath = wired.PullRequest.RecordLockPath
++	pr.RecordChanges = wired.PullRequest.RecordChanges
++	push := pr.PushTask
++	pr.PushTask = func() error {
++		pushes++
++		return push()
++	}
++	api := &prkit.API{}
++	api.Script(prkit.MethodStatus, prkit.Answer{Status: pullrequest.Status{State: pullrequest.StateOpen}})
++	pr.API = func(string) (pullrequest.API, error) { return api, nil }
++
++	session, replay := tmuxrec.PlaySession(t, "session-start-stop")
++	t.Cleanup(func() {
++		if unanswered := replay.Unanswered(); len(unanswered) > 0 {
++			t.Errorf("recording session-start-stop holds no answer to %q", unanswered)
++		}
++	})
++	status := session.Reed.Status
++	registerDir := filepath.Join(t.TempDir(), "runproc")
++	pr.Sessions = session.Runner
++	deps.EnginesRun = session.Runner.EnginesRun
++	pr.SessionLive = reedengine.SessionLiveness(status)
++	pr.RegisterSession = reedengine.SessionRegistrar(status, func(pid int) error {
++		return runproc.Register(registerDir, "fixture", runproc.ChildRecord(pid, runproc.RoleSession, nil))
++	})
++	started, err := session.Runner.StartSession(tmuxrec.SessionSpec(""))
++	if err != nil {
++		t.Fatalf("seed the session: StartSession() error = %v", err)
++	}
++	rec := pullrequest.Record{
++		Number: 7, URL: "https://github.com/acme/widgets/pull/7", Base: deps.ParentBranch, Head: deps.TaskBranch, GatedHead: "h1",
++		StrandGUID: started.StrandGUID, StrandName: strand, SessionID: started.SessionID,
++	}
++	if err := pullrequest.WriteRecord(pr.RecordPath, pr.RecordLockPath, rec); err != nil {
++		t.Fatalf("write the pull request record: %v", err)
++	}
++	return deps, &gates, &pushes
++}
+diff --git a/internal/loomcli/rownotice_test.go b/internal/loomcli/rownotice_test.go
+index 1d694310f..c1cc6e7a4 100644
+--- a/internal/loomcli/rownotice_test.go
++++ b/internal/loomcli/rownotice_test.go
+@@ -187,7 +187,7 @@ func TestNewShed_WrapsTheRowsNotifyParentOnNames(t *testing.T) {
+ 				t.Fatalf("wire() = %v; want nil", err)
+ 			}
+ 			// The landing deps are filled at arm time, after wire(); the Publish and Finalize rows refuse to build without them.
+-			c.env.Landing = envkit.LandingDeps(t.TempDir())
++			c.env.Landing = envkit.LandingDeps(t, t.TempDir())
+ 			plain, err := c.newShed()
+ 			if err != nil {
+ 				t.Fatalf("newShed() with no notify_parent_on = %v; want nil", err)
+diff --git a/internal/loomcli/wiring.go b/internal/loomcli/wiring.go
+index 6f2a2b723..4b952e085 100644
+--- a/internal/loomcli/wiring.go
++++ b/internal/loomcli/wiring.go
+@@ -892,19 +892,7 @@ func (c *loomCLI) wire(location *lymcwd.Location, cwd string) error {
+ 			}
+ 			return opened.HeadSHA()
+ 		},
+-		LiveStrands: func() ([]string, error) {
+-			status, err := reedEngine.Status()
+-			if err != nil {
+-				return nil, err
+-			}
+-			var names []string
+-			for _, strand := range status.Strands {
+-				if strand.Live {
+-					names = append(names, strand.Name)
+-				}
+-			}
+-			return names, nil
+-		},
++		LiveStrands: reedengine.LiveStrandNames(reedEngine.Status),
+ 	}
+ 
+ 	c.env = shedrecipe.Env{
+diff --git a/internal/loomcli/wiring_test.go b/internal/loomcli/wiring_test.go
+index 135d64997..9a13b1d6e 100644
+--- a/internal/loomcli/wiring_test.go
++++ b/internal/loomcli/wiring_test.go
+@@ -504,7 +504,7 @@ func TestWire_DefaultConfig(t *testing.T) {
+ 		}
+ 
+ 		// The landing deps are filled at arm time, after wire(); the Publish and Finalize rows refuse to build without them.
+-		c.env.Landing = envkit.LandingDeps(t.TempDir())
++		c.env.Landing = envkit.LandingDeps(t, t.TempDir())
+ 		shed, err := loomrecipe.New(c.recipe, c.env, c.shedPaths)
+ 		if err != nil {
+ 			t.Fatalf("loomrecipe.New(wired env) = %v; want nil", err)
+diff --git a/internal/loomrecipe/fixture_test.go b/internal/loomrecipe/fixture_test.go
+index 53f022c47..85f25ac4a 100644
+--- a/internal/loomrecipe/fixture_test.go
++++ b/internal/loomrecipe/fixture_test.go
+@@ -533,7 +533,7 @@ func buildSequenceFixture(t *testing.T) (anchorPath string, env shedrecipe.Env,
+ 		t.Fatalf("Seed(): %v", err)
+ 	}
+ 
+-	landing := envkit.LandingDeps(dir)
++	landing := envkit.LandingDeps(t, dir)
+ 	landing.Config.DeployBranches = []string{landing.ParentBranch}
+ 	// The origin reconcile reports the run's entry stopped, so Merge-In halts before it merges anything.
+ 	landing.Reconcile = func() (fabriclayout.OriginReport, error) {
+diff --git a/internal/reedengine/io.go b/internal/reedengine/io.go
+index daa15c653..7aae688c5 100644
+--- a/internal/reedengine/io.go
++++ b/internal/reedengine/io.go
+@@ -155,13 +155,17 @@ func pasteSubmitArgv(paneID, buffer string, submit bool) []string {
+ 	return argv
+ }
+ 
+-// injectBufferName returns a fresh tmux buffer name, "lym-inject-" plus 8 lowercase hex characters.
++// InjectBufferPrefix starts the name of every tmux buffer a paste loads its text into.
++// Eight lowercase hex characters, fresh for each paste, follow it.
++const InjectBufferPrefix = "lym-inject-"
++
++// injectBufferName returns a fresh tmux buffer name, InjectBufferPrefix plus 8 lowercase hex characters.
+ func injectBufferName() (string, error) {
+ 	var raw [4]byte
+ 	if _, err := rand.Read(raw[:]); err != nil {
+ 		return "", fmt.Errorf("name paste buffer: %w", err)
+ 	}
+-	return "lym-inject-" + hex.EncodeToString(raw[:]), nil
++	return InjectBufferPrefix + hex.EncodeToString(raw[:]), nil
+ }
+ 
+ // OperatorActive reports whether an attached client has been active on guid's live pane within the quiet window.
+diff --git a/internal/reedengine/sessionreads.go b/internal/reedengine/sessionreads.go
+index 16afe7c5c..cff168a5a 100644
+--- a/internal/reedengine/sessionreads.go
++++ b/internal/reedengine/sessionreads.go
+@@ -1,10 +1,28 @@
+-// sessionreads.go builds the two reads a caller keeping one session's strand makes of the strand table:
+-// whether the strand is live, and the registration of its pane process.
++// sessionreads.go builds the reads a caller that keeps sessions makes of the strand table:
++// whether one strand is live, the registration of its pane process, and the names of the live strands.
+ 
+ package reedengine
+ 
+ import "fmt"
+ 
++// LiveStrandNames returns a reader of the names of the live strands, built over the strand table status reads.
++// The table is read at each call.
++func LiveStrandNames(status func() (StatusResult, error)) func() ([]string, error) {
++	return func() ([]string, error) {
++		result, err := status()
++		if err != nil {
++			return nil, err
++		}
++		var names []string
++		for _, strand := range result.Strands {
++			if strand.Live {
++				names = append(names, strand.Name)
++			}
++		}
++		return names, nil
++	}
++}
++
+ // SessionLiveness returns a reader of whether the strand guid names is live, built over the strand table status reads.
+ // The table is read at each call, and a strand is live when it is present, live and not retiring.
+ func SessionLiveness(status func() (StatusResult, error)) func(guid string) (bool, error) {
+diff --git a/internal/reedengine/sessionreads_test.go b/internal/reedengine/sessionreads_test.go
+index 1a3defda9..e4aaef2b5 100644
+--- a/internal/reedengine/sessionreads_test.go
++++ b/internal/reedengine/sessionreads_test.go
+@@ -1,9 +1,10 @@
+-// sessionreads_test.go covers the liveness and registration reads of one kept session's strand.
++// sessionreads_test.go covers the liveness, registration and live-name reads of the strand table.
+ 
+ package reedengine_test
+ 
+ import (
+ 	"errors"
++	"slices"
+ 	"testing"
+ 
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
+@@ -12,13 +13,14 @@ import (
+ 
+ // TestSessionReads asserts the liveness read finds a strand live only while it is live and not retiring.
+ // The registrar registers the pane process of a strand that has one, and refuses a strand that is absent or has none.
++// The live-name read names every live strand, a retiring one included.
+ // A failing table read passes through.
+ func TestSessionReads(t *testing.T) {
+ 	tiergate.Require(t, 0)
+ 	t.Parallel()
+ 
+ 	strand := func(guid string, live, retiring bool, panePID int) reedengine.StrandStatus {
+-		return reedengine.StrandStatus{GUID: guid, Live: live, Retiring: retiring, PanePID: panePID}
++		return reedengine.StrandStatus{GUID: guid, Name: "name-" + guid, Live: live, Retiring: retiring, PanePID: panePID}
+ 	}
+ 	statusErr := errors.New("reed down")
+ 	registerErr := errors.New("disk full")
+@@ -33,13 +35,14 @@ func TestSessionReads(t *testing.T) {
+ 		wantPID      int
+ 		wantRegister bool
+ 		wantRegErr   error
++		wantNames    []string
+ 	}{
+-		{name: "LiveStrandIsLiveAndRegistersItsPanePID", strands: []reedengine.StrandStatus{strand("g", true, false, 4242)}, wantLive: true, wantPID: 4242, wantRegister: true},
++		{name: "LiveStrandIsLiveAndRegistersItsPanePID", strands: []reedengine.StrandStatus{strand("g", true, false, 4242)}, wantLive: true, wantPID: 4242, wantRegister: true, wantNames: []string{"name-g"}},
+ 		{name: "DeadStrandIsNotLiveAndHasNoPaneToRegister", strands: []reedengine.StrandStatus{strand("g", false, false, 0)}},
+-		{name: "RetiringStrandIsNotLive", strands: []reedengine.StrandStatus{strand("g", true, true, 4242)}, wantPID: 4242, wantRegister: true},
+-		{name: "AbsentStrandIsNotLive", strands: []reedengine.StrandStatus{strand("other", true, false, 1)}},
++		{name: "RetiringStrandIsNotLive", strands: []reedengine.StrandStatus{strand("g", true, true, 4242)}, wantPID: 4242, wantRegister: true, wantNames: []string{"name-g"}},
++		{name: "AbsentStrandIsNotLive", strands: []reedengine.StrandStatus{strand("other", true, false, 1)}, wantNames: []string{"name-other"}},
+ 		{name: "TableReadFailureIsPassedThrough", statusErr: statusErr, wantLiveErr: statusErr, wantRegErr: statusErr},
+-		{name: "RegisterFailureIsPassedThrough", strands: []reedengine.StrandStatus{strand("g", true, false, 4242)}, registerErr: registerErr, wantLive: true, wantPID: 4242, wantRegister: true, wantRegErr: registerErr},
++		{name: "RegisterFailureIsPassedThrough", strands: []reedengine.StrandStatus{strand("g", true, false, 4242)}, registerErr: registerErr, wantLive: true, wantPID: 4242, wantRegister: true, wantRegErr: registerErr, wantNames: []string{"name-g"}},
+ 	}
+ 	for _, tt := range tests {
+ 		t.Run(tt.name, func(t *testing.T) {
+@@ -65,6 +68,11 @@ func TestSessionReads(t *testing.T) {
+ 			if (err != nil) != wantErr || (tt.wantRegErr != nil && !errors.Is(err, tt.wantRegErr)) {
+ 				t.Errorf("SessionRegistrar()(%q) error = %v; want error %v (%v)", "g", err, wantErr, tt.wantRegErr)
+ 			}
++
++			names, err := reedengine.LiveStrandNames(status)()
++			if !slices.Equal(names, tt.wantNames) || !errors.Is(err, tt.statusErr) {
++				t.Errorf("LiveStrandNames()() = %q, %v; want %q, %v", names, err, tt.wantNames, tt.statusErr)
++			}
+ 		})
+ 	}
+ }
+diff --git a/internal/testkit/envkit/envkit.go b/internal/testkit/envkit/envkit.go
+index fccdbce93..8d9fde0fd 100644
+--- a/internal/testkit/envkit/envkit.go
++++ b/internal/testkit/envkit/envkit.go
+@@ -5,6 +5,8 @@
+ // Builders return plain values the caller mutates; there are no option structs.
+ // A builder fails the test only on its own setup.
+ // NilSeams reports and never asserts, so the CLI wiring tests and this kit's own test assert on its answer.
++// The session seams run a real session runner over real reed, whose tmux answers from a recording.
++// The liveness, registration and live-strand seams read that reed's strand table.
+ //
+ // `shedrecipe` and `landingshed` cannot import the kit without a cycle, so each keeps one local builder.
+ package envkit
+@@ -42,6 +44,8 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/planparser"
+ 	"github.com/Knatte18/loomyard/internal/pullrequest"
+ 	"github.com/Knatte18/loomyard/internal/raddleparser"
++	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/runproc"
+ 	"github.com/Knatte18/loomyard/internal/seatengine"
+ 	"github.com/Knatte18/loomyard/internal/segmentcolor"
+ 	"github.com/Knatte18/loomyard/internal/shedadapters"
+@@ -50,7 +54,7 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/summaryparser"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shedfake"
+-	"github.com/Knatte18/loomyard/internal/testkit/shuttlefake"
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxrec"
+ 	"github.com/Knatte18/loomyard/internal/verifytree"
+ 	"github.com/Knatte18/loomyard/internal/weaverengine"
+ 	"github.com/Knatte18/loomyard/internal/websterengine"
+@@ -155,15 +159,23 @@ var nilLegal = map[string]bool{
+ 	"Teardown.Level":               true,
+ }
+ 
+-// noopSamplerSessions is a loomshed.SamplerSessions that starts and stops nothing.
+-type noopSamplerSessions struct{}
++// sessionRecording names the recorded tmux the kit's sessions replay.
++const sessionRecording = "session-start-stop"
+ 
+-func (noopSamplerSessions) StartSession(shuttleengine.Spec) (shuttleengine.OpenResult, error) {
+-	return shuttleengine.OpenResult{}, nil
++// replayedSessions returns a session runner over real reed whose tmux answers from the kit's recording.
++// It also returns the liveness, pane-registration and live-strand-name seams over that reed's strand table;
++// a registration writes under dir.
++func replayedSessions(t testing.TB, dir string) (runner *shuttleengine.Runner, live func(guid string) (bool, error), register func(guid string) error, liveNames func() ([]string, error)) {
++	t.Helper()
++	session := tmuxrec.IdleSession(t, sessionRecording)
++	status := session.Reed.Status
++	registerDir := filepath.Join(dir, "runproc")
++	register = reedengine.SessionRegistrar(status, func(pid int) error {
++		return runproc.Register(registerDir, "fixture", runproc.ChildRecord(pid, runproc.RoleSession, nil))
++	})
++	return session.Runner, reedengine.SessionLiveness(status), register, reedengine.LiveStrandNames(status)
+ }
+ 
+-func (noopSamplerSessions) StopStrand(string) error { return nil }
+-
+ // noFindingsIndex is a planindex.Index that answers no findings,
+ // so the packages built on the kit do not link the resolve-backed index.
+ // Its Delta panics: a test that needs a delta supplies its own index.
+@@ -191,8 +203,10 @@ func (noopFixerSeats) Run(seatengine.Table) (seatengine.Result, error) {
+ }
+ 
+ // LandingDeps returns a `landingshed.Deps` with every field the landing constructors require.
+-// The fields hold fixed values derived from dir.
+-func LandingDeps(dir string) landingshed.Deps {
++// The fields hold fixed values derived from dir, and the PR-Review session seams run over a replayed reed.
++func LandingDeps(t testing.TB, dir string) landingshed.Deps {
++	t.Helper()
++	sessions, sessionLive, registerSession, _ := replayedSessions(t, dir)
+ 	return landingshed.Deps{
+ 		GateKey:          "parent-align",
+ 		Reap:             func() error { return nil },
+@@ -258,9 +272,9 @@ func LandingDeps(dir string) landingshed.Deps {
+ 			},
+ 			DropBeamRecord:  func() error { return nil },
+ 			MailAgent:       func(string, string) error { return nil },
+-			Sessions:        shuttleengine.NewRunner(&shuttlefake.Reed{}, shuttlefake.EngineSet(&shuttlefake.Engine{}), dir, dir, shuttleengine.Config{}),
+-			SessionLive:     func(string) (bool, error) { return false, nil },
+-			RegisterSession: func(string) error { return nil },
++			Sessions:        sessions,
++			SessionLive:     sessionLive,
++			RegisterSession: registerSession,
+ 		},
+ 	}
+ }
+@@ -399,6 +413,7 @@ func raddleFileDeps(dir string) loomshed.RaddleFileDeps {
+ func FullEnv(t testing.TB) shedrecipe.Env {
+ 	t.Helper()
+ 	dir := t.TempDir()
++	samplerSessions, samplerLive, samplerRegister, liveStrands := replayedSessions(t, filepath.Join(dir, "sampler"))
+ 	return shedrecipe.Env{
+ 		Cwd:                mustMkdir(t, filepath.Join(dir, "cwd")),
+ 		AnchorPath:         mustMkdir(t, filepath.Join(dir, "anchor")),
+@@ -456,9 +471,9 @@ func FullEnv(t testing.TB) shedrecipe.Env {
+ 			Setting:      func() (string, error) { return "webster", nil },
+ 			StateHistory: func() ([]weaverengine.StateVersion, error) { return nil, nil },
+ 			TaskHead:     func() (string, error) { return "task-head", nil },
+-			LiveStrands:  func() ([]string, error) { return nil, nil },
++			LiveStrands:  liveStrands,
+ 		},
+-		Landing: LandingDeps(mustMkdir(t, filepath.Join(dir, "landing"))),
++		Landing: LandingDeps(t, mustMkdir(t, filepath.Join(dir, "landing"))),
+ 		DiscussionTable: func() (seatengine.Table, error) {
+ 			return seatengine.Table{
+ 				RolePrefix: "discussion",
+@@ -596,9 +611,9 @@ func FullEnv(t testing.TB) shedrecipe.Env {
+ 			RecordPath:      filepath.Join(dir, "sampler", "sampler.json"),
+ 			RecordLockPath:  filepath.Join(dir, "sampler", "sampler.json.lock"),
+ 			Spec:            func() (shuttleengine.Spec, error) { return shuttleengine.Spec{}, nil },
+-			Sessions:        noopSamplerSessions{},
+-			SessionLive:     func(string) (bool, error) { return false, nil },
+-			RegisterSession: func(string) error { return nil },
++			Sessions:        samplerSessions,
++			SessionLive:     samplerLive,
++			RegisterSession: samplerRegister,
+ 			Stamp:           func() (int, error) { return 1, nil },
+ 			DirtyPaths:      func() ([]string, error) { return nil, nil },
+ 			CheckRecord:     func() ([]discussionparser.Finding, error) { return nil, nil },
+diff --git a/internal/testkit/tmuxrec/record.go b/internal/testkit/tmuxrec/record.go
+index 217a197e8..37b1bbc07 100644
+--- a/internal/testkit/tmuxrec/record.go
++++ b/internal/testkit/tmuxrec/record.go
+@@ -54,7 +54,7 @@ func (r *Recorder) tmux(capture bool, stdin []byte, args ...string) (string, err
+ 	for _, pid := range formatPIDs(args, out) {
+ 		r.keepPID(pid)
+ 	}
+-	call := Call{Kind: KindTmux, Args: append([]string(nil), args...), Capture: capture, Out: out, Err: errText(err)}
++	call := Call{Kind: KindTmux, Args: append([]string(nil), args...), Capture: capture, Stdin: string(stdin), Out: out, Err: errText(err)}
+ 	var exitErr interface{ ExitCode() int }
+ 	if errors.As(err, &exitErr) {
+ 		call.Exit = exitErr.ExitCode()
+@@ -227,13 +227,19 @@ func pidPlaceholder(pids map[int]bool) func(string) string {
+ // numberToken matches a run of digits that no other digit touches.
+ var numberToken = regexp.MustCompile(`[0-9]+`)
+ 
+-// placeholdCall returns call with every bound value and process id replaced by its placeholder.
++// placeholdCall returns call with every paste buffer name, bound value and process id replaced by its placeholder.
++// The buffer names go first, since a run of digits in one can spell a process id.
++// The text on standard input is what the code under test sends.
++// Its numbers are no ids tmux handed out, so it keeps them.
++// Of the bound values it holds only the hub directory as a placeholder.
++// Any other bound value can be literal text of the code's own.
+ func placeholdCall(call Call, bindings Bindings, placehold func(string) string) Call {
+ 	held := call
+ 	held.Args = make([]string, len(call.Args))
+ 	for i, arg := range call.Args {
+-		held.Args[i] = placehold(bindings.placehold(arg))
++		held.Args[i] = placehold(bindings.placehold(injectBufferPattern.ReplaceAllString(arg, injectBufferPlaceholder)))
+ 	}
++	held.Stdin = Bindings{"{hub}": bindings["{hub}"]}.placehold(call.Stdin)
+ 	held.Out = placehold(bindings.placehold(call.Out))
+ 	held.Err = placehold(bindings.placehold(call.Err))
+ 	held.Unit = placehold(bindings.placehold(call.Unit))
+diff --git a/internal/testkit/tmuxrec/record_test.go b/internal/testkit/tmuxrec/record_test.go
+index 8758a2fef..525786e05 100644
+--- a/internal/testkit/tmuxrec/record_test.go
++++ b/internal/testkit/tmuxrec/record_test.go
+@@ -42,3 +42,30 @@ func TestPlaceholdCall_ReplacesBoundPathsAndFormatPIDs(t *testing.T) {
+ 		})
+ 	}
+ }
++
++// A paste's text holds the hub directory as a placeholder, which a replay binds again.
++// It keeps its numbers and every other bound value as the code sent them.
++func TestPlaceholdCall_HoldsAPastesBufferNameAndHubAndKeepsTheRestOfItsText(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	bindings := Bindings{"{hub}": "/tmp/run/001", "{tmp}": "/tmp", "{user}": "operator"}
++	// The buffer name holds a run of digits that is also a pid the call named.
++	pids := map[int]bool{4711: true}
++	args := func(buffer string) []string {
++		return []string{"load-buffer", "-b", buffer, "-", ";", "paste-buffer", "-p", "-d", "-b", buffer, "-t", "%2"}
++	}
++	call := Call{Kind: KindTmux, Args: args("lym-inject-4711abcd"), Stdin: "see /tmp/run/001/notes, line 4711, /tmp/x, operator"}
++
++	got := placeholdCall(call, bindings, pidPlaceholder(pids))
++
++	want := Call{Kind: KindTmux, Args: args("{inject-buffer}"), Stdin: "see {hub}/notes, line 4711, /tmp/x, operator"}
++	if diff := cmp.Diff(want, got); diff != "" {
++		t.Errorf("placeholdCall() mismatch (-want +got):\n%s", diff)
++	}
++
++	replay := NewReplay("held", Recording{Calls: []Call{got}}, Bindings{"{hub}": "/r/h"})
++	sent := []byte("see /r/h/notes, line 4711, /tmp/x, operator")
++	if _, err := replay.Outside(nil).Tmux(false, sent, args("lym-inject-0f0f0f0f")...); err != nil {
++		t.Errorf("Tmux() of the text under the replay's hub error = %v; want the held paste to answer it", err)
++	}
++}
+diff --git a/internal/testkit/tmuxrec/recordings_test.go b/internal/testkit/tmuxrec/recordings_test.go
+index f545758de..42619998c 100644
+--- a/internal/testkit/tmuxrec/recordings_test.go
++++ b/internal/testkit/tmuxrec/recordings_test.go
+@@ -4,6 +4,7 @@ package tmuxrec_test
+ 
+ import (
+ 	"slices"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/google/go-cmp/cmp"
+@@ -110,3 +111,63 @@ func TestReplay_RefusesWhatItsRecordingCannotAnswer(t *testing.T) {
+ 		}
+ 	})
+ }
++
++func TestReplay_MatchesAPasteByItsTextWhateverBufferItNames(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	rec, err := tmuxrec.Embedded("session-paste")
++	if err != nil {
++		t.Fatalf("Embedded() error = %v", err)
++	}
++	var paste tmuxrec.Call
++	for _, call := range rec.Calls {
++		if len(call.Args) > 0 && call.Args[0] == "load-buffer" {
++			paste = call
++		}
++	}
++	if paste.Stdin == "" {
++		t.Fatalf("the recording holds no paste with text; calls = %d", len(rec.Calls))
++	}
++	cut := rec
++	cut.Calls = []tmuxrec.Call{paste}
++	// naming returns the recorded paste's arguments with its buffer placeholder named first, and then second.
++	naming := func(first, second string) []string {
++		args := slices.Clone(paste.Args)
++		seen := 0
++		for i, arg := range args {
++			if strings.Contains(arg, "{inject-buffer}") {
++				name := first
++				if seen > 0 {
++					name = second
++				}
++				args[i] = strings.ReplaceAll(arg, "{inject-buffer}", name)
++				seen++
++			}
++		}
++		return args
++	}
++
++	tests := []struct {
++		name  string
++		args  []string
++		stdin string
++		// wantRefused says whether the replay refuses the paste.
++		wantRefused bool
++	}{
++		{"AnotherFreshBufferName", naming("lym-inject-0f0f0f0f", "lym-inject-0f0f0f0f"), paste.Stdin, false},
++		{"OtherText", naming("lym-inject-0f0f0f0f", "lym-inject-0f0f0f0f"), paste.Stdin + " more", true},
++		{"TwoBufferNamesInOneCall", naming("lym-inject-0f0f0f0f", "lym-inject-1e1e1e1e"), paste.Stdin, true},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			replay := tmuxrec.NewReplay("cut", cut, tmuxrec.Bindings{})
++
++			_, _ = replay.Outside(nil).Tmux(paste.Capture, []byte(tt.stdin), tt.args...)
++
++			if refused := len(replay.Unanswered()) > 0; refused != tt.wantRefused {
++				t.Errorf("refused = %v; want %v (unanswered: %q)", refused, tt.wantRefused, replay.Unanswered())
++			}
++		})
++	}
++}
+diff --git a/internal/testkit/tmuxrec/scenarios_test.go b/internal/testkit/tmuxrec/scenarios_test.go
+index 6f206b1e3..0695347a9 100644
+--- a/internal/testkit/tmuxrec/scenarios_test.go
++++ b/internal/testkit/tmuxrec/scenarios_test.go
+@@ -6,8 +6,6 @@ import (
+ 	"errors"
+ 	"testing"
+ 
+-	"github.com/Knatte18/loomyard/internal/agentconfig"
+-	"github.com/Knatte18/loomyard/internal/segmentcolor"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/tmuxrec"
+ )
+@@ -25,22 +23,6 @@ type world struct {
+ 	wait func()
+ }
+ 
+-// sessionSpec is the spec the recorded sessions start under: an interactive, unawaited PR reviewer.
+-func sessionSpec(resume string) shuttleengine.Spec {
+-	return shuttleengine.Spec{
+-		Prompt:          "Review the pull request.",
+-		PromptEngine:    tmuxrec.EngineName,
+-		ModelChoice:     shuttleengine.ModelChoice{Engine: tmuxrec.EngineName, Model: "fixture-model"},
+-		Interactive:     true,
+-		Unawaited:       true,
+-		DenyPublish:     true,
+-		Role:            string(agentconfig.RolePRReviewer),
+-		Segment:         segmentcolor.Landing,
+-		ConfigRole:      agentconfig.RolePRReviewer,
+-		ResumeSessionID: resume,
+-	}
+-}
+-
+ // reading reads reed's strand table as the scenario's step.
+ func reading(w *world, step string) tmuxrec.Reading {
+ 	status, err := w.session.Reed.Status()
+@@ -58,6 +40,9 @@ func reading(w *world, step string) tmuxrec.Reading {
+ // notStarted is the error a reading records for a start whose provider never came up.
+ const notStarted = "the provider did not start"
+ 
++// pastedText is the text the paste scenario pastes into its pane: two lines, as a mail to an agent can be.
++const pastedText = "Read the review comments.\nThen answer each one."
++
+ // scenario is one recorded scenario: the runner's startup timeout it runs under, and its steps.
+ // The steps return what reed read at each.
+ type scenario struct {
+@@ -75,7 +60,7 @@ var scenarios = map[string]scenario{
+ 	"session-start-stop": {startupTimeoutS: sessionStartupTimeoutS, run: func(t *testing.T, w *world) []tmuxrec.Reading {
+ 		runner := w.session.Runner
+ 		readings := []tmuxrec.Reading{reading(w, "before")}
+-		first, err := runner.StartSession(sessionSpec(""))
++		first, err := runner.StartSession(tmuxrec.SessionSpec(""))
+ 		if err != nil {
+ 			t.Fatalf("StartSession() error = %v", err)
+ 		}
+@@ -84,7 +69,7 @@ var scenarios = map[string]scenario{
+ 			t.Fatalf("StopStrand(%q) error = %v", first.StrandGUID, err)
+ 		}
+ 		readings = append(readings, reading(w, "stopped"))
+-		second, err := runner.StartSession(sessionSpec(first.SessionID))
++		second, err := runner.StartSession(tmuxrec.SessionSpec(first.SessionID))
+ 		if err != nil {
+ 			t.Fatalf("StartSession() of the resume error = %v", err)
+ 		}
+@@ -98,7 +83,7 @@ var scenarios = map[string]scenario{
+ 	"session-ends": {startupTimeoutS: sessionStartupTimeoutS, run: func(t *testing.T, w *world) []tmuxrec.Reading {
+ 		runner := w.session.Runner
+ 		readings := []tmuxrec.Reading{reading(w, "before")}
+-		started, err := runner.StartSession(sessionSpec(""))
++		started, err := runner.StartSession(tmuxrec.SessionSpec(""))
+ 		if err != nil {
+ 			t.Fatalf("StartSession() error = %v", err)
+ 		}
+@@ -131,11 +116,29 @@ var scenarios = map[string]scenario{
+ 	"session-not-started": {startupTimeoutS: 0, run: func(t *testing.T, w *world) []tmuxrec.Reading {
+ 		w.session.Engine.StartupFn = func(string) shuttleengine.StartupState { return shuttleengine.StartupPending }
+ 		readings := []tmuxrec.Reading{reading(w, "before")}
+-		_, err := w.session.Runner.StartSession(sessionSpec(""))
++		_, err := w.session.Runner.StartSession(tmuxrec.SessionSpec(""))
+ 		if !errors.Is(err, shuttleengine.ErrNotStarted) {
+ 			t.Fatalf("StartSession() error = %v; want one wrapping ErrNotStarted", err)
+ 		}
+ 		readings = append(readings, tmuxrec.Reading{Step: "start", Err: notStarted})
+ 		return append(readings, reading(w, "after"))
+ 	}},
++	// A session starts, a text is pasted into its pane and submitted, and the strand is stopped.
++	"session-paste": {startupTimeoutS: sessionStartupTimeoutS, run: func(t *testing.T, w *world) []tmuxrec.Reading {
++		runner := w.session.Runner
++		readings := []tmuxrec.Reading{reading(w, "before")}
++		started, err := runner.StartSession(tmuxrec.SessionSpec(""))
++		if err != nil {
++			t.Fatalf("StartSession() error = %v", err)
++		}
++		readings = append(readings, reading(w, "started"))
++		if err := w.session.Reed.PasteSubmit(started.StrandGUID, pastedText, true); err != nil {
++			t.Fatalf("PasteSubmit(%q) error = %v", started.StrandGUID, err)
++		}
++		readings = append(readings, reading(w, "pasted"))
++		if err := runner.StopStrand(started.StrandGUID); err != nil {
++			t.Fatalf("StopStrand(%q) error = %v", started.StrandGUID, err)
++		}
++		return append(readings, reading(w, "stopped"))
++	}},
+ }
+diff --git a/internal/testkit/tmuxrec/session.go b/internal/testkit/tmuxrec/session.go
+index d8230cbfe..683d72dff 100644
+--- a/internal/testkit/tmuxrec/session.go
++++ b/internal/testkit/tmuxrec/session.go
+@@ -14,10 +14,12 @@ import (
+ 	"strconv"
+ 	"testing"
+ 
++	"github.com/Knatte18/loomyard/internal/agentconfig"
+ 	"github.com/Knatte18/loomyard/internal/configengine"
+ 	"github.com/Knatte18/loomyard/internal/lymdirs"
+ 	"github.com/Knatte18/loomyard/internal/machinename"
+ 	"github.com/Knatte18/loomyard/internal/reedengine"
++	"github.com/Knatte18/loomyard/internal/segmentcolor"
+ 	"github.com/Knatte18/loomyard/internal/shuttleengine"
+ 	"github.com/Knatte18/loomyard/internal/testkit/shuttlefake"
+ )
+@@ -38,6 +40,24 @@ const (
+ 	GUIDPrefix = "guid-"
+ )
+ 
++// SessionSpec returns the spec the recorded sessions start under: an interactive, unawaited PR reviewer.
++// resume is the provider session id the start resumes, empty for a fresh one.
++// A start under another spec makes tmux calls the recordings hold no answer to.
++func SessionSpec(resume string) shuttleengine.Spec {
++	return shuttleengine.Spec{
++		Prompt:          "Review the pull request.",
++		PromptEngine:    EngineName,
++		ModelChoice:     shuttleengine.ModelChoice{Engine: EngineName, Model: "fixture-model"},
++		Interactive:     true,
++		Unawaited:       true,
++		DenyPublish:     true,
++		Role:            string(agentconfig.RolePRReviewer),
++		Segment:         segmentcolor.Landing,
++		ConfigRole:      agentconfig.RolePRReviewer,
++		ResumeSessionID: resume,
++	}
++}
++
+ // recordings holds every recording of the package.
+ //
+ //go:embed testdata/*.json
+@@ -95,9 +115,11 @@ func newSession(t testing.TB, socket string, startupTimeoutS int, outside func(b
+ 		t.Fatalf("tmuxrec: load the reed config template: %v", err)
+ 	}
+ 	// Reed pins the session's shell by the path the executable search finds, which differs between hosts.
++	// A host without the shell binds its configured name, so the session still builds;
++	// reed's first start there then fails, as it would in production.
+ 	shellPath, err := reedengine.ResolveShellPath(cfg.Shell)
+ 	if err != nil {
+-		t.Fatalf("tmuxrec: %v", err)
++		shellPath = cfg.Shell
+ 	}
+ 	bindings["{shell}"] = shellPath
+ 	geom := reedengine.Geometry{
+@@ -166,6 +188,27 @@ func PlaySession(t testing.TB, name string) (*Session, *Replay) {
+ 	if rec.Source.OS != runtime.GOOS {
+ 		t.Skipf("tmuxrec: no recording %s made on %s; the stored one was made on %s", name, runtime.GOOS, rec.Source.OS)
+ 	}
++	return replaySession(t, name, rec)
++}
++
++// IdleSession builds a session whose reed answers from the package's recording named name.
++// It serves a kit that fills session seams its tests build but do not drive.
++// It never skips.
++// On an operating system other than the recording's, each call the session makes goes unanswered and fails.
++// No replay is returned, so nothing checks what the session left unanswered.
++func IdleSession(t testing.TB, name string) *Session {
++	t.Helper()
++	rec, err := Embedded(name)
++	if err != nil {
++		t.Fatalf("%v", err)
++	}
++	session, _ := replaySession(t, name, rec)
++	return session
++}
++
++// replaySession builds a session whose reed answers from rec, the recording named name.
++func replaySession(t testing.TB, name string, rec Recording) (*Session, *Replay) {
++	t.Helper()
+ 	var replay *Replay
+ 	session := newSession(t, replaySocket, rec.StartupTimeoutS, func(bindings Bindings, newGUID func() (string, error)) reedengine.Outside {
+ 		replay = NewReplay(name, rec, bindings)
+diff --git a/internal/testkit/tmuxrec/session_test.go b/internal/testkit/tmuxrec/session_test.go
+new file mode 100644
+index 000000000..11cde0c7e
+--- /dev/null
++++ b/internal/testkit/tmuxrec/session_test.go
+@@ -0,0 +1,24 @@
++// session_test.go covers how a replayed session is built on a host unlike the recording's.
++
++package tmuxrec_test
++
++import (
++	"testing"
++
++	"github.com/Knatte18/loomyard/internal/testkit/tiergate"
++	"github.com/Knatte18/loomyard/internal/testkit/tmuxrec"
++)
++
++// TestIdleSession_BindsTheBareNameOfAShellTheHostLacks pins that such a host still builds a session.
++// It runs without t.Parallel: the shell override of reed's config template is process-global.
++func TestIdleSession_BindsTheBareNameOfAShellTheHostLacks(t *testing.T) {
++	tiergate.Require(t, 0)
++	const shell = "tmuxrec-no-such-shell"
++	t.Setenv("LYM_REED_SHELL", shell)
++
++	session := tmuxrec.IdleSession(t, "session-start-stop")
++
++	if got := session.Bindings["{shell}"]; got != shell {
++		t.Errorf("Bindings[{shell}] = %q; want the configured name %q", got, shell)
++	}
++}
+diff --git a/internal/testkit/tmuxrec/testdata/session-paste.json b/internal/testkit/tmuxrec/testdata/session-paste.json
+new file mode 100644
+index 000000000..02c3fd899
+--- /dev/null
++++ b/internal/testkit/tmuxrec/testdata/session-paste.json
+@@ -0,0 +1,1589 @@
++{
++  "source": {
++    "command": "lym gate test --tier 2 ./internal/testkit/tmuxrec -- -run TestRecordings_RealTmux -tmuxrec.write \u003cdir\u003e",
++    "date": "2026-11-28",
++    "tmux": "tmux 3.6",
++    "os": "linux"
++  },
++  "startup_timeout_s": 30,
++  "calls": [
++    {
++      "kind": "tmux",
++      "args": [
++        "has-session",
++        "-t",
++        "=pr-session"
++      ],
++      "err": "exit status 1: no current target",
++      "exit": 1
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "has-session",
++        "-t",
++        "=pr-session"
++      ],
++      "err": "exit status 1: no current target",
++      "exit": 1
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "-V"
++      ],
++      "capture": true,
++      "out": "tmux 3.6\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-commands"
++      ],
++      "capture": true,
++      "out": "attach-session (attach) [-dErx] [-c working-directory] [-f flags] [-t target-session]\nbind-key (bind) [-nr] [-T key-table] [-N note] key [command [argument ...]]\nbreak-pane (breakp) [-abdP] [-F format] [-n window-name] [-s src-pane] [-t dst-window]\ncapture-pane (capturep) [-aCeJMNpPqT] [-b buffer-name] [-E end-line] [-S start-line] [-t target-pane]\nchoose-buffer [-NrZ] [-F format] [-f filter] [-K key-format] [-O sort-order] [-t target-pane] [template]\nchoose-client [-NrZ] [-F format] [-f filter] [-K key-format] [-O sort-order] [-t target-pane] [template]\nchoose-tree [-GNrswZ] [-F format] [-f filter] [-K key-format] [-O sort-order] [-t target-pane] [template]\nclear-history (clearhist) [-H] [-t target-pane]\nclear-prompt-history (clearphist) [-T prompt-type]\nclock-mode [-t target-pane]\ncommand-prompt [-1bFkliN] [-I inputs] [-p prompts] [-t target-client] [-T prompt-type] [template]\nconfirm-before (confirm) [-by] [-c confirm-key] [-p prompt] [-t target-client] command\ncopy-mode [-deHMqSu] [-s src-pane] [-t target-pane]\ncustomize-mode [-NZ] [-F format] [-f filter] [-t target-pane]\ndelete-buffer (deleteb) [-b buffer-name]\ndetach-client (detach) [-aP] [-E shell-command] [-s target-session] [-t target-client]\ndisplay-menu (menu) [-MO] [-b border-lines] [-c target-client] [-C starting-choice] [-H selected-style] [-s style] [-S border-style] [-t target-pane] [-T title] [-x position] [-y position] name [key] [command] ...\ndisplay-message (display) [-aCIlNpv] [-c target-client] [-d delay] [-F format] [-t target-pane] [message]\ndisplay-popup (popup) [-BCEkN] [-b border-lines] [-c target-client] [-d start-directory] [-e environment] [-h height] [-s style] [-S border-style] [-t target-pane] [-T title] [-w width] [-x position] [-y position] [shell-command [argument ...]]\ndisplay-panes (displayp) [-bN] [-d duration] [-t target-client] [template]\nfind-window (findw) [-CiNrTZ] [-t target-pane] match-string\nhas-session (has) [-t target-session]\nif-shell (if) [-bF] [-t target-pane] shell-command command [command]\njoin-pane (joinp) [-bdfhv] [-l size] [-s src-pane] [-t dst-pane]\nkill-pane (killp) [-a] [-t target-pane]\nkill-server \nkill-session [-aC] [-t target-session]\nkill-window (killw) [-a] [-t target-window]\nlast-pane (lastp) [-deZ] [-t target-window]\nlast-window (last) [-t target-session]\nlink-window (linkw) [-abdk] [-s src-window] [-t dst-window]\nlist-buffers (lsb) [-F format] [-f filter]\nlist-clients (lsc) [-F format] [-f filter] [-t target-session]\nlist-commands (lscm) [-F format] [command]\nlist-keys (lsk) [-1aN] [-P prefix-string] [-T key-table] [key]\nlist-panes (lsp) [-as] [-F format] [-f filter] [-t target-window]\nlist-sessions (ls) [-F format] [-f filter]\nlist-windows (lsw) [-a] [-F format] [-f filter] [-t target-session]\nload-buffer (loadb) [-b buffer-name] [-t target-client] path\nlock-client (lockc) [-t target-client]\nlock-server (lock) \nlock-session (locks) [-t target-session]\nmove-pane (movep) [-bdfhv] [-l size] [-s src-pane] [-t dst-pane]\nmove-window (movew) [-abdkr] [-s src-window] [-t dst-window]\nnew-session (new) [-AdDEPX] [-c start-directory] [-e environment] [-F format] [-f flags] [-n window-name] [-s session-name] [-t target-session] [-x width] [-y height] [shell-command [argument ...]]\nnew-window (neww) [-abdkPS] [-c start-directory] [-e environment] [-F format] [-n window-name] [-t target-window] [shell-command [argument ...]]\nnext-layout (nextl) [-t target-window]\nnext-window (next) [-a] [-t target-session]\npaste-buffer (pasteb) [-dpr] [-s separator] [-b buffer-name] [-t target-pane]\npipe-pane (pipep) [-IOo] [-t target-pane] [shell-command]\nprevious-layout (prevl) [-t target-window]\nprevious-window (prev) [-a] [-t target-session]\nrefresh-client (refresh) [-cDlLRSU] [-A pane:state] [-B name:what:format] [-C XxY] [-f flags] [-r pane:report] [-t target-client] [adjustment]\nrename-session (rename) [-t target-session] new-name\nrename-window (renamew) [-t target-window] new-name\nresize-pane (resizep) [-DLMRTUZ] [-x width] [-y height] [-t target-pane] [adjustment]\nresize-window (resizew) [-aADLRU] [-x width] [-y height] [-t target-window] [adjustment]\nrespawn-pane (respawnp) [-k] [-c start-directory] [-e environment] [-t target-pane] [shell-command [argument ...]]\nrespawn-window (respawnw) [-k] [-c start-directory] [-e environment] [-t target-window] [shell-command [argument ...]]\nrotate-window (rotatew) [-DUZ] [-t target-window]\nrun-shell (run) [-bCE] [-c start-directory] [-d delay] [-t target-pane] [shell-command]\nsave-buffer (saveb) [-a] [-b buffer-name] path\nselect-layout (selectl) [-Enop] [-t target-pane] [layout-name]\nselect-pane (selectp) [-DdeLlMmRUZ] [-T title] [-t target-pane]\nselect-window (selectw) [-lnpT] [-t target-window]\nsend-keys (send) [-FHKlMRX] [-c target-client] [-N repeat-count] [-t target-pane] [key ...]\nsend-prefix [-2] [-t target-pane]\nserver-access [-adlrw] [-t target-pane] [user]\nset-buffer (setb) [-aw] [-b buffer-name] [-n new-buffer-name] [-t target-client] [data]\nset-environment (setenv) [-Fhgru] [-t target-session] variable [value]\nset-hook [-agpRuw] [-t target-pane] hook [command]\nset-option (set) [-aFgopqsuUw] [-t target-pane] option [value]\nset-window-option (setw) [-aFgoqu] [-t target-window] option [value]\nshow-buffer (showb) [-b buffer-name]\nshow-environment (showenv) [-hgs] [-t target-session] [variable]\nshow-hooks [-gpw] [-t target-pane] [hook]\nshow-messages (showmsgs) [-JT] [-t target-client]\nshow-options (show) [-AgHpqsvw] [-t target-pane] [option]\nshow-prompt-history (showphist) [-T prompt-type]\nshow-window-options (showw) [-gv] [-t target-window] [option]\nsource-file (source) [-Fnqv] [-t target-pane] path ...\nsplit-window (splitw) [-bdefhIPvZ] [-c start-directory] [-e environment] [-F format] [-l size] [-t target-pane] [shell-command [argument ...]]\nstart-server (start) \nsuspend-client (suspendc) [-t target-client]\nswap-pane (swapp) [-dDUZ] [-s src-pane] [-t dst-pane]\nswap-window (swapw) [-d] [-s src-window] [-t dst-window]\nswitch-client (switchc) [-ElnprZ] [-c target-client] [-t target-session] [-T key-table]\nunbind-key (unbind) [-anq] [-T key-table] key\nunlink-window (unlinkw) [-k] [-t target-window]\nwait-for (wait) [-L|-S|-U] channel\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "has-session",
++        "-t",
++        "=pr-session"
++      ],
++      "err": "exit status 1: no current target",
++      "exit": 1
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "show-options",
++        "-gqv",
++        "@lym_test_server"
++      ],
++      "capture": true,
++      "out": "on\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "#{pid} #{start_time}"
++      ],
++      "capture": true,
++      "out": "{pid:1} 1795858703\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "new-session",
++        "-d",
++        "-s",
++        "pr-session",
++        "-c",
++        "{hub}/pr-session",
++        "-x",
++        "220",
++        "-y",
++        "50",
++        "bash",
++        ";",
++        "set-option",
++        "-t",
++        "=pr-session:",
++        "destroy-unattached",
++        "off",
++        ";",
++        "set-option",
++        "-t",
++        "=pr-session:",
++        "@lym_reed_session",
++        "on",
++        ";",
++        "set-option",
++        "-t",
++        "=pr-session:",
++        "@lym_follow",
++        "on"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "has-session",
++        "-t",
++        "=pr-session"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "-t",
++        "=pr-session:",
++        "#{window_id} #{pane_id} #{window_name}"
++      ],
++      "capture": true,
++      "out": "@0 %0 tmux\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "#{pid} #{start_time}"
++      ],
++      "capture": true,
++      "out": "{pid:1} 1795858703\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-g",
++        "destroy-unattached",
++        "off",
++        ";",
++        "set-option",
++        "-s",
++        "exit-unattached",
++        "off"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "has-session",
++        "-t",
++        "=pr-session"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "show-options",
++        "-gv",
++        "destroy-unattached",
++        ";",
++        "show-options",
++        "-sv",
++        "exit-unattached"
++      ],
++      "capture": true,
++      "out": "off\noff\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-g",
++        "remain-on-exit",
++        "on"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-g",
++        "mouse",
++        "on"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-g",
++        "status-format[0]",
++        "#[list=on align=left]#[list=left-marker]\u003c#[list=right-marker]\u003e#[list=on]#{W:#{?#{@lym_strands},#[range=user|shell #{?window_active,list=focus bg=white fg=black bold,bg=colour236 fg=white}] shell #[norange list=on default] ,#{?#{\u0026\u0026:#{@lym_own},#{!=:#{@lym_hidden},1}},#[range=window|#{window_index} #{?window_active,list=focus bg=#{?#{@strand_color},#{@strand_color},white} fg=black bold,bg=colour236 fg=#{?#{@strand_color},#{@strand_color},white}#{?#{@lym_unseen}, underscore,}}] #{window_name}#{P:#{?#{@lym_wait}, ⏳#{@lym_wait} #{e|/:#{e|-:%s,#{@lym_wait_start}},60}m,}} #[norange list=on default] ,#{?#{\u0026\u0026:#{\u003e:#{session_windows},1},#{!=:#{@lym_hidden},1}},#[range=window|#{window_index} #{?window_active,list=focus bg=white fg=black bold,bg=colour236 fg=white}] #{window_name} #[norange list=on default] ,}}}}"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-g",
++        "status-format[1]",
++        "#[list=on align=left]#[list=left-marker]\u003c#[list=right-marker]\u003e#[list=on]#{S:#{?#{\u0026\u0026:#{||:#{!=:#{@lym_tmux_conf_claimed},sourced},#{@lym_reed_session}},#{==:#{@lym_prime_session},1}},#{?#{==:#{session_name},#{client_session}},#[range=session|#{session_id} list=focus bg=yellow fg=black bold] #{session_name} #[norange list=on default] ,#[range=session|#{session_id} bg=colour236 fg=white] #{=12:session_name} #[norange list=on default] },}}#{S:#{?#{\u0026\u0026:#{||:#{!=:#{@lym_tmux_conf_claimed},sourced},#{@lym_reed_session}},#{!=:#{@lym_prime_session},1}},#{?#{==:#{session_name},#{client_session}},#[range=session|#{session_id} list=focus bg=yellow fg=black bold] #{session_name} #[norange list=on default] ,#[range=session|#{session_id} bg=colour236 fg=white] #{=12:session_name} #[norange list=on default] },}}#[nolist align=right]#{?#{@lym_sync_status_command},#(#{E:@lym_sync_status_command}) ,}#{?#{@lym_check},#[#{?#{==:#{@lym_check_state},green},bg=green fg=black bold,#{?#{==:#{@lym_check_state},failed},bg=red fg=white bold,bg=colour236 fg=yellow}}] #{@lym_check}#{?#{@lym_check_start}, #{e|-:%s,#{@lym_check_start}}s,} #[default] ,}%H:%M "
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-g",
++        "status-format[2]",
++        "#[list=on align=left]#[list=left-marker]\u003c#[list=right-marker]\u003e#[list=on]#[range=user|follow #{?#{!=:#{@lym_follow},off},bg=green fg=black bold,bg=colour236 fg=white}] follow #[norange list=on default] #{?#{||:#{m:*slack-on*,#(#{E:@lym_slack_state_command})},#{m:*slack-off*,#(#{E:@lym_slack_state_command})}},#[range=user|slack #{?#{m:*slack-on*,#(#{E:@lym_slack_state_command})},bg=green fg=black bold,bg=colour236 fg=white}] slack #[norange list=on default] ,}#{?#{\u0026\u0026:#{@lym_strand_name},#{\u0026\u0026:#{@lym_rc_click_command},#{@lym_button_dir}}},#[range=user|rc #{?#{@lym_rc},bg=green fg=black bold,bg=colour236 fg=white}] RC #[norange list=on default] ,}#[range=user|away #{?#{m:*away-on*,#(#{E:@lym_slack_state_command})},bg=green fg=black bold,bg=colour236 fg=white}] away #[norange list=on default] #{?#{@strand},#{E:@lym_buttons_agent},#{E:@lym_buttons_plain}}"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-g",
++        "status-style",
++        "bg=colour235,fg=white"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-g",
++        "status-interval",
++        "5"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-t",
++        "=pr-session:",
++        "status",
++        "3"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-t",
++        "=pr-session:",
++        "status-position",
++        "bottom"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-t",
++        "=pr-session:",
++        "@lym_buttons_plain",
++        "",
++        ";",
++        "set-option",
++        "-t",
++        "=pr-session:",
++        "@lym_buttons_agent",
++        "",
++        ";",
++        "set-option",
++        "-t",
++        "=pr-session:",
++        "@lym_button_spec",
++        "",
++        ";",
++        "set-option",
++        "-t",
++        "=pr-session:",
++        "@lym_button_dir",
++        "",
++        ";",
++        "set-option",
++        "-t",
++        "=pr-session:",
++        "@lym_orch_dir",
++        ""
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-w",
++        "-t",
++        "=pr-session:",
++        "window-size",
++        "latest"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-t",
++        "=pr-session:",
++        "default-shell",
++        "{shell}"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-t",
++        "=pr-session:",
++        "default-command",
++        "{shell}"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "#{socket_path}"
++      ],
++      "capture": true,
++      "out": "{tmp}/tmux-{uid}/{socket}\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-gu",
++        "@lym_follow_command"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-gu",
++        "@lym_button_command"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-gu",
++        "@lym_slack_toggle_command"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-gu",
++        "@lym_slack_state_command"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-gu",
++        "@lym_rc_click_command"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-gu",
++        "@lym_sync_status_command"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-gu",
++        "@lym_bindings_build"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "bind-key",
++        "-n",
++        "M-Up",
++        "set-option",
++        "@lym_follow",
++        "off",
++        "\\;",
++        "previous-window",
++        "\\;",
++        "if-shell",
++        "-F",
++        "-t",
++        ":",
++        "#{@lym_hidden}",
++        "run-shell -C \"#{?#{W:#{?#{@lym_strands},#{window_id},}},select-window -t #{W:#{?#{@lym_strands},#{window_id},}},}\""
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "bind-key",
++        "-n",
++        "M-Down",
++        "set-option",
++        "@lym_follow",
++        "off",
++        "\\;",
++        "next-window",
++        "\\;",
++        "if-shell",
++        "-F",
++        "-t",
++        ":",
++        "#{@lym_hidden}",
++        "select-window -t :^"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "bind-key",
++        "-n",
++        "MouseDown1Status",
++        "if-shell",
++        "-F",
++        "#{==:#{mouse_status_range},shell}",
++        "set-option @lym_follow off ; run-shell -C \"#{?#{W:#{?#{@lym_strands},#{window_id},}},select-window -t #{W:#{?#{@lym_strands},#{window_id},}},}\"",
++        "\\;",
++        "if-shell",
++        "-F",
++        "#{==:#{mouse_status_range},window}",
++        "set-option @lym_follow off ; select-window -t=",
++        "\\;",
++        "if-shell",
++        "-F",
++        "#{==:#{mouse_status_range},session}",
++        "switch-client -t=",
++        "\\;",
++        "if-shell",
++        "-F",
++        "#{==:#{mouse_status_range},follow}",
++        "if-shell -F '#{==:#{@lym_follow},off}' 'set-option @lym_follow on' 'set-option @lym_follow off'"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-hook",
++        "-t",
++        "=pr-session:",
++        "session-window-changed",
++        "set-option -w -u @lym_unseen"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "-t",
++        "=pr-session:",
++        "#{session_id}|#{pid}|#{session_created}"
++      ],
++      "capture": true,
++      "out": "$0|{pid:1}|1795858704\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-windows",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{?#{@lym_strands},1,0}"
++      ],
++      "capture": true,
++      "out": "@0 0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-t",
++        "=pr-session:",
++        "-F",
++        "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "%0 0 0 220 50 {pid:2} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "split-window",
++        "-f",
++        "-t",
++        "%0",
++        "-c",
++        "{hub}/pr-session",
++        "-P",
++        "-F",
++        "#{pane_id}",
++        "bash"
++      ],
++      "capture": true,
++      "out": "%1\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-p",
++        "-t",
++        "%1",
++        "@lym_console",
++        "1"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%0 @0\n%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-w",
++        "-t",
++        "@0",
++        "@lym_strands",
++        "1"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%0 @0\n%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-windows",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{window_index} #{?#{@lym_hidden},1,0} #{?#{@lym_shell_check_failed},1,0} #{window_name}"
++      ],
++      "capture": true,
++      "out": "@0 0 0 0 tmux\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "rename-window",
++        "-t",
++        "@0",
++        "shell"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-w",
++        "-t",
++        "@0",
++        "automatic-rename",
++        "off"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%0 @0\n%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-t",
++        "@0",
++        "-F",
++        "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "%0 0 0 220 25 {pid:2} {host}\tbash\tbash\n%1 0 26 220 24 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{?#{@lym_own},1,0} #{?#{@lym_group},#{@lym_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "@0 0 - %0 0 {pid:2} {host}\tbash\tbash\n@0 0 - %1 0 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "kill-pane",
++        "-t",
++        "%0"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-t",
++        "@0",
++        "-F",
++        "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "%1 0 0 220 50 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "-t",
++        "=pr-session:",
++        "#{session_id}|#{pid}|#{session_created}"
++      ],
++      "capture": true,
++      "out": "$0|{pid:1}|1795858704\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-t",
++        "@0",
++        "-F",
++        "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "%1 0 0 220 50 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{?#{@lym_own},1,0} #{?#{@lym_group},#{@lym_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "@0 0 - %1 0 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-windows",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{window_index} #{?#{@lym_hidden},1,0} #{?#{@lym_shell_check_failed},1,0} #{window_name}"
++      ],
++      "capture": true,
++      "out": "@0 0 0 0 shell\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-windows",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{window_index} #{?#{@lym_hidden},1,0} #{?#{@lym_shell_check_failed},1,0} #{window_name}"
++      ],
++      "capture": true,
++      "out": "@0 0 0 0 shell\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "-t",
++        "=pr-session:",
++        "#{@lym_follow}"
++      ],
++      "capture": true,
++      "out": "on\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "new-window",
++        "-d",
++        "-b",
++        "-t",
++        "@0",
++        "-P",
++        "-F",
++        "#{pane_id} #{window_id}",
++        "-n",
++        "pr-reviewer",
++        "-c",
++        "{hub}/pr-session"
++      ],
++      "capture": true,
++      "out": "%2 @1\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-w",
++        "-t",
++        "@1",
++        "@lym_own",
++        "1"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-w",
++        "-t",
++        "@1",
++        "@strand_color",
++        "colour205"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "select-window",
++        "-t",
++        "@1"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "-t",
++        "%2",
++        "#{pane_pid}"
++      ],
++      "capture": true,
++      "out": "{pid:4}\n"
++    },
++    {
++      "kind": "cap-memory",
++      "out": "/user.slice/user-{uid}.slice/user@{uid}.service/app.slice/lym-pane-{pid:4}.scope",
++      "pid": "{pid:4}",
++      "unit": "lym-pane-{pid:4}.scope",
++      "limit": 8589934592
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-p",
++        "-t",
++        "%2",
++        "allow-set-title",
++        "off"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "select-pane",
++        "-t",
++        "%2",
++        "-T",
++        "tr:pr-reviewer"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-p",
++        "-t",
++        "%2",
++        "@strand",
++        "pr-reviewer"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-p",
++        "-t",
++        "%2",
++        "@lym_strand_name",
++        "tr:pr-reviewer"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "set-option",
++        "-p",
++        "-t",
++        "%2",
++        "@strand_color",
++        "colour205"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "send-keys",
++        "-t",
++        "%2",
++        "C-u"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "send-keys",
++        "-t",
++        "%2",
++        "-l",
++        ". '{hub}/pr-session/.lym/reed/launch/guid-1.sh'"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "send-keys",
++        "-t",
++        "%2",
++        "Enter"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%2 @1\n%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-t",
++        "@0",
++        "-F",
++        "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "%1 0 0 220 50 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{?#{@lym_own},1,0} #{?#{@lym_group},#{@lym_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "@1 1 - %2 0 {pid:4} tr:pr-reviewer\tsleep\t{shell}\n@0 0 - %1 0 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "has-session",
++        "-t",
++        "=pr-session"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "-t",
++        "=pr-session:",
++        "#{session_id}|#{pid}|#{session_created}"
++      ],
++      "capture": true,
++      "out": "$0|{pid:1}|1795858704\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%2 @1\n%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-t",
++        "@0",
++        "-F",
++        "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "%1 0 0 220 50 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{?#{@lym_own},1,0} #{?#{@lym_group},#{@lym_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "@1 1 - %2 0 {pid:4} tr:pr-reviewer\tsleep\t{shell}\n@0 0 - %1 0 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "pane-age",
++      "pid": "{pid:3}",
++      "age_ms": 229,
++      "known": true
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "has-session",
++        "-t",
++        "=pr-session"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "-t",
++        "=pr-session:",
++        "#{session_id}|#{pid}|#{session_created}"
++      ],
++      "capture": true,
++      "out": "$0|{pid:1}|1795858704\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%2 @1\n%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-t",
++        "@0",
++        "-F",
++        "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "%1 0 0 220 50 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{?#{@lym_own},1,0} #{?#{@lym_group},#{@lym_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "@1 1 - %2 0 {pid:4} tr:pr-reviewer\tsleep\t{shell}\n@0 0 - %1 0 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "capture-pane",
++        "-p",
++        "-t",
++        "%2"
++      ],
++      "capture": true,
++      "out": ". '{hub}/pr-session/.lym/reed/launch/guid-1.sh'\n{user}@{host}:{hub}/pr-session$ . '{hub}/pr-session/.lym/reed/launch/guid-1.sh'\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "has-session",
++        "-t",
++        "=pr-session"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "-t",
++        "=pr-session:",
++        "#{session_id}|#{pid}|#{session_created}"
++      ],
++      "capture": true,
++      "out": "$0|{pid:1}|1795858704\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%2 @1\n%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-t",
++        "@0",
++        "-F",
++        "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "%1 0 0 220 50 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{?#{@lym_own},1,0} #{?#{@lym_group},#{@lym_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "@1 1 - %2 0 {pid:4} tr:pr-reviewer\tsleep\t{shell}\n@0 0 - %1 0 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "pane-age",
++      "pid": "{pid:3}",
++      "age_ms": 320,
++      "known": true
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "has-session",
++        "-t",
++        "=pr-session"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "-t",
++        "=pr-session:",
++        "#{session_id}|#{pid}|#{session_created}"
++      ],
++      "capture": true,
++      "out": "$0|{pid:1}|1795858704\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%2 @1\n%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-t",
++        "@0",
++        "-F",
++        "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "%1 0 0 220 50 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{?#{@lym_own},1,0} #{?#{@lym_group},#{@lym_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "@1 1 - %2 0 {pid:4} tr:pr-reviewer\tsleep\t{shell}\n@0 0 - %1 0 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "load-buffer",
++        "-b",
++        "{inject-buffer}",
++        "-",
++        ";",
++        "paste-buffer",
++        "-p",
++        "-d",
++        "-b",
++        "{inject-buffer}",
++        "-t",
++        "%2",
++        ";",
++        "send-keys",
++        "-t",
++        "%2",
++        "Enter"
++      ],
++      "stdin": "Read the review comments.\nThen answer each one."
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "has-session",
++        "-t",
++        "=pr-session"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "-t",
++        "=pr-session:",
++        "#{session_id}|#{pid}|#{session_created}"
++      ],
++      "capture": true,
++      "out": "$0|{pid:1}|1795858704\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%2 @1\n%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-t",
++        "@0",
++        "-F",
++        "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "%1 0 0 220 50 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{?#{@lym_own},1,0} #{?#{@lym_group},#{@lym_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "@1 1 - %2 0 {pid:4} tr:pr-reviewer\tsleep\t{shell}\n@0 0 - %1 0 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "pane-age",
++      "pid": "{pid:3}",
++      "age_ms": 400,
++      "known": true
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "has-session",
++        "-t",
++        "=pr-session"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "-t",
++        "=pr-session:",
++        "#{session_id}|#{pid}|#{session_created}"
++      ],
++      "capture": true,
++      "out": "$0|{pid:1}|1795858704\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%2 @1\n%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-t",
++        "@0",
++        "-F",
++        "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "%1 0 0 220 50 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{?#{@lym_own},1,0} #{?#{@lym_group},#{@lym_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "@1 1 - %2 0 {pid:4} tr:pr-reviewer\tsleep\t{shell}\n@0 0 - %1 0 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "pane-age",
++      "pid": "{pid:3}",
++      "age_ms": 429,
++      "known": true
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "has-session",
++        "-t",
++        "=pr-session"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "-t",
++        "=pr-session:",
++        "#{session_id}|#{pid}|#{session_created}"
++      ],
++      "capture": true,
++      "out": "$0|{pid:1}|1795858704\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{?#{@lym_own},1,0} #{?#{@lym_group},#{@lym_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "@1 1 - %2 0 {pid:4} tr:pr-reviewer\tsleep\t{shell}\n@0 0 - %1 0 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "-t",
++        "=pr-session:",
++        "#{window_id}"
++      ],
++      "capture": true,
++      "out": "@1\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-windows",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{window_index} #{?#{@lym_hidden},1,0} #{?#{@lym_shell_check_failed},1,0} #{window_name}"
++      ],
++      "capture": true,
++      "out": "@1 0 0 0 pr-reviewer\n@0 1 0 0 shell\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{?#{@lym_own},1,0} #{?#{@lym_group},#{@lym_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "@1 1 - %2 0 {pid:4} tr:pr-reviewer\tsleep\t{shell}\n@0 0 - %1 0 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "kill-pane",
++        "-t",
++        "%2"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-t",
++        "@0",
++        "-F",
++        "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "%1 0 0 220 50 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{?#{@lym_own},1,0} #{?#{@lym_group},#{@lym_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "@0 0 - %1 0 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "has-session",
++        "-t",
++        "=pr-session"
++      ]
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "display-message",
++        "-p",
++        "-t",
++        "=pr-session:",
++        "#{session_id}|#{pid}|#{session_created}"
++      ],
++      "capture": true,
++      "out": "$0|{pid:1}|1795858704\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{pane_id} #{window_id}"
++      ],
++      "capture": true,
++      "out": "%1 @0\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-t",
++        "@0",
++        "-F",
++        "#{pane_id} #{pane_dead} #{pane_top} #{pane_width} #{pane_height} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "%1 0 0 220 50 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "tmux",
++      "args": [
++        "list-panes",
++        "-s",
++        "-t",
++        "=pr-session",
++        "-F",
++        "#{window_id} #{?#{@lym_own},1,0} #{?#{@lym_group},#{@lym_group},-} #{pane_id} #{pane_dead} #{pane_pid} #{pane_title}\t#{pane_current_command}\t#{pane_start_command}"
++      ],
++      "capture": true,
++      "out": "@0 0 - %1 0 {pid:3} {host}\tbash\tbash\n"
++    },
++    {
++      "kind": "pane-age",
++      "pid": "{pid:3}",
++      "age_ms": 539,
++      "known": true
++    }
++  ],
++  "readings": [
++    {
++      "step": "before",
++      "strands": null,
++      "err": "no reed session; run \"lym reed up\""
++    },
++    {
++      "step": "started",
++      "strands": [
++        {
++          "guid": "guid-1",
++          "name": "tr:pr-reviewer",
++          "live": true
++        }
++      ]
++    },
++    {
++      "step": "pasted",
++      "strands": [
++        {
++          "guid": "guid-1",
++          "name": "tr:pr-reviewer",
++          "live": true
++        }
++      ]
++    },
++    {
++      "step": "stopped",
++      "strands": null
++    }
++  ]
++}
+diff --git a/internal/testkit/tmuxrec/tmuxrec.go b/internal/testkit/tmuxrec/tmuxrec.go
+index 4c9a6eec5..14b132086 100644
+--- a/internal/testkit/tmuxrec/tmuxrec.go
++++ b/internal/testkit/tmuxrec/tmuxrec.go
+@@ -8,7 +8,12 @@
+ // A recording keeps the paths and process ids of the machine that made it as placeholders,
+ // and a replay binds them to the test's own directories and to process ids no kernel hands out,
+ // so no process of the machine running a replay is ever read or signalled.
++// The text a call hands tmux on standard input is what the code under test sent,
++// so a recording holds only the hub directory in it as a placeholder.
+ // Replay answers only what was recorded; a call with no recorded answer fails, naming the call.
++// A call matches by its arguments and by the text it hands tmux on standard input, as a paste does.
++// A paste names a fresh buffer each time, so a recording holds a placeholder for the buffer name,
++// and a replayed paste matches whatever buffer name it draws, as long as the call names only that one.
+ //
+ // Recordings live in this package's testdata directory, one file per scenario.
+ // The package's tier0 test replays every scenario over its recording.
+@@ -43,6 +48,29 @@ const (
+ // pidPlaceholderPrefix starts the placeholder a recording holds in place of a process id.
+ const pidPlaceholderPrefix = "{pid:"
+ 
++// injectBufferPlaceholder is what a recording holds in place of the buffer name a paste loads its text into.
++const injectBufferPlaceholder = "{inject-buffer}"
++
++// injectBufferPattern matches the buffer name a paste draws.
++var injectBufferPattern = regexp.MustCompile(regexp.QuoteMeta(reedengine.InjectBufferPrefix) + `[0-9a-f]+`)
++
++// holdInjectBuffers returns args with each paste buffer name replaced by its placeholder.
++// It reports whether args name at most one buffer, as one paste does.
++func holdInjectBuffers(args []string) ([]string, bool) {
++	held := make([]string, len(args))
++	named := ""
++	for i, arg := range args {
++		for _, name := range injectBufferPattern.FindAllString(arg, -1) {
++			if named != "" && name != named {
++				return nil, false
++			}
++			named = name
++		}
++		held[i] = injectBufferPattern.ReplaceAllString(arg, injectBufferPlaceholder)
++	}
++	return held, true
++}
++
+ // replayPIDBase is added to a placeholder's index to make the process id a replay answers.
+ // It lies above the largest pid a Linux kernel hands out (2^22), so a replayed pid names no process.
+ const replayPIDBase = 1 << 30
+@@ -74,6 +102,8 @@ type Call struct {
+ 	Args []string `json:"args,omitempty"`
+ 	// Capture marks a tmux call whose standard output reed read.
+ 	Capture bool `json:"capture,omitempty"`
++	// Stdin is the text a tmux call handed tmux on standard input, such as a paste's text.
++	Stdin string `json:"stdin,omitempty"`
+ 	// Out is a tmux call's standard output, or a memory-scope move's cgroup.
+ 	Out string `json:"out,omitempty"`
+ 	// Err is the text of the error the call failed with, empty for a call that succeeded.
+@@ -111,7 +141,7 @@ func (c Call) read() bool {
+ 
+ // matches reports whether c answers the call want, whose placeholders are already bound alike.
+ func (c Call) matches(want Call) bool {
+-	return c.Kind == want.Kind && slices.Equal(c.Args, want.Args) && c.Capture == want.Capture &&
++	return c.Kind == want.Kind && slices.Equal(c.Args, want.Args) && c.Capture == want.Capture && c.Stdin == want.Stdin &&
+ 		c.PID == want.PID && c.Unit == want.Unit && c.Limit == want.Limit
+ }
+ 
+@@ -239,6 +269,7 @@ func bindCall(call Call, bindings Bindings) Call {
+ 	for i, arg := range call.Args {
+ 		bound.Args[i] = bindings.bind(arg)
+ 	}
++	bound.Stdin = bindings.bind(call.Stdin)
+ 	bound.Out = bindings.bind(call.Out)
+ 	bound.Err = bindings.bind(call.Err)
+ 	bound.Unit = bindings.bind(call.Unit)
+@@ -278,8 +309,16 @@ func (r *Replay) Remaining() []string {
+ 	return remaining
+ }
+ 
+-func (r *Replay) tmux(capture bool, _ []byte, args ...string) (string, error) {
+-	answer, err := r.answer(Call{Kind: KindTmux, Args: args, Capture: capture})
++func (r *Replay) tmux(capture bool, stdin []byte, args ...string) (string, error) {
++	want := Call{Kind: KindTmux, Args: args, Capture: capture, Stdin: string(stdin)}
++	held, oneBuffer := holdInjectBuffers(args)
++	if !oneBuffer {
++		r.mu.Lock()
++		defer r.mu.Unlock()
++		return "", r.refuseLocked(want)
++	}
++	want.Args = held
++	answer, err := r.answer(want)
+ 	if err != nil {
+ 		return "", err
+ 	}
+@@ -351,15 +390,24 @@ func (r *Replay) answer(want Call) (Call, error) {
+ 			}
+ 		}
+ 	}
++	return Call{}, r.refuseLocked(want)
++}
++
++// refuseLocked records want as a call the recording holds no answer to and returns the failure naming it.
++// The caller holds the replay's lock.
++func (r *Replay) refuseLocked(want Call) error {
+ 	described := describe(want)
+ 	r.unanswered = append(r.unanswered, described)
+-	return Call{}, fmt.Errorf("tmuxrec: recording %s holds no answer to %s after call %d", r.name, described, r.next)
++	return fmt.Errorf("tmuxrec: recording %s holds no answer to %s after call %d", r.name, described, r.next)
+ }
+ 
+ // describe names a call in a failure.
+ func describe(call Call) string {
+ 	switch call.Kind {
+ 	case KindTmux:
++		if call.Stdin != "" {
++			return fmt.Sprintf("tmux %s < %q", strings.Join(call.Args, " "), call.Stdin)
++		}
+ 		return "tmux " + strings.Join(call.Args, " ")
+ 	case KindPaneAge:
+ 		return "the pane age of pid " + call.PID
