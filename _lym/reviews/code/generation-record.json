@@ -1,6 +1,12 @@
 {
   "number": 1,
   "judge_subject": {
-    "kind": ""
-  }
+    "kind": "code",
+    "merge_base": "5c985d926526c1d4d8d9bb7cf4fff3a2a48a64a8",
+    "head": "8087e12435bc56ae6aa6bb28f839c892591418e3",
+    "full_hash": "f48341ee724818b0ecb3bb6b803598a0caeeb6220d3513b564ed4eae7a16990e",
+    "patch_id": "8f91a471e4358ff226ed8649d109323af7d07309"
+  },
+  "judge_base": "5c985d926526c1d4d8d9bb7cf4fff3a2a48a64a8",
+  "judge_at": "2026-11-28T11:21:16Z"
 }
