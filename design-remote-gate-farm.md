@@ -6,6 +6,7 @@
 
 Gate queues on Neve hold landings back: two slots, load near 30 on 12 cores, a tier1 verify past its 30-minute budget.
 The operator's desktop Septim (Ryzen 7 9800X3D, water-cooled, Windows 11 with WSL2 installed) sits idle on the LAN.
+The study `docs/research/gate/septim-farm-study.md` sizes both modes below and recommends a hand measurement first.
 
 ## Idea
 
@@ -28,11 +29,16 @@ The agents stay on Neve; only gate tier runs move to Septim.
 ## Bounds (operator, 2026-11-28)
 
 - Work code may use Septim only in the ephemeral mode, and only over a closed network; the operator confirmed the network is closed.
+- For work code the guarantee that matters is that the material never leaks out of Septim and the closed network.
+  Windows paging or hibernating WSL's memory to Septim's own disk is acceptable;
+  what the design must ensure is that nothing of the work code leaves the machine: no crash dumps, logs or telemetry sent off it,
+  no network reach from a tier run beyond the caller, and no copy kept where another party can fetch it.
 - A hub opts in and names its mode; a hub that names none never sends a gate run to Septim.
 - Windows itself is not a lym target: the service runs only inside WSL2.
 
 ## Open
 
-- Measure first: the same tier1 run on Septim's WSL2 and on Neve.
-- How the remote slots are configured, how a remote slot is found to be dead, and what tier2 (tmux) needs there.
+- Measure first: the same tier1 and tier2 runs on Septim's WSL2 and on Neve, cold and warm, with a night left idle.
+- Whether work code may leave OSL-1046 for Septim at all, and whether the laptop reaches the closed LAN.
+- Whether a RAM build cache kept between runs counts as stored.
 - Whether a .NET hub's gate (C#) runs in WSL2 as the Go gate does.
