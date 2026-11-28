@@ -1,0 +1,10 @@
+docs/research/no-fake-other-modules/loom-landing.md
+internal/loomcli/prreview_mail_integration_test.go
+internal/loomcli/wiring.go
+internal/reedengine/sessionreads.go
+internal/reedengine/sessionreads_test.go
+internal/testkit/envkit/envkit.go
+internal/testkit/tmuxrec/record.go
+internal/testkit/tmuxrec/record_test.go
+internal/testkit/tmuxrec/session_test.go
+internal/testkit/tmuxrec/tmuxrec.go
