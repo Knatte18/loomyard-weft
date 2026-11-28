@@ -21,6 +21,12 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T19 | **Timing a gate test call includes the slot wait; run time needs the run record** | [`gate-call-shows-slot-wait`](design-gate-call-shows-slot-wait.md) | darn · light | Darn-Write | neve | 10h<br>10h | gate |
 | T21 | **Faults the hardener study read in fabric, cleanup and teardown code** | [`hardener-study-faults`](design-hardener-study-faults.md) | darn · light | Darn-Write | neve | 1d<br>13h | fabric, cleanup, batten |
 
+## Ready (1)
+
+| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
+| --- | --- | --- | --- | --- | --- | --- |
+| T22 | **internal/shedcli.names is reached by no main package**<br>• Remove the function or give it a caller; TestTestOnlyCode fails on it in the upkeep gate | [`shedcli-names-unreached`](design-shedcli-names-unreached.md) | darn · light |  | 10h<br>0m | shed |
+
 ## Layer A (8)
 
 | # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
@@ -33,12 +39,6 @@ An entry waits only on the open entries it names under After, so the entries in 
 | T13 | **Reviews and plans check their claims against the code: fix keys, test infrastructure, card claims and first callers** | [`review-fix-claims-checked`](design-review-fix-claims-checked.md) | darn · light | T12 | 10h<br>10h | burler, stencil, webster |
 | T18 | **Darn writer prompt forbids the gate calls a measurement entry requires** | [`darn-writer-measure-gates`](design-darn-writer-measure-gates.md) | darn · light | T12 | 10h<br>10h | darn, stencil |
 | T20 | **webster reset refuses before its records push when fabricSync fails after the records commit landed** | [`reset-partial-commit-push`](design-reset-partial-commit-push.md) | darn · light | T5 | 1m<br>1m | webster, fabric |
-
-## Draft (1)
-
-| # | Task | Slug | Recipe | After | Age<br>Revised | Labels |
-| --- | --- | --- | --- | --- | --- | --- |
-| T22 | `draft` **internal/shedcli.names is reached by no main package**<br>• Remove the function or give it a caller; TestTestOnlyCode fails on it in the upkeep gate | [`shedcli-names-unreached`](design-shedcli-names-unreached.md) | darn · light |  | 10h<br>0m | shed |
 
 ## Sketches (1)
 
