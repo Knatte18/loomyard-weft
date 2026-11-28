@@ -1,0 +1,440 @@
+diff --git a/contracts/specs/loom-plan-spec.md b/contracts/specs/loom-plan-spec.md
+index 8868b7b38..4ed66185c 100644
+--- a/contracts/specs/loom-plan-spec.md
++++ b/contracts/specs/loom-plan-spec.md
+@@ -328,7 +328,8 @@ The hub's tests run through `lym gate test`.
+ It runs the numbered tiers `gate.yaml` declares over a scope lym computes.
+ A gate key names a site's tiers and scope, `card`, `diff` or `all`.
+ A Go site runs `lym gate test --wait --gate <key>`; an agent's card, batch and `webster-fix` calls carry no `--wait`.
+-The `card` key runs per card and the `batch` key per batch, both over the cards' packages and the packages that depend on them;
++The `card` key runs per card over the cards' packages and the packages that depend on them,
++and the `batch` key per batch, scoped as its bullet below states;
+ `webster-fix` in Webster's verify fixers;
+ `webster` once for the whole plan;
+ `parent-align` and `finalize` at Parent-Align and Finalize.
+@@ -342,6 +343,9 @@ so a plan names no gate, tier list or target list.
+   and a passing call names the declared tiers it did not run.
+ - **Per batch.** The fork runs `lym gate test --gate batch` after its last card.
+   The call carries one `--card <card id>` per card of the batch.
++  Its tier0 run holds the packages that depend on the cards' packages;
++  each tier above tier0 that does not cover tier0 runs the cards' packages alone.
++  A tier that runs whole is not narrowed.
+ - **Per plan.** The `webster` gate runs once, a must-pass gate on Merriam that sends a failure back to Merriam.
+ - Tier 3 tests drive a real LLM; no gate runs them.
+ 
+diff --git a/internal/gatecli/cli.go b/internal/gatecli/cli.go
+index 5dcfcb00e..93071d37a 100644
+--- a/internal/gatecli/cli.go
++++ b/internal/gatecli/cli.go
+@@ -122,7 +122,7 @@ Examples:
+ 	testCmd.Flags().StringVar(&gate, "gate", "", "key of "+keyName(gatesKey)+" whose tiers and scope the call runs; goes with none of --tier, --upto, --all and --base")
+ 	testCmd.Flags().IntSliceVar(&tiers, "tier", nil, "tier number to run; repeatable, default 0")
+ 	testCmd.Flags().IntVar(&upto, "upto", 0, "run every declared tier numbered 0 through N but the manual ones")
+-	testCmd.Flags().StringArrayVar(&cards, "card", nil, "plan card id whose packages, and the packages that depend on them, are the scope; repeatable")
++	testCmd.Flags().StringArrayVar(&cards, "card", nil, "plan card id whose packages, and the packages that depend on them, are the scope; under --gate batch a tier above tier0 that does not cover tier0 runs the cards' packages alone; repeatable")
+ 	testCmd.Flags().BoolVar(&mainPackages, gateslot.MainPackagesFlag, false, "with --card under the go scoper, add every package main of tier0's module to the scope")
+ 	testCmd.Flags().StringVar(&base, "base", "", "revision whose diff to the working tree is the scope")
+ 	testCmd.Flags().BoolVar(&all, "all", false, "run every tier over its all_targets")
+diff --git a/internal/gatecli/doc.go b/internal/gatecli/doc.go
+index 8ab607c68..111fc2791 100644
+--- a/internal/gatecli/doc.go
++++ b/internal/gatecli/doc.go
+@@ -151,6 +151,11 @@
+ // So a test outside the cards that asserts on what they change runs at the card's gate;
+ // a module `go list` cannot list keeps the cards' packages alone, which the call names on stderr.
+ // With `--main-packages` it also holds every `package main` package of tier0's module.
++// Under `--gate batch` only tier0, and a listed tier that covers it, run that scope.
++// Each other listed tier runs the cards' packages alone, with the main packages when asked,
++// and the call names it on stderr.
++// A tier that runs whole is neither narrowed nor named there.
++// The gates that run the whole tree run the slower tests of the dependent packages once per plan.
+ // A narrower scope runs each listed tier once per module, in that module's directory.
+ // One slot hold and one `gate.tiers.<tier>.timeout_min` cover every invocation.
+ // An empty scope, such as a diff of Markdown files only, runs no listed tier's command, bar a tier with `carry: false`:
+@@ -234,6 +239,8 @@
+ // It covers the module's `//lym:guard` tests outside the scope, so a narrower gate keeps full guard coverage.
+ // It also covers a scope package's guard test whose tier no listed tier is or covers, which the listed runs skip:
+ // under `--card` for the cards' scope, and under a computed or `--base` scope for each base's impacted set and tiers.
++// Under `--card` the step also takes a dependent package's guard test.
++// It does so when the listed run of the test's tier holds the cards' packages alone.
+ // A guard test's tier comes from its file's `tierN` build tag, a file naming none counting as `tier0`.
+ // The step plans one run per tier holding guard tests, ascending.
+ // Each run is the tier's command with the group's packages as `{targets}`;
+diff --git a/internal/gatecli/scope.go b/internal/gatecli/scope.go
+index 8bac8e722..6de3b1960 100644
+--- a/internal/gatecli/scope.go
++++ b/internal/gatecli/scope.go
+@@ -81,9 +81,10 @@ type scope struct {
+ 	// guards maps a tier number to each directory that holds guard tests of it for the guard step, and to their names.
+ 	// The directories are relative to guardDir; nil when no scan has run.
+ 	guards map[int]map[string][]string
+-	// listedTiers are the tiers a --card scope's listed runs run: each listed tier and every tier it covers.
+-	// A guard test of any other tier is left to the guard step, even in a package of the scope.
+-	listedTiers []int
++	// listedPackages maps a tier number to the guard module's packages in which a --card scope's listed runs run its tests.
++	// Each kept listed tier adds its share's packages under its own number and under every tier it covers.
++	// A guard test outside the packages of its tier is left to the guard step, even in a package of the scope.
++	listedPackages map[int]map[string]bool
+ 	// tagTiers are the declared tiers, ascending, whose build tag adds a file to a --card scope's package.
+ 	// A build without tags leaves that file out, so the vet step is planned over these tiers.
+ 	tagTiers []int
+@@ -170,6 +171,9 @@ func skippedInside(cfg gateslot.Config, numbers []int, inside map[string][]impac
+ // A --card scope is the cards' packages per module.
+ // It holds every package of that module whose build or tests reach one of them too.
+ // With request.mainPackages it also holds every package main of tier0's module, listed once.
++// Under the batch key, each listed tier above tier0 that does not cover tier0 runs the cards' packages alone.
++// A tier that runs whole is not narrowed.
++// That narrower set holds the main packages when asked, and request.stderr names the narrowed tiers.
+ // It adds the declared tiers whose build tag brings a file into one of those packages.
+ // A narrowed share, and a --card scope, skip the `//lym:watch` tests of their packages that no changed file concerns.
+ // A --card scope reads its changed files as the diff from the merge base with the parent branch.
+@@ -236,29 +240,35 @@ func computeScope(ctx context.Context, cfg gateslot.Config, location *lymcwd.Loc
+ 			}
+ 		}
+ 		modules := make([]moduleTargets, len(cardModules))
++		own := make([]moduleTargets, len(cardModules))
+ 		for i, module := range cardModules {
+ 			modules[i] = moduleTargets{dir: module.Dir, targets: cardDependents(ctx, root, module, request.stderr)}
++			own[i] = moduleTargets{dir: module.Dir, targets: slices.Clone(module.Packages)}
+ 		}
+ 		modules = withMainPackages(modules, mainsDir, mains)
+-		var dirs []string
+-		for _, module := range modules {
+-			for _, target := range module.targets {
+-				dir := path.Join(module.dir, strings.TrimPrefix(target, "./"))
+-				// A card may name a package it has yet to create.
+-				if info, err := os.Stat(filepath.Join(root, filepath.FromSlash(dir))); err == nil && info.IsDir() {
+-					dirs = append(dirs, dir)
++		own = withMainPackages(own, mainsDir, mains)
++		sc := scope{form: form, modules: modules, guardStep: true, guardDir: tier0.Dir, tagTiers: tagTiers(cfg, root, modules)}
++		ownTiers := ownPackageTiers(cfg, request)
++		var ownSkip []string
++		sc.changed, sc.changesRead = cardChanges(ctx, location, root)
++		if sc.changesRead {
++			if sc.skip, err = watchedSkip(root, existingDirs(root, modules), sc.changed); err != nil {
++				return scope{}, err
++			}
++			if len(ownTiers) > 0 {
++				if ownSkip, err = watchedSkip(root, existingDirs(root, own), sc.changed); err != nil {
++					return scope{}, err
+ 				}
+ 			}
+ 		}
+-		sc := scope{form: form, modules: modules, guardStep: true, guardDir: tier0.Dir, tagTiers: tagTiers(cfg, root, modules), listedTiers: coveredTiers(cfg, request)}
+-		sc.changed, sc.changesRead = cardChanges(ctx, location, root)
+-		if sc.changesRead {
+-			watched, err := impactset.FindWatchedTests(root, dirs)
+-			if err != nil {
+-				return scope{}, errors.New(guardScanRefusal(root, err))
++		if len(ownTiers) > 0 {
++			sc.tiers = map[int]tierScope{}
++			for _, number := range ownTiers {
++				sc.tiers[number] = tierScope{modules: own, skip: ownSkip}
+ 			}
+-			sc.skip = skipNames(impactset.UnwatchedTests(watched, sc.changed))
++			printLine(request.stderr, fmt.Sprintf("gate test: --gate %s runs %s over the cards' packages alone, not the packages that depend on them", request.gate, tierNames(ownTiers)))
+ 		}
++		sc.listedPackages = listedPackages(cfg, request, sc)
+ 		return sc, nil
+ 	}
+ 
+@@ -328,6 +338,83 @@ func cardDependents(ctx context.Context, root string, module planparser.ModulePa
+ 	return dependents
+ }
+ 
++// ownPackageTiers returns the kept listed tiers of a batch key call that run the cards' packages alone, ascending.
++// They are the tiers above tier0 that do not cover tier0, so tier0 alone runs the packages that depend on the cards.
++// The slower tests of the dependent packages are left to the runs over the whole tree.
++// Those happen once per plan, not once per batch.
++// A tier that runs whole is not narrowed:
++// a `carry: false` tier, every tier of a --no-carry call, and one whose command takes no targets.
++// A call of any other key returns none.
++func ownPackageTiers(cfg gateslot.Config, request testRequest) []int {
++	if request.gate != gateslot.BatchGateKey {
++		return nil
++	}
++	var numbers []int
++	for _, number := range keptTiers(cfg, request) {
++		tier, err := cfg.Tier(number)
++		if err != nil || number == 0 || slices.Contains(tier.Covers, 0) {
++			continue
++		}
++		if !tier.NoCarry && !request.noCarry && gateslot.HoldsTargets(tier.Command) {
++			numbers = append(numbers, number)
++		}
++	}
++	return numbers
++}
++
++// listedPackages returns, per tier number, the guard module's packages in which the listed runs of sc run its tests.
++// A kept listed tier runs its own tests and those of every tier it covers, over its share of sc.
++// The packages are module-relative directories.
++func listedPackages(cfg gateslot.Config, request testRequest, sc scope) map[int]map[string]bool {
++	byTier := map[int]map[string]bool{}
++	for _, number := range keptTiers(cfg, request) {
++		run := []int{number}
++		if tier, err := cfg.Tier(number); err == nil {
++			run = append(run, tier.Covers...)
++		}
++		for _, module := range sc.forTier(number).modules {
++			if path.Clean(module.dir) != path.Clean(sc.guardDir) {
++				continue
++			}
++			for _, target := range module.targets {
++				dir := strings.TrimPrefix(path.Clean(target), "./")
++				for _, covered := range run {
++					if byTier[covered] == nil {
++						byTier[covered] = map[string]bool{}
++					}
++					byTier[covered][dir] = true
++				}
++			}
++		}
++	}
++	return byTier
++}
++
++// existingDirs returns the worktree-relative directories of the packages of modules that exist under root.
++// A card may name a package it has yet to create, which is left out.
++func existingDirs(root string, modules []moduleTargets) []string {
++	var dirs []string
++	for _, module := range modules {
++		for _, target := range module.targets {
++			dir := path.Join(module.dir, strings.TrimPrefix(target, "./"))
++			if info, err := os.Stat(filepath.Join(root, filepath.FromSlash(dir))); err == nil && info.IsDir() {
++				dirs = append(dirs, dir)
++			}
++		}
++	}
++	return dirs
++}
++
++// watchedSkip returns the sorted names of the `//lym:watch` tests in dirs that no path of changed concerns.
++// A watch scan error is returned as the refusal.
++func watchedSkip(root string, dirs, changed []string) ([]string, error) {
++	watched, err := impactset.FindWatchedTests(root, dirs)
++	if err != nil {
++		return nil, errors.New(guardScanRefusal(root, err))
++	}
++	return skipNames(impactset.UnwatchedTests(watched, changed)), nil
++}
++
+ // withMainPackages returns modules with mains, the main packages of the module at dir, added to that module's targets.
+ // A package the cards already name is not added twice, and a module the cards leave out joins the list last.
+ func withMainPackages(modules []moduleTargets, dir string, mains []string) []moduleTargets {
+@@ -498,18 +585,6 @@ func keptTiers(cfg gateslot.Config, request testRequest) []int {
+ 	return dropCovered(listed, declared, silent)
+ }
+ 
+-// coveredTiers returns the tiers the request's listed runs run: each kept listed tier and every tier it covers.
+-func coveredTiers(cfg gateslot.Config, request testRequest) []int {
+-	var numbers []int
+-	for _, number := range keptTiers(cfg, request) {
+-		numbers = append(numbers, number)
+-		if tier, err := cfg.Tier(number); err == nil {
+-			numbers = append(numbers, tier.Covers...)
+-		}
+-	}
+-	return numbers
+-}
+-
+ // tierNames returns the names of the tiers numbers, joined by commas.
+ func tierNames(numbers []int) string {
+ 	names := make([]string, len(numbers))
+@@ -613,7 +688,7 @@ func guardScanDir(cfg gateslot.Config, request testRequest, sc scope) (string, e
+ }
+ 
+ // scanGuards fills sc.guards with the guard tests the scope's listed runs leave out, grouped by their file's tier.
+-// Those are the guard tests outside the scope's packages, and those inside one whose tier no listed run runs.
++// Those are the guard tests outside every package in which a listed run runs tests of their tier.
+ // It scans the module at sc.guardDir.
+ // A whole scope and an explicit-targets scope hold no package of that module, so every guard test counts as left out.
+ // It scans the guard packages for `//lym:watch` markers too.
+@@ -625,19 +700,10 @@ func scanGuards(sc scope, root string) (scope, error) {
+ 	if err != nil {
+ 		return scope{}, errors.New(guardScanRefusal(moduleDir, err))
+ 	}
+-	inside := map[string]bool{}
+-	for _, module := range sc.modules {
+-		if path.Clean(module.dir) != path.Clean(sc.guardDir) {
+-			continue
+-		}
+-		for _, target := range module.targets {
+-			inside[strings.TrimPrefix(path.Clean(target), "./")] = true
+-		}
+-	}
+ 	leftOut := map[string][]impactset.GuardTest{}
+ 	for dir, tests := range all {
+ 		for _, test := range tests {
+-			if !inside[path.Clean(dir)] || !slices.Contains(sc.listedTiers, test.Tier) {
++			if !sc.listedPackages[test.Tier][path.Clean(dir)] {
+ 				leftOut[dir] = append(leftOut[dir], test)
+ 			}
+ 		}
+diff --git a/internal/gatecli/scopes_integration_test.go b/internal/gatecli/scopes_integration_test.go
+index 5ffb02c26..779d6f75b 100644
+--- a/internal/gatecli/scopes_integration_test.go
++++ b/internal/gatecli/scopes_integration_test.go
+@@ -530,6 +530,51 @@ func TestGateTest_Scopes(t *testing.T) {
+ 		f.wantArgs(t, f.gate(t, f.pair, nil, "--card", "1", "--tier", "1"), scoped, []string{"."}, guardInvocation)
+ 	})
+ 
++	t.Run("--gate batch runs tier1 over the cards' and main packages alone, with their own watch skip, and its guard step takes a dependent's tier1 guard, unless tier1 covers tier0", func(t *testing.T) {
++		t.Parallel()
++		f := newScopesHub(t)
++		// A watched test runs when its own file changed, so this file sits at the merge base.
++		gitkit.CommitFile(t, f.prime, "consumer/c0_test.go",
++			"package consumer\n\nimport \"testing\"\n\n//lym:guard\nfunc TestConsumerTierZeroGuard(t *testing.T) {}\n\n"+
++				"//lym:watch *_linux.go\nfunc TestConsumerWatched(t *testing.T) {}\n",
++			"add the consumer tests")
++		gitkit.Git(t, f.pair, "merge", "--ff-only", "-q", "main")
++		plankit.WriteTree(t, f.pair, map[string]string{
++			"consumer/c.go":      "package consumer\n\nimport \"example.com/scopes/lib\"\n\nvar One = lib.One\n",
++			"consumer/c_test.go": "//go:build tier1\n\npackage consumer\n\nimport \"testing\"\n\n//lym:guard\nfunc TestConsumerGuard(t *testing.T) {}\n",
++			"tool/main.go":       "package main\n\nfunc main() {}\n",
++		})
++		writeCardKeys := func(tier1CoversTier0 bool) {
++			t.Helper()
++			config := scopesConfigWith(t, "go", func(cfg map[string]any) {
++				if !tier1CoversTier0 {
++					delete(cfg["tiers"].(map[string]any)["tier1"].(map[string]any), "covers")
++				}
++				cfg["gates"] = map[string]any{
++					"batch": map[string]any{"tiers": []int{0, 1}, "scope": "card"},
++					"card":  map[string]any{"tiers": []int{0, 1}, "scope": "card"},
++				}
++			})
++			if err := os.WriteFile(f.configPath, config, 0o644); err != nil {
++				t.Fatal(err)
++			}
++		}
++		scoped := []string{"./lib", "./consumer", "./user", "-skip", "^(TestConsumerWatched)$"}
++		nested := []string{".", "-skip", "^(TestConsumerWatched)$"}
++		scopedWithMain := []string{"./lib", "./consumer", "./user", "./tool", "-skip", "^(TestConsumerWatched)$"}
++
++		writeCardKeys(false)
++		batch := f.gate(t, f.pair, nil, "--gate", "batch", "--card", "1", "--main-packages")
++		f.wantArgs(t, batch, scopedWithMain, nested, []string{"./lib", "./tool"}, []string{"."}, guardInvocation, []string{"./consumer", "-run", "^(TestConsumerGuard)$"})
++		if want := "gate test: --gate batch runs tier1 over the cards' packages alone, not the packages that depend on them"; !strings.Contains(batch.stdout.String(), want) {
++			t.Errorf("stdout = %q; want it to hold %q", batch.stdout.String(), want)
++		}
++		f.wantArgs(t, f.gate(t, f.pair, nil, "--gate", "card", "--card", "1"), scoped, nested, scoped, nested, guardInvocation)
++
++		writeCardKeys(true)
++		f.wantArgs(t, f.gate(t, f.pair, nil, "--gate", "batch", "--card", "1"), scoped, nested, guardInvocation)
++	})
++
+ 	t.Run("a computed scope runs an impacted package's guard in the guard step unless a listed tier is or covers its tier", func(t *testing.T) {
+ 		t.Parallel()
+ 		f := newScopesHub(t)
+diff --git a/internal/gateslot/config.go b/internal/gateslot/config.go
+index b2eae9ed6..2e4e31d20 100644
+--- a/internal/gateslot/config.go
++++ b/internal/gateslot/config.go
+@@ -518,7 +518,7 @@ func decodeGates(entries map[string]yaml.Node) (map[string]GateKey, error) {
+ 		}
+ 		switch key.Scope {
+ 		case scopeCard:
+-			if name != cardGateKey && name != "batch" {
++			if name != cardGateKey && name != BatchGateKey {
+ 				return nil, guidedError{fmt.Errorf("config key %q: scope card is only for the card and batch keys; fix it with \"lym config gate\" from the prime%s", path, roleClause)}
+ 			}
+ 		case scopeDiff, scopeAll, ScopeMarked:
+diff --git a/internal/gateslot/template.yaml b/internal/gateslot/template.yaml
+index 5303fb2c6..405a81d9c 100644
+--- a/internal/gateslot/template.yaml
++++ b/internal/gateslot/template.yaml
+@@ -15,7 +15,7 @@ plan_tier0_budget_sec: 60  # seconds a plan's new and changed tier0 tests may ad
+ tiers: {}
+ 
+ # gate.gates maps a gate key to the tiers that site runs and the scope it runs them over, written {tiers: [<n>...], scope: card|diff|all|marked}.
+-# The keys lym reads: card and batch (scope card, the cards' packages and the packages that depend on them), webster, parent-align, finalize and adopt (scope all, the whole tree, or no tier once gate.inert_paths is set and every changed file matches it), webster-fix, darn-write, code-burler-fix, harden-burler-fix, harden-live and pr-review (scope diff, the diff from the merge base), and upkeep (scope marked, run under the go scoper by the board-tidy agent on the main branch).
++# The keys lym reads: card and batch (scope card, the cards' packages and the packages that depend on them; a batch tier above tier0 that does not cover tier0 runs the cards' packages alone), webster, parent-align, finalize and adopt (scope all, the whole tree, or no tier once gate.inert_paths is set and every changed file matches it), webster-fix, darn-write, code-burler-fix, harden-burler-fix, harden-live and pr-review (scope diff, the diff from the merge base), and upkeep (scope marked, run under the go scoper by the board-tidy agent on the main branch).
+ # Under the go scoper a Go test marked //lym:only <key>... runs only in a --gate call whose key the marker names, and a call without --gate; every other key's call skips it.
+ # Scope marked runs only the tests marked for the key, each under its file's tier whatever tiers the key lists, so gate.gates.upkeep needs no tier1 to run marked tier1 tests; a manual tier's marked tests run only when the key lists that tier or one that covers it; a marked test of a manual tier the key names in neither way or of a tier the hub does not declare, and a key no test is marked for, refuse the call.
+ # The two harden keys name tier 0, the tier a key may name before the hub declares more, so a hardener run needs no gate write; a hub whose live tests sit in a higher tier may point harden-live at one tier below tier3, since the run's concurrent copies call runs that same key.
+diff --git a/internal/gateslot/tiers.go b/internal/gateslot/tiers.go
+index 503ed2a04..b2fb4afc3 100644
+--- a/internal/gateslot/tiers.go
++++ b/internal/gateslot/tiers.go
+@@ -124,6 +124,9 @@ type GateKey struct {
+ // cardGateKey is the name of the gate.yaml key that runs a card's gate, the one key whose agent call may hold a fixer.
+ const cardGateKey = "card"
+ 
++// BatchGateKey is the name of the gate.yaml key that runs an implementer batch's gate over the batch's cards.
++const BatchGateKey = "batch"
++
+ // Scope values a gate key may hold.
+ const (
+ 	scopeCard = "card"
+@@ -151,7 +154,7 @@ const (
+ )
+ 
+ // goReadGates are the gate keys the Go verify sites read, in the order TiersValue lists them.
+-var goReadGates = []string{"card", "batch", "webster", "parent-align", "finalize", "adopt", "webster-fix", "darn-write", "code-burler-fix", "harden-burler-fix", "harden-live", "pr-review"}
++var goReadGates = []string{"card", BatchGateKey, "webster", "parent-align", "finalize", "adopt", "webster-fix", "darn-write", "code-burler-fix", "harden-burler-fix", "harden-live", "pr-review"}
+ 
+ var (
+ 	tierKeyPattern   = regexp.MustCompile(`^tier(0|[1-9][0-9]*)$`)
+diff --git a/internal/runplan/cardgate.go b/internal/runplan/cardgate.go
+index 35209e3e4..55a6b71e7 100644
+--- a/internal/runplan/cardgate.go
++++ b/internal/runplan/cardgate.go
+@@ -62,7 +62,7 @@ func RenderBatchGate(cards []planparser.Card, gate gateslot.Config, last bool) (
+ 	if last {
+ 		render = gate.AgentGateCallWithMainPackages
+ 	}
+-	call, err := render("batch", ids...)
++	call, err := render(gateslot.BatchGateKey, ids...)
+ 	if err != nil {
+ 		return "", err
+ 	}
+diff --git a/internal/weaverengine/strand.go b/internal/weaverengine/strand.go
+index 1b12bd724..ac75f5bc6 100644
+--- a/internal/weaverengine/strand.go
++++ b/internal/weaverengine/strand.go
+@@ -20,11 +20,8 @@ import (
+ 	"github.com/Knatte18/loomyard/internal/verifytree"
+ )
+ 
+-// The gate keys a batch attempt's own gates render their calls from.
+-const (
+-	gateKeyCard  = "card"
+-	gateKeyBatch = "batch"
+-)
++// gateKeyCard is the gate key a batch attempt's per-card gates render their calls from.
++const gateKeyCard = "card"
+ 
+ // batchGateAttempts is the re-prompt budget of each of a batch attempt's own gate entries.
+ const batchGateAttempts = 3
+@@ -116,7 +113,7 @@ func batchGateCalls(geom Geometry, cards []planparser.Card, last bool) ([]string
+ 		calls = append(calls, call)
+ 		ids = append(ids, card.ID())
+ 	}
+-	batchCall, err := cfg.GateCall(gateKeyBatch, ids...)
++	batchCall, err := cfg.GateCall(gateslot.BatchGateKey, ids...)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -136,7 +133,7 @@ func batchGateSpec(geom Geometry, cards []planparser.Card, last bool, rowGates s
+ 	}
+ 	spec := make(shuttleengine.GateSpec, 0, len(calls)+len(rowGates))
+ 	for i, call := range calls {
+-		name := gateKeyBatch
++		name := gateslot.BatchGateKey
+ 		if i < len(cards) {
+ 			name = gateKeyCard + " " + cards[i].ID()
+ 		}
+diff --git a/internal/webstercli/beginbatch.go b/internal/webstercli/beginbatch.go
+index 7e6b585bc..857711d23 100644
+--- a/internal/webstercli/beginbatch.go
++++ b/internal/webstercli/beginbatch.go
+@@ -73,7 +73,7 @@ func (c *websterCLI) loadGateConfig() (gateslot.Config, error) {
+ 	if err != nil {
+ 		return gateslot.Config{}, err
+ 	}
+-	for _, name := range []string{"card", "batch"} {
++	for _, name := range []string{"card", gateslot.BatchGateKey} {
+ 		if _, err := gate.TierList(name); err != nil {
+ 			return gateslot.Config{}, err
+ 		}
