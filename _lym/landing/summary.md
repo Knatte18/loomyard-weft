@@ -1,44 +1,54 @@
-# Reviews and plans check their claims against the code first
+# Check review fixes and plan card claims against the code
 
-Review findings and plan cards made claims that reading the code would have disproved:
-a fix that named test infrastructure the repository lacks, a fix that reused an identifier invisible from the test's package,
-a fix resting on "this test only reads" when a callee writes, and plan cards wrong about who reads a field or what a package can reach.
-A plan also split a new exported function from its first caller across cards, which the reachability guard on production functions refuses in between.
-This change makes the review and plan prompts check those facts first.
-
-Closes #285
-Closes #288
-Closes #290
-Closes #291
+Reviews proposed fixes that rested on facts the code disproves,
+such as a test kit that does not exist, a "read-only" test that writes, or an identifier the target file cannot see.
+Plans likewise passed review with claims about readers, visibility and reachability that were false,
+or that another card contradicted.
+This change adds stencil instructions to check those facts. It changes no Go code.
 
 ## What changes
 
-- `contracts/stencils/burler/burler-review-format.md`: before writing a `fix`, the reviewer reads each fact it rests on:
-  the package clause of the edited file and the export status of any identifier the fix reuses,
-  every function on the call chain behind a claim that code only reads,
-  and that any kit, recording, stand-in or test tier the fix names exists and can run the tests moved onto it.
-  A fix the code disproves is never written: the reviewer proposes one that holds without the fact and names what is missing,
-  or, when none exists, raises a `decision` finding offering to accept the gap or build what is missing.
+- **Review findings** (`burler-review-format.md`): before writing a `fix`, the reviewer reads the facts it rests on:
+  - for a reused identifier, the package clause of the file the `fix` edits, and whether that package can see it;
+  - every function on the call chain, when the claim is that code only reads;
+  - that any named test infrastructure (kit, recording, stand-in, test tier) exists and can run the tests moved onto it.
+- **A `fix` may not rest on a fact the code disproves.**
+  The reviewer proposes a fix that holds without it and names what is missing.
+  When there is none, the finding is raised as class `decision`: accept the gap, or build what is missing.
   A fact the reviewer could not establish is named in the `fix` as unverified.
-- `contracts/stencils/burler/burler-step-fix.md`: the fixer reads a fact a `fix` names as unverified before applying the change,
-  and fixes with its own change or defers when the code disproves it.
-- `contracts/stencils/loom/loom-block-plan-cards.md` (the plan writer) and `contracts/stencils/loom/loom-rubric-plan-review.md` (plan review):
-  - each card's claims are read in the code: readers and writers through the call chain, export status and visibility from the using package,
-    whether a test or seam can reach a member, and which input reaches a branch past the checks before it;
-  - cards are checked against each other for contradicting rules, and for a claim another card's change makes false;
-  - a new production function goes on the card that adds its first production caller; a test-only caller does not count.
-- `contracts/specs/loom-plan-spec.md`: the card-granularity rule that gives a public-surface symbol its own card now carries that first-caller exception.
+- **Fixing** (`burler-step-fix.md`): the fixer reads an unverified fact before applying the change,
+  then gives the finding its usual disposition.
+- **Plan writing** (`loom-block-plan-cards.md`): each claim a card makes about the code is one the writer read there,
+  and no card contradicts, or is falsified by, another card.
+- **Plan review** (`loom-rubric-plan-review.md`): the reviewer checks each card's claims against the code
+  and each card against every other.
+
+Closes #285
+Closes #288
+Closes #291
+Closes #290
 
 ## Design decisions
 
-- The fix checks live in the review-file format, which every review round reads, rather than in one rubric,
-  so code, plan and discussion reviews all check their fixes the same way.
-- For a split between a new function and its first caller, the function moves onto the caller's card.
-  The alternative, a defined way for a card to carry a temporary reachability allowlist entry and a later card to retire it, is not built:
-  it adds a mechanism and a stale-entry failure to every plan that uses it, where moving the function needs neither.
-- The first-caller rule is an exception to the existing granularity rule, stated beside it in the spec, the writer block and the review rubric,
-  so the three do not contradict each other.
-- No test pins the new wording: the change is prompt prose, and the repository's test-economy rules forbid tests asserting a stencil's static prose.
+- A carried finding keeps its class, so it never becomes `decision`; its `fix` names both choices instead.
+- A `fix` that carries another reviewer's change, which may not be rejected (a kept parent finding's),
+  is the one exception to the disproved-fact rule.
+  It keeps the change and the class, and appends the disproved or unverified fact.
+- The fixer gets no separate rule for a disproved unverified fact.
+  The ordered dispositions apply, so a disproved premise can be disputed.
+- #290 asked for a new production function to stay with its first caller, or for a sanctioned temporary allowlist entry.
+  Neither rule is added.
+  The reachability guard it hit is already limited to the upkeep run (commit `2326ef4da`),
+  and `PATTERN-test-only-code` allows a card to add a function that only a later card calls.
+  The message of commit `e489adf46` still describes a first-caller rule that a later commit on this branch removes.
+
+## To check by hand
+
+- No test asserts this stencil wording, and its effect on a live review or plan has not been tried.
+- In `contracts/stencils/burler/burler-step-fix.md`, check that the line on an unverified fact
+  leaves Dispute available when the code disproves that fact.
+- In `contracts/stencils/burler/burler-review-format.md`, check that the exception bullet
+  lets a kept parent finding carry the parent's change without breaking the ban on a `fix` resting on a disproved fact.
 
 ## Merge danger
 
