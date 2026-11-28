@@ -766,27 +766,6 @@
       "record_body_sha256": "af87c4dd2e4aa69249a3fc380e6d9586d3df95e86cdae4398d3f2842f6f68ff8"
     },
     {
-      "id": 1791,
-      "handle": "T30",
-      "slug": "clone-reset-keeps-unpushed",
-      "title": "lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes",
-      "kind": "task",
-      "labels": [
-        "bug",
-        "fabric"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen\n\nThe landing of `hardener-study-faults` (`7cb004818`) says `lym fabric clone --reset` still removes unpushed records and board commits,\nuncommitted Bolt changes and ignored files, and leaves open whether that is acceptable.\n\n## Operator decision (2026-11-28)\n\nIt is not acceptable: `--reset` refuses when it would lose work, and names what would be lost.\n\n## Idea\n\nBefore `--reset` removes anything, check for unpushed records and board commits, uncommitted Bolt changes and ignored files that hold work.\nWhen any is found, refuse with the list and the way forward: push or commit them first, or pass an explicit flag that accepts the loss.\n",
-      "status": "done",
-      "created": "2026-11-28T09:48:05Z",
-      "revised": "2026-11-28T09:48:05Z",
-      "profile": "light"
-    },
-    {
       "id": 1792,
       "handle": "E1",
       "slug": "pr-review-github-recorded",
@@ -1285,9 +1264,7 @@
         "fabric"
       ],
       "issues": [],
-      "depends_on": [
-        "clone-reset-keeps-unpushed"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nThe Code-Review Bouncer of `clone-reset-keeps-unpushed` (2026-11-28) reports that a hub holding files of an earlier layout at the `_bolt` root,\nsuch as `.gitrepo-push.lock` and `board.json.swaplock` in the live loomyard hub, still has a plain `lym fabric clone --reset` refused.\nNo current code writes those files, so the run's rule (lym's own ignored files are no work) does not skip them.\n\n## Idea\n\nEither skip the known leftovers of earlier layouts in the reset's work check, or remove them in a reconcile step, so a plain reset passes on an old hub.\n",

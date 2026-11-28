@@ -2,8 +2,6 @@
 
 `reset-old-layout-leftovers` · Note · bug, fabric
 
-Depends on: [`clone-reset-keeps-unpushed`](design-clone-reset-keeps-unpushed.md)
-
 ## Seen
 
 The Code-Review Bouncer of `clone-reset-keeps-unpushed` (2026-11-28) reports that a hub holding files of an earlier layout at the `_bolt` root,
