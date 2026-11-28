@@ -1,0 +1,366 @@
+{
+  "sketch": "self-healing-runs",
+  "shape": "project",
+  "project": {"slug": "self-healing-autonomy", "title": "Autonomy settles known run stops itself, so lym runs overnight and only severe halts reach the operator on Slack", "type": "feature"},
+  "board_checked": [
+    {"slug": "beam-member-parent", "revised": "2026-11-26T12:30:49Z"},
+    {"slug": "push-retry-not-halt", "revised": "2026-11-27T21:24:06Z"},
+    {"slug": "worktree-create-transient-net", "revised": "2026-11-28T09:01:03Z"},
+    {"slug": "kde-window-placement-build", "revised": "2026-11-27T14:33:20Z"},
+    {"slug": "finalize-owed-tips-gate", "revised": "2026-11-27T21:40:02Z"},
+    {"slug": "pr-session-mail-stand-ins", "revised": "2026-11-28T08:45:18Z"},
+    {"slug": "battencli-wire-test-gofmt", "revised": "2026-11-28T08:45:27Z"},
+    {"slug": "creel-machine-outbound-flake", "revised": "2026-11-28T09:19:22Z"},
+    {"slug": "hardener-study-faults", "revised": "2026-11-27T18:23:35Z"},
+    {"slug": "bouncer-stalemate-uncommitted", "revised": "2026-11-27T21:40:05Z"},
+    {"slug": "missing-origin-unreachable", "revised": "2026-11-27T21:40:02Z"},
+    {"slug": "config-key-comment-sweep", "revised": "2026-11-26T20:19:01Z"},
+    {"slug": "catchup-fetch-stops-start", "revised": "2026-11-28T09:20:56Z"},
+    {"slug": "fabric-core-push-origin", "revised": "2026-11-28T09:19:22Z"},
+    {"slug": "fabric-core-teardown", "revised": "2026-11-26T21:44:40Z"},
+    {"slug": "fabric-core-merge-landing", "revised": "2026-11-26T21:44:40Z"},
+    {"slug": "fabric-core-pull-replay", "revised": "2026-11-26T21:44:40Z"},
+    {"slug": "fabric-core-add-clone", "revised": "2026-11-26T21:44:40Z"},
+    {"slug": "fabric-core-records-guards", "revised": "2026-11-27T12:22:58Z"},
+    {"slug": "keep-landed-run-records", "revised": "2026-11-27T09:46:36Z"},
+    {"slug": "area-seccomp-core", "revised": "2026-11-26T12:03:20Z"},
+    {"slug": "area-host-exits", "revised": "2026-11-26T11:58:18Z"},
+    {"slug": "borrowed-orchestrator-ideas", "revised": "2026-11-17T10:49:21Z"},
+    {"slug": "fabric-core", "revised": "2026-11-26T21:44:40Z"},
+    {"slug": "closed-area", "revised": "2026-11-26T20:49:28Z"}
+  ],
+  "parts": [
+    {
+      "slug": "stop-settlement-table",
+      "title": "The settlement table: stop classes and who settles each, per autonomy level and halt count",
+      "type": "feature",
+      "labels": ["shed"],
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D2"],
+      "packages": [{"path": "internal/stopclass", "size": 480}],
+      "contract": {
+        "takes": "D2's table and its verdict order; nothing from another part.",
+        "delivers": "D2's table steps: the new leaf package `internal/stopclass`, standard library only and no I/O, holding one named class constant per row of D2's table and the one function that returns a verdict for a class, a level and the halt count at the row, read in D2's order. lym's bound per class lives here, and lym's column applies at every level. The driver rows that take their bound from it, and the `settle: orch` hand-back, are built by `driver-settles-stops`.",
+        "exports": "Fixed for consumers: `stopclass.Class` with one constant per row; `stopclass.Level` with `LevelOff` (\"false\"), `LevelOn` (\"true\") and `LevelUnattended` (\"unattended\"), the same strings `dobbyengine.AutonomyLevel` holds, so a consumer converts with `stopclass.Level(level)`; `stopclass.Verdict` with `VerdictLym`, `VerdictOrch`, `VerdictOperator`; `stopclass.Settle(class Class, level Level, haltsAtRow, lymSettles int) Decision`, `Decision{Verdict, Bound}`."
+      },
+      "depends_on": [],
+      "open_risks": [],
+      "criteria": ["D2: a tier0 test in `internal/stopclass` (new) pins the table's verdict for every class at each level, `false` among them, and at halt counts one, two and three, read in D2's order,\nthat no class reaches `operator` at `false`, and that the package imports only the standard library."],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn/light with a stored record: lym report cost holds no run for that cell, so it reads too few runs; about 480 changed lines in one new package; light, as one new leaf package with no data at risk"
+    },
+    {
+      "slug": "autonomy-unattended-level",
+      "title": "beam.autonomy takes false, true or unattended, and every reader reads the level",
+      "type": "feature",
+      "labels": ["dobby", "config", "cwd", "board", "orch", "slack", "loom"],
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D1"],
+      "packages": [
+        {"path": "internal/dobbyengine", "size": 260},
+        {"path": "internal/hubgeom", "size": 70},
+        {"path": "internal/boardengine", "size": 40},
+        {"path": "internal/orchengine", "size": 30},
+        {"path": "internal/orchcli", "size": 40},
+        {"path": "internal/slackcli", "size": 15},
+        {"path": "internal/loomcli", "size": 30},
+        {"path": "internal/beamcli", "size": 45}
+      ],
+      "contract": {
+        "takes": "D1 whole: `LookupAutonomy` in `internal/dobbyengine/tasksetting.go`, `checkTaskSetting` in `internal/dobbyengine/config.go` and its callers, the template comment in `internal/dobbyengine/template.yaml`, `hubgeom.Autonomy` in `internal/hubgeom/autonomy.go` and its callers in slackcli, loomcli, orchcli and beamcli, the beam modes in `internal/boardengine/beammodes.go`, and the autonomy line in `internal/orchengine/prompt.go`, which also serves D9's rule that the line names the level.",
+        "delivers": "The three levels on every path that checks the key, a refusal naming the three values and `lym config beam`, a refused value read as `false` and posted once per episode to the orch, the level on the `autonomy:` stamp, `off`, `on` or `unattended` in the beam modes, and the level named in the orch prompt and the template comment. Every reader that asks only whether autonomy is on reads `true` and `unattended` as on.",
+        "exports": "Fixed for consumers: `dobbyengine.AutonomyLevel`, a string type with `AutonomyOff` (\"false\"), `AutonomyOn` (\"true\") and `AutonomyUnattended` (\"unattended\") and an `On() bool` method; `dobbyengine.LookupAutonomy` and `hubgeom.Autonomy` return it."
+      },
+      "depends_on": ["battencli-wire-test-gofmt", "push-retry-not-halt"],
+      "open_risks": [],
+      "criteria": [
+        "D1: a tier0 test in `internal/dobbyengine` pins that the lookup, the beam config load's check and the local values check accept `false`, `true` and `unattended`,\nthat a boolean in a board `run_settings` still reads, and that any other value is refused naming the three values and `lym config beam`.",
+        "D1: a test pins that `hubgeom.Autonomy` returns the level and reads a refused value as `false`, that a halt notice's `autonomy:` stamp carries the level,\nthat the board's beam modes show `off`, `on` or `unattended`, and that the dobby posts a refused value once per episode; tier1 or the lowest that fits.",
+        "D1, Review: the template comment on `beam.autonomy` names the three values and says to set `unattended` only once every machine runs a build that knows it, and the orch prompt's autonomy line names the level."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn/solid with a stored record: lym report cost holds no run for that cell, so it reads too few runs; about 530 changed lines over eight packages; solid because the return type of `hubgeom.Autonomy` changes across eight packages. Its dobbyengine edit is the value check, the template and one post, so it takes no edge on kde-window-placement-build, whose dobbyengine change is a separate concern; dobby-pause-lift-resume takes that edge for the dobby chain"
+    },
+    {
+      "slug": "loom-verbs-await-park",
+      "title": "lym loom resume and lym loom start wait for the driver to park, with a no-wait option batten passes",
+      "type": "enhancement",
+      "labels": ["loom", "batten"],
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D5"],
+      "packages": [
+        {"path": "internal/loomcli", "size": 420},
+        {"path": "internal/battencli", "size": 60},
+        {"path": "internal/battenshed", "size": 50}
+      ],
+      "contract": {
+        "takes": "D5 whole: the `shedrun.StartNotParkedKind` refusals in `internal/loomcli/resume.go` and `internal/loomcli/start.go`, the driver's wait record `sheddriver.ReadDriveWait` that push-retry-not-halt added, the keep-warm cap from `shuttleengines.KeepWarm`, `childSpawnError` in `internal/battencli/wire.go` and the `battenshed.ErrChildNotParked` retry in `internal/battenshed/innerrun.go`.",
+        "delivers": "Both verbs wait for the park, or for a run lock on a non-running run to be released, under the keep-warm cap, waking at most once a second with an injected clock; answer at once for a driver that keeps a wait record; refuse past the cap naming the retry; and refuse at once with the no-wait option, which batten passes on its child start and on every resume it runs, the resume of dobby-pause-lift-resume's lift pass among them.",
+        "exports": "Fixed for consumers: the `--no-wait` flag on `lym loom resume` and `lym loom start`."
+      },
+      "depends_on": ["autonomy-unattended-level", "hardener-study-faults"],
+      "open_risks": [],
+      "criteria": ["D5: a test in `internal/loomcli` with an injected clock pins that `lym loom resume` and `lym loom start` wait for a driver that parks and then act,\nwait for a run lock held on a non-running run to be released and then act,\nanswer at once and change nothing for a driver that keeps a wait record, refuse with `driver_not_parked` naming the retry once the cap passes,\nand refuse at once with the no-wait option batten's child start and resume pass; tier1 or the lowest that fits."],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn/light with a stored record: lym report cost holds no run for that cell, so it reads too few runs; about 530 changed lines over three packages; light, as a wait inside two verbs with no data at risk; it follows autonomy-unattended-level only because both change internal/loomcli"
+    },
+    {
+      "slug": "stop-halt-count",
+      "title": "The driver gives each stop an identity, counts halts at a row with lym's retries, and records a halt's four facts",
+      "type": "feature",
+      "labels": ["shed", "loom"],
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D3"],
+      "packages": [
+        {"path": "internal/sheddriver", "size": 820},
+        {"path": "internal/shedrun", "size": 80},
+        {"path": "internal/shedengine", "size": 90},
+        {"path": "internal/loomcli", "size": 40}
+      ],
+      "contract": {
+        "takes": "D3 whole and D7's recording steps; `stopclass.Settle` and the class constants from stop-settlement-table; `dobbyengine.AutonomyLevel` through `hubgeom.Autonomy` from autonomy-unattended-level, converted with `stopclass.Level(level)` in the driver wiring in `internal/loomcli/drivewiring.go`. It answers the Discussion-Review round-3 BLOCKING finding failed-state-halt-not-counted-or-recorded through the stop identity, as both added decisions rule.",
+        "delivers": "D3: the stop record written through `internal/state` beside the settle records, holding the open stop's key, its halt entry's history index and the four facts; the identity opened, closed and taken over across a driver restart as D3 says; settle records carrying the stop identity, the class and the halt entry's index; one function that computes both the halt count at a row and lym's settles of a class at the row over the whole history, counting and excluding exactly what D3 lists, so `wakeRestartGap` never restores a bound. D7's recording steps: every hand-back records `class:`, `settle:`, `halts_at_row:` and `halt:` on its history entry, or on the stop record when the stop left none, and carries them on the notice beside `autonomy:`; every hand-back to the orch reads `settle: orch` or `settle: operator`. D7's criterion, which needs the dobby's child read, is carried by severe-halt-slack-post.",
+        "exports": "Fixed for consumers: `shedengine.HistoryEntry` fields `Class`, `Settle`, `HaltsAtRow` and `Halt`; `shedrun.SettleRecord` fields `StopID`, `Class` and `HistoryIndex`; the stop record type and its path helper in `internal/shedrun`; the halt key, the row's producer and the stop identity joined, which readers treat as an opaque string; the count function in `internal/sheddriver`."
+      },
+      "depends_on": ["stop-settlement-table", "loom-verbs-await-park"],
+      "open_risks": [],
+      "criteria": ["D3: a tier0 test pins the halt count at a row over a history holding a halt entry with repeats, a stop with no history entry and its settle records, a settle record naming its halt entry,\na network wait, a pause, a build hand-over, an arbiter resume, an arbiter accept, a handed-on escalation's Awaiting entry,\na halt entry the tackler resumed, with its tackler `spawn` and `restep` settle records and its tackler attempt, which counts once,\nand an interrupted-reinvoke re-step after a driver wake, counting each retry and the handed-on escalation once and no wait, arbiter settle, accept or wake re-step."],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn/solid with a stored record: lym report cost holds no run for that cell, so it reads too few runs; about 1030 changed lines over four packages; solid because it changes the persisted history entry, the settle record and adds the stop record every run writes. It takes no edge on fabric-core-teardown or fabric-core-add-clone, which touch shedengine and shedrun in other files: a few lines that merge by hand"
+    },
+    {
+      "slug": "dobby-pause-lift-resume",
+      "title": "The dobby resumes a run handed back for a pause once the pause lifts, and never a run the orch holds",
+      "type": "feature",
+      "labels": ["dobby", "tender"],
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D4"],
+      "packages": [
+        {"path": "internal/dobbyengine", "size": 480},
+        {"path": "internal/tenderengine", "size": 220},
+        {"path": "internal/pauserecord", "size": 50}
+      ],
+      "contract": {
+        "takes": "D4's pause-lift and hold steps: `liftPending` and `spawn` in `internal/dobbyengine/passes.go`, `syncBoltHold` in `internal/dobbyengine/catchupwait.go`, `Pause` in `internal/tenderengine/pause.go` and `pauserecord.Entry`; the `--no-wait` flag from loom-verbs-await-park, which batten passes on the lift pass's child resume.",
+        "delivers": "The lift resumes a run whose last stop is the hand-back for the lifted pause, matched by scope, with a dobby pass on a run that is not drivable, keeping the lift in the dobby state record until the resume succeeds or the run moves on; a hold reason on a pause entry, set on a live entry of the scope when one exists, that stands through a `lym tender resume` with no slug and is lifted only by one naming the slug; a bolt-hold entry carrying a hold reason replaced by the dobby's own hold entry when it lifts the bolt-hold. The driver rows of D4 are built by driver-settles-stops.",
+        "exports": "Fixed for consumers: the hold reason field on `pauserecord.Entry` and the tender pause option that sets it, which the orch's hold of orch-unattended-rules uses."
+      },
+      "depends_on": ["loom-verbs-await-park", "catchup-fetch-stops-start", "kde-window-placement-build"],
+      "open_risks": [],
+      "criteria": ["D4: a test pins that the dobby resumes a run handed back for a pause once that pause lifts, matched by the pause entry's scope,\nand leaves alone a run another pause covers, a run that moved on, and a run whose pause the orch set as a hold,\nwhose entry stands through a `lym tender resume` with no slug and is lifted by one naming the slug;\nthat a hold over the operator's slug pause sets its hold reason on that entry, and a hold over a bolt-hold entry is replaced by a hold entry when the dobby lifts the bolt-hold, neither resuming the run;\nand that the lift resume of a run whose driver has not parked passes the no-wait option, does not block the tick and resumes the run on a later tick; tier1 or the lowest that fits."],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn/light with a stored record: lym report cost holds no run for that cell, so it reads too few runs; about 750 changed lines over three packages; light, as the pause record's new field is tolerant and the lift acts only on a lifted pause's hand-back; it runs beside stop-halt-count, with no package in common"
+    },
+    {
+      "slug": "driver-settles-stops",
+      "title": "The driver settles board claim refusals, failed launches, bounce budgets and gate attempts itself within the table's bound",
+      "type": "feature",
+      "labels": ["shed", "board", "batten", "shuttle", "webster"],
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D2", "D3", "D4"],
+      "packages": [
+        {"path": "internal/sheddriver", "size": 650},
+        {"path": "internal/boardengine", "size": 70},
+        {"path": "internal/battencli", "size": 30},
+        {"path": "internal/shuttleengine", "size": 130},
+        {"path": "internal/shedadapters", "size": 140},
+        {"path": "internal/shedtransient", "size": 50},
+        {"path": "internal/websterengine", "size": 80}
+      ],
+      "contract": {
+        "takes": "D4's driver rows, D2's driver steps and D3's bound check, over stop-halt-count's count function and stop record and stop-settlement-table's bounds. Raise sites: the claim push in `pushOwnerCommit` in `internal/boardengine/ownerset.go`, reached from `claimBoardEntry` in `internal/battencli/owner.go`; `shuttleengine.ErrNotStarted` and `shedtransient.TransientAgentStart`; the session timeout reason in `internal/shedadapters/multillm.go`; the fixer fork in `internal/websterengine`; `strandGoneError` in `internal/shuttleengine/run.go`; and the gate-attempts Stuck from `gateFailedReason` in `internal/shedadapters/gateattempts.go`.",
+        "delivers": "New rows in `decideDrive` in `internal/sheddriver/driverules.go`: a board claim refusal gets a board sync and a re-step; a launch never ready, a session timeout, a failed fixer fork and a lost strand get one fresh start of the row's producer; a bounce budget exhausted gets one resume, matching the `shedengine.ReasonBounceBudgetExhausted` prefix; a gate-attempts Stuck gets a re-step with a fresh producer session. Each class but the bounce budget's is raised as a named kind or field where the stop starts. Each row takes its bound from the table, a settle within the bound sends no notice and leaves a settle record, and a stop past it is handed back with its verdict. The tackler keeps every stop no row names.",
+        "exports": "The named kinds for the claim refusal, the session timeout, the fixer fork failure, the lost strand and the gate-attempts Stuck."
+      },
+      "depends_on": ["stop-halt-count", "worktree-create-transient-net", "bouncer-stalemate-uncommitted", "missing-origin-unreachable"],
+      "open_risks": ["`worktree-create-transient-net` changes Worktree-Create's stop handling beside D4's board-claim row; the classes differ, a transient `ls-remote` against a refused board claim,\nand the raddle promotion names it in `depends_on` so both rows are built over one stop chain."],
+      "criteria": [
+        "D2: a tier0 test in `internal/sheddriver` pins that each new driver row takes its bound from the table and that a stop past the bound is handed back with `settle: orch`.",
+        "D3: a tier0 test in `internal/sheddriver` pins that a class whose verdict is severe at the third halt reaches `settle: operator` when two earlier stops at the row were settled by lym alone,\nthat a wake past `wakeRestartGap` does not restore lym's bound, that a driver restarted at a stopped run keeps the stop's identity,\nand that one that died after a step persisted a second failed stop at the row but before it opened the identity opens a new one;\nand that an agent launch failing three times at one row with no history entry, one fresh start, then a hand-back, a resume and a third failure, reaches `settle: operator`.",
+        "D4: a tier0 test in `internal/sheddriver` pins each new row: a board claim refusal is synced and re-stepped once, then handed back;\na launch failure, session timeout, fixer fork failure and lost strand get one fresh start, then are handed back;\na bounce budget exhausted gets one resume, then is handed back; a gate-attempts Stuck gets one fresh re-step, then is handed back;\nand that each row matches its class by kind or field, not by message text, but the bounce budget's row, which matches the `shedengine.ReasonBounceBudgetExhausted` prefix.",
+        "D4: a tier0 test in `internal/sheddriver` pins that a stop settled within its bound sends the orch no notice and leaves a settle record."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn/solid with a stored record: lym report cost holds no run for that cell, so it reads too few runs; about 1150 changed lines over seven packages; solid because the raise sites span seven packages. It takes no edge on fabric-core-push-origin or fabric-core-pull-replay, which rework boardengine's push code at the end of a seven-task chain: the claim refusal kind is a few lines at one push site that merge by hand, and waiting would hold this project behind the whole fabric-core chain"
+    },
+    {
+      "slug": "arbiter-budget-escalations",
+      "title": "The arbiter takes budget escalations, and nothing lands a round with an open blocking finding unattended",
+      "type": "feature",
+      "labels": ["arbiter", "shed", "loom", "stencil"],
+      "recipe": "darn",
+      "profile": "solid",
+      "decisions": ["D6"],
+      "packages": [
+        {"path": "internal/arbiterstop", "size": 160},
+        {"path": "internal/shedarbiter", "size": 90},
+        {"path": "internal/shedadapters", "size": 230},
+        {"path": "internal/sheddriver", "size": 160},
+        {"path": "internal/loomcli", "size": 150},
+        {"path": "contracts/stencils/loom", "size": 60}
+      ],
+      "contract": {
+        "takes": "D6's Go and arbiter-stencil steps: `Eligibility` and `Stop` in `internal/arbiterstop/arbiterstop.go`, built in `arbiterstop.Check` from `NewReaders`; the arbiter call in `internal/shedarbiter`; the stencil `contracts/stencils/loom/loom-template-arbiter.md`; the Bouncer's escalation and accept paths in `internal/shedadapters/bouncer.go` and `readCirclingFile` and `recordAutoContinue` in `internal/shedadapters/circling.go`; `circlingVerb` and `finalizeCirclingVerb` in `internal/loomcli/circling.go`; the fixer report's `deferred` disposition parsed by `internal/burlerengine/fixerreport.go`; `dobbyengine.LookupAutonomy` from autonomy-unattended-level.",
+        "delivers": "Cause `budget` admitted; `arbiterstop.Stop` carrying the run's level, named in the arbiter's prompt; the arbiter's `budget` rules in D6's order, with the one continue per segment read from the circling decision files and refused at the hard cap; one board note for a deferred-findings accept at Code-Review and after, filed by the driver through a seam the loomcli driver wiring backs with `internal/boardengine`, with no board grant for the arbiter; under `unattended` the Bouncer runs every perch as with `blocking_escalates`, and neither the arbiter at any cause nor a Finalize fix-review accept lands a round with an open BLOCKING finding or a red gate. The orch's side of D6, the hold and the role text, is built by orch-unattended-rules.",
+        "exports": "The `Autonomy` field on `arbiterstop.Stop`."
+      },
+      "depends_on": ["driver-settles-stops"],
+      "open_risks": [],
+      "criteria": [
+        "D6: a tier0 test in `internal/arbiterstop` pins that cause `budget` is admitted and that `arbiterstop.Stop` carries the run's autonomy level.",
+        "D6: a test pins the arbiter's rules: a green `budget` round whose open BLOCKING findings are all `deferred` is accepted under `true`, with one board note at Code-Review and after,\nand handed on under `false` and `unattended`; a missing or older-than-the-round fixer report marks no finding `deferred`;\na round with a red gate or an open BLOCKING finding not deferred is continued once per segment, read from the segment's circling decision files, and then handed on;\na segment the Bouncer auto-continued still gets the arbiter's one continue, and a `budget` escalation at the hard cap is handed on, not continued;\na `budget` escalation over an unreadable ledger with a green gate under `true` is handed on, neither accepted nor continued;\na `hard-cap` escalation holding an open BLOCKING finding under `unattended` is handed on, not accepted;\na run halted at Finalize after its fix reviews ran out of rounds with an open BLOCKING finding under `unattended` is held, not accepted;\nand under `unattended` the Bouncer's auto-accept and soft-cap accept pass no round with an open BLOCKING entry; tier1 or the lowest that fits."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn/solid with a stored record: lym report cost holds no run for that cell, so it reads too few runs; about 850 changed lines over five packages and one stencil directory; solid because it decides whether a round with open findings lands, which a landing makes hard to undo; it runs beside severe-halt-slack-post, with no package in common"
+    },
+    {
+      "slug": "severe-halt-slack-post",
+      "title": "The dobby posts each severe halt to Slack, and the relay mentions the operator on a severe-halt post",
+      "type": "feature",
+      "labels": ["dobby", "batten", "slack"],
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D7", "D8"],
+      "packages": [
+        {"path": "internal/dobbyengine", "size": 420},
+        {"path": "internal/battencli", "size": 70},
+        {"path": "internal/beamcli", "size": 60},
+        {"path": "internal/slackengine", "size": 260}
+      ],
+      "contract": {
+        "takes": "D7's dobby steps and D8's relay steps: the four facts and the halt key stop-halt-count records on the history entry or the stop record; `ChildReading` in `internal/dobbyengine/runnotice.go`, read through `ReadChild` in `internal/battencli/dobbynotice.go`; the program post `internal/dobbyengine/waitreminder.go` makes, wired in `internal/beamcli/dobbydeps.go`; `internal/slackengine/outbound.go` and the operator ID in `slackengine.Setup`; `dobbyengine.AutonomyLevel` from autonomy-unattended-level.",
+        "delivers": "D7: `ChildReading` carries the four facts from the halt entry the stop record names, or from the stop record; the dobby that drives the run posts one `[operator] severe halt <slug> <key>:` line to `<shortname>:SLACK` under its program name for each `settle: operator` halt under `true` or `unattended`, whether or not an orch strand is recorded, and keeps the posted key in its state record, written after the post. D8: the relay mentions the configured operator on a post whose first line opens `[operator] severe halt <slug>`, from an orch or a program, and dedups a second one by slug and key within `slack.remind_after_min`, keyless only against keyless; every other post carries no mention. D8's reminders and D10's stall posts are built by dobby-stall-chase; the orch's relay rules by orch-unattended-rules.",
+        "exports": "The severe-post record in the dobby state record, which dobby-stall-chase's reminders and stall posts read."
+      },
+      "depends_on": ["driver-settles-stops", "dobby-pause-lift-resume", "beam-member-parent"],
+      "open_risks": ["`beam-member-parent` changes which orch a beam member's run reports to; D7's post goes to the orch of the dobby that drives the run, and that task decides whether that orch stays the run's parent."],
+      "criteria": [
+        "D7: a test pins that a hand-back records `class:`, `settle:`, `halts_at_row:` and `halt:` on the halt's history entry the dobby's child read reads,\nthat a failed-state hand-back with no history entry records the four on the stop record the child read reads,\nthat the next transition's entry or a fold that raises `repeats` supersedes them and gives a new key,\nthat a second failed-state hand-back at the row gets a new key and a second severe post when its verdict is `operator`,\nthat the dobby posts one `[operator] severe halt <slug> <key>:` line to `<shortname>:SLACK` under its program name for a severe verdict under `true` or `unattended`, with or without a recorded orch strand,\nthat a restarted dobby does not post it again once its state record holds it, and that under `false` nothing is posted to Slack; tier1 or the lowest that fits.",
+        "D8: a tier0 test in `internal/slackengine` pins that an outbound post whose first line opens `[operator] severe halt <slug>` mentions the configured operator, from an orch and from a program,\nthat a second one for the same slug and key within `slack.remind_after_min` does not, that a keyless one dedups only against an earlier keyless one of the slug,\nthat a keyless one following a keyed one of the same slug within the window mentions the operator,\nthat one for a distinct second halt of the slug within that window does, a fold into the same history entry and a second failed halt at the row with no history entry among them,\nand that `[operator] split ready`, `[operator] merge ready`, `[operator] held` and a reminder carry no mention."
+      ],
+      "pattern_changes": ["PATTERN-stop-settlement"],
+      "expected_cost_usd": null,
+      "cost_line": "darn/light with a stored record: lym report cost holds no run for that cell, so it reads too few runs; about 810 changed lines over four packages; light, as it adds one post and one state record entry and models both on the wait reminders. It carries PATTERN-stop-settlement because its rule holds whole only here, once the table, the count and the Slack post have landed. It takes no edge on area-seccomp-core, a draft that changes slackengine"
+    },
+    {
+      "slug": "idle-notice-correct-waits",
+      "title": "The idle and held notices skip correct waits and name what an agent waits on",
+      "type": "enhancement",
+      "labels": ["dobby", "batten", "creel", "shuttle", "loom"],
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D11"],
+      "packages": [
+        {"path": "internal/dobbyengine", "size": 300},
+        {"path": "internal/battencli", "size": 130},
+        {"path": "internal/creelengine", "size": 130},
+        {"path": "internal/creelcli", "size": 50},
+        {"path": "internal/shuttleengine", "size": 160},
+        {"path": "internal/loomshed", "size": 40}
+      ],
+      "contract": {
+        "takes": "D11 whole: the quiet notice in `internal/dobbyengine/runnotice.go`, `readAgentActivity` in `internal/battencli/wire.go`, `Store.AwaitsReply` in `internal/creelengine/verbs.go` and `creelcli.AwaitsReplyProbe`, the held notice in `internal/shuttleengine/hold.go` and `Runner.SetReplyProbe` in `internal/shuttleengine/run.go`, and `verifyBudgetNotice` in `internal/loomshed/verifybudget.go`.",
+        "delivers": "The quiet notice raises nothing for a `Raddle-Write` run whose proposal passes with a live raddle agent or for an agent with an open question in creel, and names an unread reply; `AwaitsReply` read as two probes for the quiet notice while the held notice keeps the combined one; an idle notice names the live command, its run time and its last output, or the Finalize step and what it waits on; the held notice is not sent while a question is open or a reply unread, in every runner; the verify gate's past-budget notice names the failing runs or says none failed.",
+        "exports": "Fixed for consumers: `creelcli.OpenQuestionProbe` and `creelcli.UnreadReplyProbe`, which dobby-stall-chase's question chase reads."
+      },
+      "depends_on": ["severe-halt-slack-post", "push-retry-not-halt", "creel-machine-outbound-flake"],
+      "open_risks": ["`push-retry-not-halt` changes the files D4, D5, D7 and D11 change; this task's runs must start after it lands, so the raddle promotion names it in `depends_on`."],
+      "criteria": [
+        "D11: a test pins that the quiet notice raises nothing for a run at `Raddle-Write` whose proposal passes with a live agent and for an agent with an open question in creel,\nand still raises it for a `Raddle-Write` run whose proposal does not pass or whose agent ended, and for an agent holding an unread reply, naming that reply; tier1 or the lowest that fits.",
+        "D11: a test pins that an idle notice for an agent running a live command names the command, its run time and its last output time; tier1 or the lowest that fits.",
+        "D11: a test pins that the held notice is not sent while the agent has an open question in creel, in a runner whose wiring sets no reply probe today among them,\nnor while it holds an unread reply, and that the verify gate's past-budget notice names the failing runs or says none failed; tier1 or the lowest that fits."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn/light with a stored record: lym report cost holds no run for that cell, so it reads too few runs; about 810 changed lines over six packages; light, as it changes notices only. It carries the push-retry-not-halt risk, since this is the first part with every decision that risk names on its path; that task landed and Raddle-File drops the edge"
+    },
+    {
+      "slug": "dobby-stall-chase",
+      "title": "The dobby chases stalls the orch leaves unsettled, reminds of severe posts, and warns when autonomy cannot reach the operator",
+      "type": "feature",
+      "labels": ["dobby", "batten", "config"],
+      "recipe": "darn",
+      "profile": "light",
+      "decisions": ["D8", "D10", "D12"],
+      "packages": [
+        {"path": "internal/dobbyengine", "size": 620},
+        {"path": "internal/beamcli", "size": 90},
+        {"path": "internal/battencli", "size": 40}
+      ],
+      "contract": {
+        "takes": "D10 and D12 whole and D8's reminder steps: severe-halt-slack-post's severe-post record and post; `creelcli.OpenQuestionProbe` from idle-notice-correct-waits; the respawn cap the child read shows; the dobby `ConfigSpec` in `internal/dobbyengine/config.go`; the slack button state and the configured operator, read through the dobby's wiring in `internal/beamcli/dobbydeps.go`.",
+        "delivers": "D10: `beam.halt_chase_min`, default 10, classified `CategoryNone` and refused under 1 naming the key in full; one chase line per stall key to the dobby's orch for a `settle: orch` halt, an open creel question and a dead driver past its caps, naming `lym loom resume` when a parent decision came after the halt; under `unattended` one severe post per stall key one interval later, also sent to the orch while its slack button is off; chase and post kept in the state record and ended by D10's end events. D8: the wait reminders remind of each severe post the state record holds at `slack.remind_after_min`, without a mention, until its end event. D12: one warning per episode when a task resolves `true` or `unattended` with the slack button off or no operator configured, naming `lym slack`.",
+        "exports": "The `beam.halt_chase_min` key."
+      },
+      "depends_on": ["idle-notice-correct-waits"],
+      "open_risks": [],
+      "criteria": [
+        "D8: a tier0 test in `internal/dobbyengine` with an injected clock pins that the wait reminders remind of each severe post the state record holds at `slack.remind_after_min` while the operator is away,\nand stop at the post's own end event: once the run leaves the halt, once a question stall's question is answered or settled, and once a dead-driver stall's driver is revived.",
+        "D10: a tier0 test in `internal/dobbyengine` with an injected clock pins one chase after `beam.halt_chase_min` for a run still halted with `settle: orch`,\nfor an agent's open question in creel, and for a dead driver past its caps,\nthe chase naming `lym loom resume` when a parent decision was recorded after the halt, no chase after a transition, an answered question, a revive or once a pause covers the run,\nunder `unattended` one severe post with the stall's key one interval after the chase and none for a paused run, and neither sent again by a restarted dobby;\nthat the chase line carries the stall's key, and that with the dobby's orch's slack button off the post's line is also sent to that orch;\nand that a halt the orch relayed as severe under `unattended` and then held gets no second severe post.",
+        "D10: a tier0 test pins that `beam.halt_chase_min` under 1 is refused naming the key in full.",
+        "D12: a tier0 test in `internal/dobbyengine` pins one warning when a task resolves `true` or `unattended` with the dobby's orch's slack button off or no operator configured,\nnone again in the same episode, and one after the cause cleared and returned."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn/light with a stored record: lym report cost holds no run for that cell, so it reads too few runs; about 750 changed lines over three packages; light, as its records follow the wait reminders' model and change no run"
+    },
+    {
+      "slug": "orch-unattended-rules",
+      "title": "The orch role texts gain the unattended level's rules and the glossary names the level",
+      "type": "feature",
+      "labels": ["orch", "heddle"],
+      "recipe": "darn",
+      "profile": "docs",
+      "decisions": ["D6", "D7", "D9", "D13"],
+      "packages": [
+        {"path": "contracts/orchrole", "size": 200},
+        {"path": "internal/heddleengine", "size": 10}
+      ],
+      "contract": {
+        "takes": "D9 and D13 whole and the role-text steps of D6 and D7, written in `contracts/orchrole/role-autonomy.md`, `contracts/orchrole/orch-role.md` and `internal/heddleengine/glossary.md`; the hold reason from dobby-pause-lift-resume, the arbiter's hand-on from arbiter-budget-escalations, the `settle: operator` post from severe-halt-slack-post and the stall posts from dobby-stall-chase, each landed. D9's autonomy line in `internal/orchengine/prompt.go` is built by autonomy-unattended-level.",
+        "delivers": "The unattended rules D9 lists; D6's hold of a round with an open BLOCKING finding or a red gate and of a Finalize halt while one remains; D7's relay rule, keyed posts, the in-pane relay while the slack button is off, the hold after a severe relay and the `lym selfreport create` filing, with \"lym classifies no halt\" dropped; and D13's three glossary lines.",
+        "exports": "Nothing in Go."
+      },
+      "depends_on": ["arbiter-budget-escalations", "dobby-stall-chase"],
+      "open_risks": [],
+      "criteria": [
+        "D6, Review: `role-autonomy.md` says the unattended orch pauses as a hold, never accepts, a round holding an open BLOCKING finding or a red gate,\nand a run halted at Finalize after its fix reviews ran out of rounds while one remains.",
+        "D7, Review: the orch role texts say the orch relays only the severe halts of the rows D2 marks *(orch)*, a cancel under `true` among them, and leaves a halt with no settling action open to lym's post under `unattended`;\nthat it never relays a halt whose notice reads `settle: operator` but in its pane while the dobby's orch has its slack button off, where it also relays each stall D10 posts as severe;\nthat under `unattended` it holds a run whose halt it relayed as severe, and relays a question that shows a run cannot finish within its record as that run's held severe halt;\nthat it still files the bug of a `settle: operator` third halt at a row with `lym selfreport create`; and they no longer say lym classifies no halt.",
+        "D9, Review: `role-autonomy.md` holds the unattended rules D9 lists, the narrowed severe classes among them, and leaves the `true` rules unchanged but for D7's relay rule.",
+        "D13, Review: `internal/heddleengine/glossary.md` holds the unattended autonomy, severe halt and settlement table lines as D13 gives them."
+      ],
+      "pattern_changes": [],
+      "expected_cost_usd": null,
+      "cost_line": "darn/docs with a stored record reads too few runs (1 run); about 210 changed lines of role text and glossary; docs, as it writes only stencil and heddle text, and it lands last so the orch stops relaying `settle: operator` halts only once lym posts them"
+    }
+  ],
+  "order_departures": [],
+  "cost": {
+    "expected_usd": null,
+    "line": "Eleven darn parts under the new project self-healing-autonomy at the board's top level, about 7,900 changed lines in all: six light, four solid, one docs. Every stored-record darn cell reads too few runs (light and solid hold no run, docs holds one), so the total has no figure; the unstored cells' fits, darn/light 5.81 + 0.35 per 100 lines over 103 runs, darn/solid 18.73 + 0.13 over 18 and darn/docs 1.83 + 0.77 over 16, would give about 132 USD, for reference only. Two parts start at once, stop-settlement-table and autonomy-unattended-level; then loom-verbs-await-park; then stop-halt-count beside dobby-pause-lift-resume; then driver-settles-stops; then arbiter-budget-escalations beside severe-halt-slack-post and its chain to idle-notice-correct-waits and dobby-stall-chase; orch-unattended-rules lands last. The chain is long because internal/dobbyengine, internal/sheddriver, internal/loomcli and internal/battencli each sit in several parts",
+    "next_best": {
+      "split": "one tapestry/solid part building every decision",
+      "expected_usd": 66.8,
+      "line": "tapestry/solid stored-record fit, 31.63 USD fixed plus 0.44 per 100 lines over about 7,900 lines (6 runs, correlation 0.93), which extrapolates past the cell's run sizes and puts one review over five times the darn bound. Notes for the operator: push-retry-not-halt and worktree-create-transient-net have landed and are gone from the board, so they sit in board_checked as landed, stamped with their landing commits, and Raddle-File drops their edges. Edges left out: the fabric-core chain and keep-landed-run-records, whose overlaps in boardengine, battencli, shedengine, shedrun and loomcli are a few lines in other files, and waiting on them would hold this project behind a seven-task chain; config-key-comment-sweep, which changes comments only; pr-session-mail-stand-ins, which changes loomcli tests only; and the drafts area-seccomp-core and area-host-exits, which are not released. The note autonomy-intake-runs depends on self-healing-runs; repoint it to self-healing-autonomy once the project is filed. Decisions built by more than one part: D2 by stop-settlement-table (table) and driver-settles-stops (driver rows); D3 by stop-halt-count (count, identity) and driver-settles-stops (bound checks); D4 by driver-settles-stops (driver rows) and dobby-pause-lift-resume (lift, hold); D6 by arbiter-budget-escalations (Go, arbiter stencil) and orch-unattended-rules (role text); D7 by stop-halt-count (records), severe-halt-slack-post (child read, post) and orch-unattended-rules (relay rules); D8 by severe-halt-slack-post (mention, dedup) and dobby-stall-chase (reminders); D9's prompt line is built by autonomy-unattended-level. The Discussion-Review round-3 BLOCKING finding failed-state-halt-not-counted-or-recorded is answered by both added decisions and built in stop-halt-count and driver-settles-stops"
+    },
+    "cells": [
+      {"recipe": "darn", "profile": "light", "stored_record": true},
+      {"recipe": "darn", "profile": "solid", "stored_record": true},
+      {"recipe": "darn", "profile": "docs", "stored_record": true},
+      {"recipe": "tapestry", "profile": "solid", "stored_record": true}
+    ]
+  }
+}
