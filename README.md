@@ -182,7 +182,7 @@ An entry waits only on the open entries it names under After, so the entries in 
 | --- | --- | --- | --- | --- | --- |
 | E6 |  | **An implementer batch gets the files and symbols its cards name, so it starts editing sooner** | [`implementer-orientation-read`](design-implementer-orientation-read.md) | 3h<br>1h | webster, weaver, stencil |
 
-## [P0 Root: entries under no project](project-root.md) (18)
+## [P0 Root: entries under no project](project-root.md) (19)
 
 Owner `neve`
 
@@ -209,7 +209,7 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | --- | --- | --- | --- | --- | --- |
 | R4 |  | **Antigravity CLI engine spike**<br>• Hands-on spike of agy in a tmux pane: screens, hooks, transcript, login | [`antigravity-engine-spike`](design-antigravity-engine-spike.md) | 10d<br>10d | shuttle |
 
-### Bugs (7)
+### Bugs (8)
 
 | # | Prio | Note | Slug | After | Age<br>Revised | Labels |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -217,9 +217,10 @@ Autonomy _on_ (hub-wide) · PR setting _off_ (hub-wide)
 | B2 |  | **A window whose home desktop no longer exists keeps that home after it is placed elsewhere** | [`kwin-home-desktop-gone`](design-kwin-home-desktop-gone.md) | T2 | 1h<br>1h | termwindow |
 | B3 |  | **lym fabric clone --reset refuses a hub holding leftovers of an earlier _bolt layout** | [`reset-old-layout-leftovers`](design-reset-old-layout-leftovers.md) |  | 33m<br>33m | fabric |
 | B4 |  | **Parent-Align halts when its own fixer pushes the task branch, reading the fixer commits as a foreign move** | [`parent-align-fixer-own-push`](design-parent-align-fixer-own-push.md) |  | 28m<br>0m | landing |
-| B5 |  | **Dobby posts a refused beam.autonomy on its own tick** | [`autonomy-refusal-own-tick`](design-autonomy-refusal-own-tick.md) |  | 9m<br>9m | dobby |
+| B5 |  | **Dobby posts a refused beam.autonomy on its own tick** | [`autonomy-refusal-own-tick`](design-autonomy-refusal-own-tick.md) |  | 10m<br>10m | dobby |
 | B6 |  | **Test git can reach the network and open a credential prompt, hanging an agent's test run** | [`test-git-hermetic-network`](design-test-git-hermetic-network.md) |  | 0m<br>0m | testkit, git |
 | B7 |  | **Review fork guard halts the run on a push from the fork's own throwaway repo after an ln, with a message that names the wrong rule** | [`review-fork-guard-ln-push`](design-review-fork-guard-ln-push.md) |  | 0m<br>0m | burler, stencil |
+| B8 |  | **Gate tier timeout counts time spent in hibernation and fails a run that did not hang** | [`gate-timeout-counts-suspend`](design-gate-timeout-counts-suspend.md) |  | 0m<br>0m | gate, hibernate |
 
 ### Enhancements (3)
 
