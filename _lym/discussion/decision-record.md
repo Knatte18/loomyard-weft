@@ -29,4 +29,12 @@ No current recording holds a `load-buffer` call, so a scenario that sends text t
 
 ## Open risks
 
+<!-- lym:carry-over Code-Review -->
+- Code-Review, round 2: closed by an accepted circling decision; a finding below was addressed by the round's fixer or is still unfixed.
+  Review: _lym/reviews/code/round-2-review.md; fixer report: _lym/reviews/code/round-2-fixer-report.md.
+  - F10 (class design, severity BLOCKING, open in rounds 2)
+  - F11 (class decision, severity BLOCKING, open in rounds 2)
+  - prreview-mail-test-new-standing-fake-uses (class decision, severity BLOCKING, open in rounds 1, 2)
+<!-- /lym:carry-over Code-Review -->
+
 ## Acceptance criteria
