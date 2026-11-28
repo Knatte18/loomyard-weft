@@ -1,11 +1,11 @@
 {
-  "current_producer": "Code-Burler-Review",
+  "current_producer": "Code-Burler-Fix",
   "state": "running",
   "error": "",
   "pause_requested": false,
   "activity": {
-    "now": "Code-Burler-Review",
-    "last": "Code-Bouncer → bounced to Code-Burler-Review",
+    "now": "Code-Burler-Fix",
+    "last": "Code-Burler-Review → bounced to Code-Burler-Fix",
     "wait": ""
   },
   "history": [
@@ -116,6 +116,30 @@
       "at": "2026-11-28T08:09:06Z",
       "started_at": "2026-11-28T08:08:25Z",
       "routed_to": "Code-Burler-Review"
+    },
+    {
+      "producer": "Code-Burler-Review",
+      "outcome": "stuck",
+      "output": "/home/knatte/Code/loomyard-LYMHUB/gate-call-shows-slot-wait/_lym/reviews/code/round-1-review.md",
+      "at": "2026-11-28T08:13:41Z",
+      "started_at": "2026-11-28T08:09:07Z",
+      "gate_attempts": 0,
+      "gate_spans": [
+        {
+          "gate": "review",
+          "kind": "gate",
+          "start": "2026-11-28T08:13:39.928576301Z",
+          "end": "2026-11-28T08:13:39.929231276Z"
+        },
+        {
+          "gate": "round",
+          "kind": "gate",
+          "start": "2026-11-28T08:13:40.384737103Z",
+          "end": "2026-11-28T08:13:40.385440298Z"
+        }
+      ],
+      "budget_exempt": true,
+      "routed_to": "Code-Burler-Fix"
     }
   ],
   "product": {
