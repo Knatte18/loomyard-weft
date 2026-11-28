@@ -647,7 +647,7 @@
       "isolated": false,
       "brief": "",
       "body": "Imported from [issue #294](https://github.com/Knatte18/loomyard/issues/294).\n\n## What happened\n\nAn origin that is missing on disk is not treated as unreachable:\n\n- A removed bare repository used as origin is classed `other` by the push failure classification, not as transport.\n- A remote pointing at a missing directory makes the origin reconcile return an error instead of reporting origin unreachable.\n\nTests of an owed push or an unreachable origin had to use a refused connection URL instead.\n\n## Why it is abnormal\n\nAn origin that cannot be reached for a path reason, such as a missing or unmounted directory, takes a different route from one that refuses a connection.\nIt may therefore stop a run where an owed push would be expected.\n\n## What to do\n\nDecide how a missing local remote should be classed.\nEither treat it as unreachable in both places, or document that only network failures count.\n\nProvenance: task `push-retry-not-halt`, notes `06-pusher-target-kinds.md`, `12-finalize-local-landing.md`.\n",
-      "status": "landing · Finalize",
+      "status": "running · Friction-Reflect",
       "created": "2026-11-27T21:39:07Z",
       "revised": "2026-11-27T21:40:02Z",
       "profile": "light"
