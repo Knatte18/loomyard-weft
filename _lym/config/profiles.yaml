@@ -10,66 +10,57 @@
 # Remove one by deleting its block in the editor: lym config profiles
 
 defaults:
-    tapestry: solid
-    darn: light
-    motif: solid
-    pawl: light
-    raddle: light
-    arras: solid
+  tapestry: solid
+  darn: light
+  motif: solid
+  pawl: light
+  raddle: light
 speed:
-    tapestry: {loom: {code: {hard_max_bounces: 2, max_bounces: 1, reviewer_fan: ""}, discussion: {hard_max_bounces: 1, max_bounces: 0}}, tapestry: {plan: {hard_max_bounces: 1, max_bounces: 0}}}
-    darn: {loom: {code: {hard_max_bounces: 1, max_bounces: 0, reviewer_model: 'opus[medium]'}}}
-    motif:
-        loom: {discussion: {hard_max_bounces: 1, max_bounces: 0}}
-    pawl:
-        loom: {code: {hard_max_bounces: 1, max_bounces: 0}}
-    sampler:
-        loom: {code: {hard_max_bounces: 1, max_bounces: 0}}
-    raddle:
-        loom: {raddle: {auto_approve: false}}
-    arras:
-        loom: {discussion: {hard_max_bounces: 1, max_bounces: 0}, split: {hard_max_bounces: 1, max_bounces: 0}}
+  tapestry: {loom: {code: {hard_max_bounces: 2, max_bounces: 1, reviewer_fan: ""}, discussion: {hard_max_bounces: 1, max_bounces: 0}}, tapestry: {plan: {hard_max_bounces: 1, max_bounces: 0}}}
+  darn: {loom: {code: {hard_max_bounces: 1, max_bounces: 0, reviewer_model: 'opus[medium]'}}}
+  motif:
+    loom: {discussion: {hard_max_bounces: 1, max_bounces: 0}}
+  pawl:
+    loom: {code: {hard_max_bounces: 1, max_bounces: 0}}
+  sampler:
+    loom: {code: {hard_max_bounces: 1, max_bounces: 0}}
+  raddle:
+    loom: {raddle: {auto_approve: false}}
 light:
-    tapestry: {loom: {code: {hard_max_bounces: 2, max_bounces: 1}, discussion: {hard_max_bounces: 2, max_bounces: 1}}, tapestry: {plan: {hard_max_bounces: 2, max_bounces: 1}}}
-    darn: {loom: {code: {hard_max_bounces: 2, max_bounces: 1, reviewer_model: 'opus[medium]'}}}
-    motif:
-        loom: {discussion: {hard_max_bounces: 2, max_bounces: 1}}
-    pawl:
-        loom: {code: {hard_max_bounces: 2, max_bounces: 1}}
-    sampler:
-        loom: {code: {hard_max_bounces: 2, max_bounces: 1}}
-        sampler: {code_review: true}
-    raddle:
-        loom: {raddle: {auto_approve: false}}
-    arras:
-        loom: {discussion: {hard_max_bounces: 2, max_bounces: 1}, split: {hard_max_bounces: 2, max_bounces: 1}}
+  tapestry: {loom: {code: {hard_max_bounces: 2, max_bounces: 1}, discussion: {hard_max_bounces: 2, max_bounces: 1}}, tapestry: {plan: {hard_max_bounces: 2, max_bounces: 1}}}
+  darn: {loom: {code: {hard_max_bounces: 2, max_bounces: 1, reviewer_model: 'opus[medium]'}}}
+  motif:
+    loom: {discussion: {hard_max_bounces: 2, max_bounces: 1}}
+  pawl:
+    loom: {code: {hard_max_bounces: 2, max_bounces: 1}}
+  sampler:
+    loom: {code: {hard_max_bounces: 2, max_bounces: 1}}
+    sampler: {code_review: true}
+  raddle:
+    loom: {raddle: {auto_approve: false}}
 solid:
-    tapestry: {loom: {code: {hard_max_bounces: 2, max_bounces: 1}, discussion: {hard_max_bounces: 3, max_bounces: 2}}, tapestry: {plan: {hard_max_bounces: 3, max_bounces: 2}}}
-    darn: {loom: {code: {hard_max_bounces: 3, max_bounces: 2, reviewer_model: 'opus[medium]'}}}
-    motif:
-        loom: {discussion: {hard_max_bounces: 3, max_bounces: 2}}
-    pawl:
-        loom: {code: {hard_max_bounces: 3, max_bounces: 2}}
-    sampler:
-        loom: {code: {hard_max_bounces: 3, max_bounces: 2}}
-        sampler: {code_review: true}
-    raddle:
-        loom: {raddle: {auto_approve: false}}
-    arras:
-        loom: {discussion: {hard_max_bounces: 3, max_bounces: 2}, split: {hard_max_bounces: 3, max_bounces: 2}}
+  tapestry: {loom: {code: {hard_max_bounces: 2, max_bounces: 1}, discussion: {hard_max_bounces: 3, max_bounces: 2}}, tapestry: {plan: {hard_max_bounces: 3, max_bounces: 2}}}
+  darn: {loom: {code: {hard_max_bounces: 3, max_bounces: 2, reviewer_model: 'opus[medium]'}}}
+  motif:
+    loom: {discussion: {hard_max_bounces: 3, max_bounces: 2}}
+  pawl:
+    loom: {code: {hard_max_bounces: 3, max_bounces: 2}}
+  sampler:
+    loom: {code: {hard_max_bounces: 3, max_bounces: 2}}
+    sampler: {code_review: true}
+  raddle:
+    loom: {raddle: {auto_approve: false}}
 wide:
-    tapestry: {loom: {code: {hard_max_bounces: 2, max_bounces: 1}, discussion: {hard_max_bounces: 4, max_bounces: 3}}, tapestry: {plan: {hard_max_bounces: 3, max_bounces: 2}}}
-    darn: {loom: {code: {hard_max_bounces: 4, max_bounces: 3, reviewer_model: 'opus[medium]'}}}
-    motif:
-        loom: {discussion: {hard_max_bounces: 4, max_bounces: 3}}
-    pawl:
-        loom: {code: {hard_max_bounces: 4, max_bounces: 3}}
-    sampler:
-        loom: {code: {hard_max_bounces: 4, max_bounces: 3}}
-        sampler: {code_review: true}
-    raddle:
-        loom: {raddle: {auto_approve: false}}
-    arras:
-        loom: {discussion: {hard_max_bounces: 4, max_bounces: 3}, split: {hard_max_bounces: 4, max_bounces: 3}}
+  tapestry: {loom: {code: {hard_max_bounces: 2, max_bounces: 1}, discussion: {hard_max_bounces: 4, max_bounces: 3}}, tapestry: {plan: {hard_max_bounces: 3, max_bounces: 2}}}
+  darn: {loom: {code: {hard_max_bounces: 4, max_bounces: 3, reviewer_model: 'opus[medium]'}}}
+  motif:
+    loom: {discussion: {hard_max_bounces: 4, max_bounces: 3}}
+  pawl:
+    loom: {code: {hard_max_bounces: 4, max_bounces: 3}}
+  sampler:
+    loom: {code: {hard_max_bounces: 4, max_bounces: 3}}
+    sampler: {code_review: true}
+  raddle:
+    loom: {raddle: {auto_approve: false}}
 docs:
-    darn: {darn: {writer: 'sonnet[medium]', report_dir: "docs/research"}, loom: {code: {hard_max_bounces: 1, max_bounces: 0, reviewer_fan: "", reviewer_model: 'opus[medium]'}}, drift: {scope: "off"}}
+  darn: {darn: {writer: 'sonnet[medium]', report_dir: "docs/research"}, loom: {code: {hard_max_bounces: 1, max_bounces: 0, reviewer_fan: "", reviewer_model: 'opus[medium]'}}, drift: {scope: "off"}}
