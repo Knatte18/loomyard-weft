@@ -1,36 +1,49 @@
-# Retry pair-create origin lookups in transit; an unmade pair is fresh
+# Retry pair-create origin reads; treat a not-yet-made pair as fresh
 
-A batten run blocked at Worktree-Create when one `git ls-remote origin refs/heads/<branch>-weft` failed with `Recv failure: Connection reset by peer`.
-The same lookup succeeded seconds later, but nothing retried it.
-The stop then read as if a created pair had lost its records branch,
-although no pair had ever been made and the branch is absent for every new task.
+A batten run blocked at Worktree-Create when one `git ls-remote` of the weft branch got a connection reset,
+although the same lookup succeeded seconds later.
+The stop question then claimed the task worktree had already been created,
+and asked whether to restore the absent weft branch on origin or abandon the pair.
+Nothing had been made.
+
+Closes #279
 
 ## What changes
 
-- `Topology.Add` in `internal/fabricengine/add.go` runs each of its two pre-flight origin probes, the warp branch tip and the weft branch's liveness, again when git reports a transport failure (`gitexec.IsTransportFailure`).
-  It waits one, two and then four seconds between attempts, and only the last failure fails the Add.
-  A failure that is not a transport failure, such as a missing repository, is returned at once as before.
-  The wait goes through `AddOptions.BackoffSleep`, the same hook a push's backoff uses, so a test waits out no real time.
-- The tackler and arbiter wiring in `internal/battencli/drive.go` resolves the task worktree for its usage records only once the worktree exists.
-  Before, at a Worktree-Create stop, it logged the absent-worktree refusal, whose text says the run's status records the worktree as created.
-  That log line was the false premise the stop's question repeated.
-- The batten run descriptions the tackler and arbiter prompts carry now state that a run whose Worktree-Create never finished done has no pair yet.
-  Its absent task worktree and the absence of its records branch on origin are its fresh state, never a pair to restore or abandon.
+- Some of the create's origin reads now run again after 1, 2 and 4 seconds when they fail in transit:
+  `Add`'s warp and weft pre-flight probes, the fetch of an adopted warp branch,
+  the fetches of a live weft branch, the lookup of a weft branch that is only on origin,
+  and Worktree-Create's lookup of a beam's branch.
+  A failure that is not a transport failure is returned at once.
+- Before Worktree-Create has made the pair, `primeShuttle` no longer tries to locate the task worktree.
+  It therefore no longer logs a warning whose error says the run's status records the worktree as created.
+- The run descriptions given to the tackler and the arbiter now say that,
+  until Worktree-Create has finished done, an absent task worktree and a records branch absent from origin
+  are the fresh state, never a pair to restore.
 
 ## Design decisions
 
-- The retry wraps each probe as a whole rather than the single `ls-remote` call.
-  The weft probe can also list archive tags and fetch into `FETCH_HEAD`, all read-only, so re-running it from the start is safe and covers a drop in any of those calls.
-- The probes keep running in parallel, and a retry extends the time Add holds the hub's prime lock by at most seven seconds.
-- The absent-worktree refusal keeps its wording: every verb that raises it runs past Worktree-Create, where its claim about the status holds.
-  The fix stops the one caller that reached it before the pair existed.
+- The retry is `AddOptions.RetryOriginReadInTransit`, and it waits through `AddOptions.BackoffSleep`.
+  It is exported so that batten's beam lookup can use it, and it is meant only for reads that are safe to repeat.
+- `gitexec.IsTransportFailure` decides what is retried, and it counts a timed-out git command.
+  The retries inside `Add` can therefore hold the prime lock longer:
+  each retried read adds up to 7 seconds of backoff and three more attempts,
+  and each remote command in an attempt can run to git's remote deadline.
+- Two lookups in `Add` still run once: the pair's branch name under `AdoptOnly`,
+  and the warp's default branch under `AdoptLocal`.
+- `resolveWeftBranch` now takes the reader as a parameter, so checkout and reconcile still read once.
+- The wrong stop question is addressed in two ways: the misleading warning is gone, and the agents' prompt text is explicit.
+  No code constrains what question an agent asks.
 
-## Tests
+## To check by hand
 
-`TestAdd_RetriesOriginProbesThatFailInTransit` points both stores' origin at a URL git refuses with `connection refused`.
-In one row the backoff hook restores the real URLs and the Add makes the pair.
-In the other, origin stays down, and the Add fails with the transport failure after three backoff waits for each of the two probes, leaving nothing created.
-Without the retry, both rows fail: the Add returns the first refusal and waits out no backoff.
+- `primeShuttle` (`internal/battencli/drive.go`) is only partly tested.
+  `TestPrimeShuttle_WiresTheReplyProbe` (`internal/battencli/wire_seams_test.go`) fails if the absent-pair path logs
+  a failure to locate the task worktree,
+  but no test checks that the usage recorder is wired when the pair is present.
+- No test checks the new tackler and arbiter wording against a live agent's stop question.
+- The retry test drives the pre-flight probes.
+  No new test makes the later fetches, the origin-only weft lookup or the beam lookup fail in transit.
 
 ## Merge danger
 
