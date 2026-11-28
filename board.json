@@ -986,29 +986,6 @@
       "project": "plan-ahead-chains"
     },
     {
-      "id": 1810,
-      "handle": "T6",
-      "slug": "batch-gate-tier1-own-packages",
-      "title": "The batch gate runs tier1 over the batch own packages, not their dependents",
-      "kind": "task",
-      "labels": [
-        "enhancement",
-        "gate",
-        "webster"
-      ],
-      "issues": [],
-      "recipe": "darn",
-      "depends_on": [],
-      "isolated": false,
-      "brief": "",
-      "body": "## Seen (`docs/research/webster/gate-time-2026-11-28.md`, lever A)\n\nSince the card gate scope grew in `a69580709`, the batch gate takes 24.1 min per row against 6.6 before, mostly its tier1 run over the dependent packages.\nThat tier1 listed run takes 18.9 min per row.\nNone of the batch gate's tier1 failures after the change was in a dependent package, and the plan-level verify still runs tier1 over everything.\n\n## Change\n\nThe batch gate's tier1 runs over the packages of the batch's own cards only, not their dependents.\nTier0 and the card gate keep their scope, and so does the plan-level verify.\n\n## Expected\n\nAbout 14.6 min saved per Webster or Weaver row; the report's estimate is 4.3 min for the narrower run against 18.9 min today.\n",
-      "status": "done",
-      "created": "2026-11-28T13:24:49Z",
-      "revised": "2026-11-28T13:24:49Z",
-      "profile": "light",
-      "project": "implementer-gate-time"
-    },
-    {
       "id": 1811,
       "handle": "T34",
       "slug": "webster-audit-master-friction",
@@ -1229,9 +1206,7 @@
       ],
       "issues": [],
       "recipe": "darn",
-      "depends_on": [
-        "batch-gate-tier1-own-packages"
-      ],
+      "depends_on": [],
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\n`docs/research/webster/gate-time-2026-11-28.md` ranks three card-gate levers among its top five, minutes saved per implementer row:\n\n- Lever C, 9 to 14 min: the card gate's listed run now covers the card's packages and their dependents, 20.6 min per row against 2.0 before the dependent scope.\n  Of 28 failed card tier0 runs, 14 failed only in dependents, which the batch gate also runs.\n- Lever B, about 11 min: the card gate's cold fixer (`contracts/stencils/gatefix/gatefix-body-card.md`) re-runs the failed check and then the whole card gate call,\n  and the next card gate call, which judges the fix, runs it in full again.\n- Lever 1, 3 to 8 min: the card gate's guard step (8.1 of 28.7 card gate min per row) repeats what the batch gate runs.\n  Under lever C the guard step would take back about 4.4 min, since the listed run covers fewer guard tests.\n\n## Change\n\nFor Webster and Weaver alike:\n\n- The card gate's listed run covers the card's own packages only; dependents run at the batch gate.\n- The card gate's fixer re-runs only the check that failed, and leaves the whole card gate to the call that judges the fix.\n- The guard step runs only in the batch gate, if the measured trade still holds once the two changes above are in; the run decides and says why in its change description.\n\nThe plan-level verify keeps running tier1 over everything.\n",

@@ -2,8 +2,6 @@
 
 `card-gate-own-packages` · Task · enhancement, gate, webster, weaver
 
-Depends on: [`batch-gate-tier1-own-packages`](design-batch-gate-tier1-own-packages.md)
-
 ## Seen
 
 `docs/research/webster/gate-time-2026-11-28.md` ranks three card-gate levers among its top five, minutes saved per implementer row:
