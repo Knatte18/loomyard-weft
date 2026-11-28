@@ -1,0 +1,15 @@
+{
+  "verdict": "resume",
+  "reason": "The plan review stopped at its hard cap with round 3's design-wrong findings F19, F20 and F21 open, all of them on card 12 (board-test-moves). The round-3 fixer applied each fix exactly as the review prescribed, and the current card 12 answers each one. F19: newReplayHub, pushPrimeRecords, commitOnOrigin, endEntryOnOrigin and addPushedPair are gone, gitkit.CommitOnBare is created, and fabric's originCommit and originCommitFile call it, so one copy stands. The card names the edit to replay_integration_test.go as a departure from D9. F20: the pushkit kit is gone, and moved rows assert inline over ListFailedPushes and the report's Entries. F21: teardownRecorder now wraps the real pairteardown.New and OriginSeams(HubSeamOptions) seams and records what passes through, with no scripted reply, and OwnerOf comes from pairteardown.OwnerReader with a fixed identity. The card's two Unverified facts hold in the code. otherPairSessions treats a hub with no tmux server as having no sessions. fabriccli's tier1 removelanding test already runs a real teardown over a hubforge hub. OwnerReader returns ParseOwners' error on board bytes that do not decode. The fix in place answers every open finding, so I recorded the ruling as an arbiter decision and accepted the round.",
+  "question": "",
+  "goto": "",
+  "verbs": [
+    "lym loom decision add fabric-core-push-origin --by arbiter --title \"Plan review round 3 accepted at the hard cap: card 12's support fixes stand\" --decision … --rationale …",
+    "lym loom circling accept fabric-core-push-origin"
+  ],
+  "cause": "",
+  "attempt": 1,
+  "attempt_dir": "/home/knatte/Code/loomyard-LYMHUB/fabric-core-push-origin/_lym/shed/fabric-core-push-origin/arbiter/attempt-1",
+  "verdict_path": "/home/knatte/Code/loomyard-LYMHUB/fabric-core-push-origin/_lym/shed/fabric-core-push-origin/arbiter/attempt-1/verdict.yaml",
+  "relaunch": "lym shed step fabric-core-push-origin --until-stop --arbiter-attempt 1"
+}

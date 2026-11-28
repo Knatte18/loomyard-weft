@@ -1,0 +1,14 @@
+{
+  "session_id": "fda011f8-141f-4b8f-b39e-cb9deef7b059",
+  "row": "Plan-Bouncer",
+  "role": "arbiter",
+  "model": "claude-opus-5-5",
+  "engine": "claude",
+  "input_tokens": 28,
+  "cache_write_tokens": 55108,
+  "cache_read_tokens": 610347,
+  "output_tokens": 6779,
+  "cost_usd": 0.5333014,
+  "started": "2026-11-28T16:06:54Z",
+  "ended": "2026-11-28T16:08:45Z"
+}
