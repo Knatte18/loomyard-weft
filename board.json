@@ -1048,7 +1048,7 @@
       "isolated": false,
       "brief": "",
       "body": "## Why\n\nThe Weaver bench of 2026-11-27 (`docs/research/weaver/bench-2026-11-27/report.md`) found Weaver can replace Webster as tapestry's implementer,\nbut named four changes to make first (operator, 2026-11-28: fix them, then bench again).\n\n## Changes\n\n1. A Weaver attempt gets a timeout of its own, sized to a batch.\n   Today an attempt runs under `shuttle.run_timeout_min` (30 minutes), which its gate waits and gate fixers count against;\n   the bench's first calibration batch hit it with three of four cards committed, and the retry climbed to Opus.\n2. Weaver's `summary.md` names each batch's deviations and departures, as Webster's summary does.\n   Today Weaver records the deviations only in `state.json`, and its summary lists attempt counts.\n3. The Weaver row records `gate_spans` for the plan-level verify, as the Webster rows do.\n4. Tests pin the paths the bench did not reach: a lost strand, a resume, a failed plan-level verify and the ladder's third rung.\n",
-      "status": "running · Code-Burler-Review",
+      "status": "running · Code-Burler-Fix",
       "created": "2026-11-28T11:36:30Z",
       "revised": "2026-11-28T11:36:30Z",
       "profile": "solid"
