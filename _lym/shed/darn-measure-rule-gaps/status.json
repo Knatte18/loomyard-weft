@@ -3,6 +3,7 @@
   "state": "awaiting",
   "error": "bouncer Code-Bouncer: round 1 escalated to the parent (cause: decision); brief at /home/knatte/Code/loomyard-LYMHUB/darn-measure-rule-gaps/_lym/reviews/code/round-1-escalation.md; file each call the record does not ask for as a board note for a new task, since the task's scope is closed, then decide with `lym loom circling accept darn-measure-rule-gaps` or `lym loom circling continue darn-measure-rule-gaps`, then run `lym loom resume` in the task worktree to resume",
   "parent_notice": "Review segment of task `darn-measure-rule-gaps` needs a decision: review the brief at `/home/knatte/Code/loomyard-LYMHUB/darn-measure-rule-gaps/_lym/reviews/code/round-1-escalation.md` with a one-shot fork. Way forward: the task's scope is closed, so no decision enters the record: rule each finding the record already asks for in scope with \"lym loom circling continue darn-measure-rule-gaps --in-scope \u003cfinding-id\u003e\", which hands it to the next round's fixer, file every other call as a board note for a new task, and decide with \"lym loom circling accept darn-measure-rule-gaps\" or \"lym loom circling continue darn-measure-rule-gaps\".",
+  "pending_by": "shed",
   "pause_requested": false,
   "activity": {
     "now": "Code-Bouncer",
