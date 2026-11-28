@@ -1,0 +1,376 @@
+diff --git a/docs/overview.md b/docs/overview.md
+index 6f943f094..c83897b9a 100644
+--- a/docs/overview.md
++++ b/docs/overview.md
+@@ -331,12 +331,12 @@ github.com/Knatte18/loomyard/
+ ├── internal/shedadapters/        the Shed engine adapters (Webster, Weaver, the Burler review and fix row producers, MultiLLMProducer, and the Bouncer) over shuttle/websterengine/burlerengine/seatengine
+ ├── internal/loomcli/             loom's cobra module: the session bootstrap, arming `internal/shedverbs`' generic status and pause verb bodies, and mounting `internal/sheddriver` for `lym loom drive`
+ ├── internal/loomshed/            loom's own row-name constants and producer constructors over `shedengine`
+-├── internal/loomrecipe/          assembles the `*shedengine.Shed` of the tapestry, darn, pawl, sampler, motif, raddle and arras recipes from their embedded files, and expands tapestry's and arras's `Motif` block from motif, the recipe that makes a sketch, the decision record
++├── internal/loomrecipe/          assembles the `*shedengine.Shed` of the tapestry, darn, pawl, sampler, motif, raddle and arras recipes from their embedded files, arras kept in code but not offered, and expands tapestry's and arras's `Motif` block from motif, the recipe that makes a sketch, the decision record
+ ├── internal/shedrecipe/          the engine registry — the name to `ShedProducer`-constructor mapping a recipe loader resolves each row's `Engine` against
+ ├── internal/shedbuild/           the recipe file format's loader and builder — decodes a recipe document and assembles the producer-definition list the shed engine already consumes
+ ├── internal/shedverbs/           the generic run/step/status/pause/goto cobra verb bodies shared by every module that arms a `*shedengine.Shed` onto a CLI subtree
+ ├── internal/sheddriver/          the shed layer's Go driver: its settle loop, rule table and hand-back, the tackler agent call, and the `shed` config module, told its paths and seams by the arming module
+-├── internal/shedcli/             the `lym shed` subtree: a named-recipe arming table for the tapestry, motif, raddle, arras, darn, pawl, sampler, hardener and batten recipes plus the three CLI seams that register it under the lym root
++├── internal/shedcli/             the `lym shed` subtree: a named-recipe arming table for the tapestry, motif, raddle, arras (kept in code but not offered), darn, pawl, sampler, hardener and batten recipes plus the three CLI seams that register it under the lym root
+ ├── internal/runpusher/           the background pusher of one push target: its start conditions, spawn, push loop, parent step and exit protocol
+ ├── internal/pushledger/          the machine-local ledger of owed pushes and unpushed landings, one entry per push target
+ ├── internal/statuscommit/        the shared per-transition status commit core (skip while mid-merge, commit hard-errors, start the worktree's pusher) that `loomcli` and `battencli` wrap
+@@ -535,6 +535,7 @@ User-facing modules each get one `lym <module>` namespace:
+   Seed-Child writes the profile's block for the task's recipe under the task's `run_settings`.
+   A task naming no profile takes its recipe's default profile.
+   The starting profiles are the ladder `speed`, `light`, `solid` and `wide`, plus the darn-only `docs`.
++  No starting profile or default covers `arras`, a recipe kept in code but not offered.
+   `lym config profiles --set <name>='<json object>'` adds or replaces one whole profile,
+   and a dotted key such as `docs.darn.loom.code.max_bounces=0` sets one value inside it.
+   See [internal/runprofile](../internal/runprofile/doc.go). ✅ Implemented.
+@@ -1130,7 +1131,8 @@ User-facing modules each get one `lym <module>` namespace:
+   A run with no seed gets `tapestry`.
+   `lym loom start` never rewrites a recorded recipe.
+   The `lym loom` verbs serve loom runs only:
+-  a recipe declaring `contract: loom` is served, among them tapestry, motif, raddle, arras, darn, pawl and sampler.
++  a recipe declaring `contract: loom` is served, among them tapestry, motif, raddle, darn, pawl and sampler,
++  and arras, which is kept in code but not offered.
+   A run of any other recipe is refused, naming the `lym shed` verbs;
+   a seed naming no recipe this lym knows is refused, naming the re-seed.
+   A verb that applies to some loom recipes refuses on the others by the recipe's rows, never its name:
+@@ -1976,7 +1978,8 @@ and the baseline capture is a detached registered process, not a gate tier.
+ See [internal/driftengine](../internal/driftengine/doc.go).
+ 
+ The batten Shed nests loom's, as its own recipe.
+-Its `Run-Shed` row seeds a task's run, tapestry, motif, raddle, arras, darn, sampler or hardener and drives it as a child process,
++Its `Run-Shed` row seeds a task's run, tapestry, motif, raddle, darn, sampler or hardener,
++or arras, which is kept in code but not offered, and drives it as a child process,
+ and it polls that run's own persisted status for the verdict.
+ There are two status files by design:
+ the task's, committed on the task branch, and batten's own, durable under prime's own `_lym/shed/<slug>/`.
+diff --git a/docs/reference/weaving-glossary.md b/docs/reference/weaving-glossary.md
+index 8eab8bbef..9e6623080 100644
+--- a/docs/reference/weaving-glossary.md
++++ b/docs/reference/weaving-glossary.md
+@@ -130,7 +130,7 @@ Agent nouns name the one who does the work.
+ | pile | flor †, polvarp (pile warp) | sv lugg; fr velours; de Flor | raised loops or cut ends on the surface | state | – |
+ | terry | frotté | fr éponge; de Frottee | pile of uncut loops | state | – |
+ | tapestry | billedvev, gobelenger (pl.) | sv gobelängvävnad; fr tapisserie; de Gobelin | weft-faced pictorial weave | recipe, artifact | Taken: `tapestry`, the full task recipe: Discussion, Plan, Webster, Code review, Describe and Finalize, each review step followed by its own fix step. |
+-| arras | – | fr arras | a tapestry hung as a wall covering | recipe | Taken: `arras`, a recipe that is kept, but no board entry may be given it; `motif` serves a tapestry-sized note. It discusses the task and splits its decision record into board entries under the split perch's review, and the entry becomes the family's project. |
++| arras | – | fr arras | a tapestry hung as a wall covering | recipe | Taken: `arras`, a recipe kept in code but not offered: no board entry may be given it, and no starting run profile covers it; `motif` serves a tapestry-sized note. It discusses the task and splits its decision record into board entries under the split perch's review, and the entry becomes the family's project. |
+ | overshot | – † | sv opphämta †; de Überschuss | pattern from long weft floats on a plain ground | state | – |
+ | rep, ribbed weave | rips † | fr reps; de Rips | weave with fine crosswise ribs | state | – |
+ | double cloth | dobbeltvev | fr double étoffe; de Doppelgewebe | two layers woven at once | state, recipe | – |
+diff --git a/internal/boardcli/verbs_test.go b/internal/boardcli/verbs_test.go
+index c1ffe0a52..bec9e56ac 100644
+--- a/internal/boardcli/verbs_test.go
++++ b/internal/boardcli/verbs_test.go
+@@ -1074,7 +1074,7 @@ func stepProfiles(t *testing.T, f *cliFixture) {
+ 	if want := []string{"docs", "light", "solid", "speed", "wide"}; !slices.Equal(names, want) {
+ 		t.Errorf("profile names = %v, want %v", names, want)
+ 	}
+-	if want := map[string]any{"tapestry": "solid", "arras": "solid", "motif": "solid", "darn": "light", "pawl": "light", "raddle": "light"}; !reflect.DeepEqual(result["defaults"], want) {
++	if want := map[string]any{"tapestry": "solid", "motif": "solid", "darn": "light", "pawl": "light", "raddle": "light"}; !reflect.DeepEqual(result["defaults"], want) {
+ 		t.Errorf("defaults = %v, want %v", result["defaults"], want)
+ 	}
+ 
+diff --git a/internal/configreg/configreg.go b/internal/configreg/configreg.go
+index 483e4b276..c4a78cbb9 100644
+--- a/internal/configreg/configreg.go
++++ b/internal/configreg/configreg.go
+@@ -168,7 +168,7 @@ func Modules() []Module {
+ 		{Name: "loom", Template: loomengine.ConfigTemplate, OpenMaps: loomengine.ConfigOpenMaps(), CheckValues: loomengine.ValidateLocalValues, CheckLoad: checkLoadNamed(loomengine.LoadConfig, "loom"), Reinterpretations: []Reinterpretation{{ID: loomengine.CodeAutoAcceptBlockingReinterpretationID, Rewrite: loomengine.FlagCodeAutoAccept, RunsWithoutFile: true}}, Spec: loomengine.ConfigSpec},
+ 		{Name: "models", Template: modelspec.ConfigTemplate, SeedOnly: true, CheckLoad: checkLoad(modelspec.LoadRegistry), Spec: modelspec.ConfigSpec},
+ 		{Name: "orch", Template: orchengine.ConfigTemplate, CheckLoad: checkLoadNamed(orchengine.LoadConfig, "orch"), Reinterpretations: []Reinterpretation{{ID: orchengine.RemoteControlOffReinterpretationID, Rewrite: orchengine.FlagRemoteControlDefault}}, Spec: orchengine.ConfigSpec},
+-		{Name: runprofile.ModuleName, Template: runprofile.ConfigTemplate, HubWide: true, SeedOnly: true, RunSettingsBlocks: true, CheckLoad: checkProfiles, Reinterpretations: []Reinterpretation{{ID: dobbyengine.ProfilePullRequestModesReinterpretationID, Rewrite: dobbyengine.ReinterpretProfilePullRequestModes}}, Spec: runprofile.ConfigSpec},
++		{Name: runprofile.ModuleName, Template: runprofile.ConfigTemplate, HubWide: true, SeedOnly: true, RunSettingsBlocks: true, CheckLoad: checkProfiles, Reinterpretations: []Reinterpretation{{ID: dobbyengine.ProfilePullRequestModesReinterpretationID, Rewrite: dobbyengine.ReinterpretProfilePullRequestModes}, {ID: runprofile.ArrasDefaultReinterpretationID, Rewrite: runprofile.ReinterpretArrasDefault}}, Spec: runprofile.ConfigSpec},
+ 		{Name: "reed", Template: reedengine.ConfigTemplate, OpenMaps: reedengine.ConfigOpenMaps(), CheckLoad: checkLoadNamed(reedengine.LoadConfig, "reed"), Spec: reedengine.ConfigSpec},
+ 		{Name: "report", Template: reportconfig.ConfigTemplate, HubWide: true, CheckLoad: checkLoad(reportconfig.LoadConfig), Spec: reportconfig.ConfigSpec},
+ 		{Name: "sampler", Template: samplerengine.ConfigTemplate, HubWide: true, CheckLoad: checkLoadNamed(samplerengine.LoadConfig, "sampler"), Spec: samplerengine.ConfigSpec},
+diff --git a/internal/configsync/configsync_test.go b/internal/configsync/configsync_test.go
+index 9c9d5a079..8335cbaba 100644
+--- a/internal/configsync/configsync_test.go
++++ b/internal/configsync/configsync_test.go
+@@ -1140,6 +1140,84 @@ func TestReconcileHubWideAt_SeedOnlyFileFollowsItsTemplate(t *testing.T) {
+ 	}
+ }
+ 
++// TestReconcileHubWideAt_ProfilesStillLoadAfterTheArrasBlocksDrop pins a hub's upgrade past the arras blocks.
++// Its profiles.yaml and template base hold the template that still covered arras, with an operator's defaults.arras.
++// The follow and then the module's registered reinterpretations leave a file that loads.
++// The default stays only while the profile it names keeps an arras block.
++func TestReconcileHubWideAt_ProfilesStillLoadAfterTheArrasBlocksDrop(t *testing.T) {
++	tiergate.Require(t, 0)
++	t.Parallel()
++	const (
++		raddleBlock = "  raddle:\n    loom: {raddle: {auto_approve: false}}\n"
++		arrasBlock  = "  arras:\n    loom: {split: {max_bounces: 1, hard_max_bounces: 2}}\n"
++		ownBlock    = "  arras:\n    loom: {split: {max_bounces: 4, hard_max_bounces: 5}}\n"
++	)
++	withBlocks := strings.ReplaceAll(runprofile.ConfigTemplate(), raddleBlock, raddleBlock+arrasBlock)
++	older := strings.Replace(withBlocks, "  raddle: light\n", "  raddle: light\n  arras: solid\n", 1)
++	repointed := strings.Replace(older, "  arras: solid\n", "  arras: light\n", 1)
++	m, ok := configreg.Lookup(runprofile.ModuleName)
++	if !ok {
++		t.Fatalf("module %q is not registered", runprofile.ModuleName)
++	}
++
++	tests := []struct {
++		name    string
++		hubFile string
++		// wantDefault is the arras default the loaded file holds, empty for none.
++		wantDefault string
++		// wantLines holds the opening of each rewrote or flagged line, in order.
++		wantLines []string
++	}{
++		{
++			name:      "a default repointed at a profile left as shipped is dropped",
++			hubFile:   repointed,
++			wantLines: []string{"defaults.arras: light is dropped"},
++		},
++		{
++			name:        "a default naming a profile whose arras block the operator edited stays",
++			hubFile:     strings.Replace(repointed, raddleBlock+arrasBlock+"solid:", raddleBlock+ownBlock+"solid:", 1),
++			wantDefault: "light",
++		},
++	}
++	for _, tt := range tests {
++		t.Run(tt.name, func(t *testing.T) {
++			t.Parallel()
++			boardDir := t.TempDir()
++			writeModuleFile(t, boardDir, runprofile.ModuleName, tt.hubFile)
++			if err := os.WriteFile(configengine.TemplateBaseFile(boardDir, runprofile.ModuleName), []byte(older), 0o644); err != nil {
++				t.Fatalf("write the template base: %v", err)
++			}
++			if _, err := ReconcileHubWideAt(boardDir, "", HubWideOptions{Apply: true}); err != nil {
++				t.Fatalf("ReconcileHubWideAt(): %v", err)
++			}
++			hubPath := configengine.ConfigFile(boardDir, runprofile.ModuleName)
++			hub, err := os.ReadFile(hubPath)
++			if err != nil {
++				t.Fatalf("read the hub file: %v", err)
++			}
++			var lines []string
++			for _, change := range m.Reinterpretations {
++				rewritten, rewrote, flagged, err := change.Rewrite(hub, nil)
++				if err != nil {
++					t.Fatalf("Rewrite(%s) error = %v; want none", change.ID, err)
++				}
++				hub, lines = rewritten, append(append(lines, rewrote...), flagged...)
++			}
++			if !slices.EqualFunc(lines, tt.wantLines, strings.HasPrefix) {
++				t.Errorf("reinterpretation lines = %q; want lines opening %q", lines, tt.wantLines)
++			}
++			writeModuleFile(t, boardDir, runprofile.ModuleName, string(hub))
++			profiles, err := runprofile.Load(configengine.Dirs{Board: boardDir})
++			if err != nil {
++				t.Fatalf("Load() after the upgrade: %v; file:\n%s", err, hub)
++			}
++			if got := profiles.Defaults["arras"]; got != tt.wantDefault {
++				t.Errorf("Load() defaults.arras = %q; want %q", got, tt.wantDefault)
++			}
++		})
++	}
++}
++
+ // findResult returns the Result for the named module, or nil if absent.
+ func findResult(results []Result, module string) *Result {
+ 	for i := range results {
+diff --git a/internal/runprofile/doc.go b/internal/runprofile/doc.go
+index 35919d13e..15d0783a6 100644
+--- a/internal/runprofile/doc.go
++++ b/internal/runprofile/doc.go
+@@ -18,6 +18,11 @@
+ // The template's starting profiles are a ladder of review rounds per perch, `speed`, `light`, `solid` and `wide`.
+ // Each perch's hard cap is its rounds plus one.
+ // `docs` is a darn-only profile for prose and config value edits.
++// No starting profile or default covers the `arras` recipe, which is kept in code but not offered,
++// so an arras run naming no profile runs on the hub's own config.
++// The reconcile drops a starting profile's arras block that the hub left as shipped.
++// A `defaults.arras` naming a profile left with no arras block would then keep the file from loading.
++// A one-time reinterpretation drops that default.
+ // A round count of 0 turns a perch off, since its Bouncer then settles approved with no review round.
+ // A darn run has no Discussion or Plan review,
+ // so its Code-Review reviewer also judges whether the run did what the entry asks.
+diff --git a/internal/runprofile/reinterpret.go b/internal/runprofile/reinterpret.go
+new file mode 100644
+index 000000000..0c6c83e73
+--- /dev/null
++++ b/internal/runprofile/reinterpret.go
+@@ -0,0 +1,93 @@
++// reinterpret.go carries a hub's profiles.yaml across the template's drop of the starting profiles' arras blocks.
++
++package runprofile
++
++import (
++	"bytes"
++	"fmt"
++	"slices"
++
++	"gopkg.in/yaml.v3"
++
++	"github.com/Knatte18/loomyard/internal/configengine"
++	"github.com/Knatte18/loomyard/internal/shedrun"
++)
++
++// ArrasDefaultReinterpretationID names the change that stopped the starting profiles covering the arras recipe.
++const ArrasDefaultReinterpretationID = "profiles-arras-default-dropped"
++
++// ReinterpretArrasDefault repairs the bytes of a hub profiles.yaml that its arras default keeps from loading.
++// It drops defaults.arras when the profile it names holds no arras block.
++// It keeps comments and every other key.
++// The drop does not keep what the default meant, so it is reported as one flagged line with a way forward.
++// A default written through an alias or a merge key is flagged for a hand edit, and the file is left as it is.
++// A file with no such default is returned unchanged, with no line.
++// The worktrees argument is unused, as the rewrite judges the file alone.
++func ReinterpretArrasDefault(existing []byte, _ []configengine.HubWorktree) (rewritten []byte, rewrote, flagged []string, err error) {
++	var document yaml.Node
++	if err := yaml.Unmarshal(existing, &document); err != nil {
++		return nil, nil, nil, fmt.Errorf("parse the profiles config: %w", err)
++	}
++	if document.Kind != yaml.DocumentNode || len(document.Content) == 0 {
++		return existing, nil, nil, nil
++	}
++	// The values are judged decoded, so a block reached through an alias or a merge key counts.
++	var entries map[string]any
++	if err := document.Decode(&entries); err != nil {
++		return nil, nil, nil, fmt.Errorf("decode the profiles config: %w", err)
++	}
++	defaults, _ := entries[DefaultsEntry].(map[string]any)
++	name, named := defaults[shedrun.RecipeArras].(string)
++	if !named {
++		return existing, nil, nil, nil
++	}
++	profile, _ := entries[name].(map[string]any)
++	if _, covered := profile[shedrun.RecipeArras]; covered {
++		return existing, nil, nil, nil
++	}
++	if !removeMappingKey(mappingValue(document.Content[0], DefaultsEntry), shedrun.RecipeArras) {
++		line := fmt.Sprintf("%s.%s: %s names a profile with no %s block, so the file does not load, and it is written through an alias or a merge key; "+
++			"way forward: remove that default by hand with `lym config profiles`", DefaultsEntry, shedrun.RecipeArras, name, shedrun.RecipeArras)
++		return existing, nil, []string{line}, nil
++	}
++
++	var out bytes.Buffer
++	encoder := yaml.NewEncoder(&out)
++	encoder.SetIndent(2)
++	if err := encoder.Encode(&document); err != nil {
++		return nil, nil, nil, fmt.Errorf("write the profiles config: %w", err)
++	}
++	if err := encoder.Close(); err != nil {
++		return nil, nil, nil, fmt.Errorf("write the profiles config: %w", err)
++	}
++	line := fmt.Sprintf("%s.%s: %s is dropped, even where another notice lists it as kept, since profile %s holds no %s block, "+
++		"so such a task naming no profile now runs on the hub's own config; "+
++		"way forward: to keep a default, add the block with `lym config profiles --set %s.%s='<json object>'`, then set the default again",
++		DefaultsEntry, shedrun.RecipeArras, name, name, shedrun.RecipeArras, name, shedrun.RecipeArras)
++	return out.Bytes(), nil, []string{line}, nil
++}
++
++// mappingValue returns the value node mapping holds under key, nil when it holds none.
++func mappingValue(mapping *yaml.Node, key string) *yaml.Node {
++	for i := 0; i+1 < len(mapping.Content); i += 2 {
++		if mapping.Content[i].Value == key {
++			return mapping.Content[i+1]
++		}
++	}
++	return nil
++}
++
++// removeMappingKey removes key and its value from mapping, and reports whether mapping held it as its own key.
++// A nil mapping holds none.
++func removeMappingKey(mapping *yaml.Node, key string) bool {
++	if mapping == nil {
++		return false
++	}
++	for i := 0; i+1 < len(mapping.Content); i += 2 {
++		if mapping.Content[i].Value == key {
++			mapping.Content = slices.Delete(mapping.Content, i, i+2)
++			return true
++		}
++	}
++	return false
++}
+diff --git a/internal/runprofile/runprofile_test.go b/internal/runprofile/runprofile_test.go
+index 090092ef6..5e3e6f0f0 100644
+--- a/internal/runprofile/runprofile_test.go
++++ b/internal/runprofile/runprofile_test.go
+@@ -45,7 +45,7 @@ func TestLoad(t *testing.T) {
+ 		{
+ 			name:         "no file reads the template's ladder, docs and defaults",
+ 			wantNames:    []string{"docs", "light", "solid", "speed", "wide"},
+-			wantDefaults: map[string]string{"tapestry": "solid", "motif": "solid", "darn": "light", "pawl": "light", "raddle": "light", "arras": "solid"},
++			wantDefaults: map[string]string{"tapestry": "solid", "motif": "solid", "darn": "light", "pawl": "light", "raddle": "light"},
+ 		},
+ 		{
+ 			name:         "a removed starting profile stays removed",
+@@ -100,7 +100,7 @@ func TestLoad(t *testing.T) {
+ // sampler.code_review is on from light up, and sampler has no default profile.
+ // Only the darn block sets the Code-Review reviewer, to opus[medium].
+ // Each profile's motif block holds its tapestry block's Discussion perch and nothing else.
+-// Each profile's arras block holds that Discussion perch's rounds and the split perch's alike, with a hard cap one above.
++// No profile holds an arras block, since the arras recipe is not offered.
+ //
+ //testtiming:keep pins the template's per-block code.reviewer_model values, which the lookup tests over a fixture file cannot see
+ func TestTemplateLadder(t *testing.T) {
+@@ -183,13 +183,8 @@ func TestTemplateLadder(t *testing.T) {
+ 			if !reflect.DeepEqual(motif, wantMotif) {
+ 				t.Errorf("Settings(%s, motif) = %v; want %v", tt.profile, motif, wantMotif)
+ 			}
+-			arras, err := profiles.Settings(tt.profile, "arras")
+-			if err != nil {
+-				t.Fatal(err)
+-			}
+-			wantArras := map[string]any{"loom": map[string]any{"discussion": caps(), "split": caps()}}
+-			if !reflect.DeepEqual(arras, wantArras) {
+-				t.Errorf("Settings(%s, arras) = %v; want %v", tt.profile, arras, wantArras)
++			if arras, err := profiles.Settings(tt.profile, "arras"); err == nil {
++				t.Errorf("Settings(%s, arras) = %v, nil; want the refusal for a profile holding no arras block", tt.profile, arras)
+ 			}
+ 			wantReview := tt.profile != "speed"
+ 			samplerKeys, _ := sampler["sampler"].(map[string]any)
+diff --git a/internal/runprofile/template.yaml b/internal/runprofile/template.yaml
+index 0501d7a17..c1145ae0e 100644
+--- a/internal/runprofile/template.yaml
++++ b/internal/runprofile/template.yaml
+@@ -22,7 +22,6 @@ defaults:
+   darn: light
+   pawl: light
+   raddle: light
+-  arras: solid
+ speed:
+   tapestry:
+     loom: {discussion: {max_bounces: 0, hard_max_bounces: 1}, code: {max_bounces: 1, hard_max_bounces: 2, reviewer_fan: ""}}
+@@ -37,8 +36,6 @@ speed:
+     loom: {code: {max_bounces: 0, hard_max_bounces: 1}}
+   raddle:
+     loom: {raddle: {auto_approve: false}}
+-  arras:
+-    loom: {discussion: {max_bounces: 0, hard_max_bounces: 1}, split: {max_bounces: 0, hard_max_bounces: 1}}
+ light:
+   tapestry:
+     loom: {discussion: {max_bounces: 1, hard_max_bounces: 2}, code: {max_bounces: 1, hard_max_bounces: 2}}
+@@ -54,8 +51,6 @@ light:
+     sampler: {code_review: true}
+   raddle:
+     loom: {raddle: {auto_approve: false}}
+-  arras:
+-    loom: {discussion: {max_bounces: 1, hard_max_bounces: 2}, split: {max_bounces: 1, hard_max_bounces: 2}}
+ solid:
+   tapestry:
+     loom: {discussion: {max_bounces: 2, hard_max_bounces: 3}, code: {max_bounces: 1, hard_max_bounces: 2}}
+@@ -71,8 +66,6 @@ solid:
+     sampler: {code_review: true}
+   raddle:
+     loom: {raddle: {auto_approve: false}}
+-  arras:
+-    loom: {discussion: {max_bounces: 2, hard_max_bounces: 3}, split: {max_bounces: 2, hard_max_bounces: 3}}
+ wide:
+   tapestry:
+     loom: {discussion: {max_bounces: 3, hard_max_bounces: 4}, code: {max_bounces: 1, hard_max_bounces: 2}}
+@@ -88,8 +81,6 @@ wide:
+     sampler: {code_review: true}
+   raddle:
+     loom: {raddle: {auto_approve: false}}
+-  arras:
+-    loom: {discussion: {max_bounces: 3, hard_max_bounces: 4}, split: {max_bounces: 3, hard_max_bounces: 4}}
+ docs:
+   darn:
+     darn: {writer: "sonnet[medium]", report_dir: "docs/research"}
