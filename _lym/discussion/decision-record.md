@@ -29,6 +29,12 @@ It ends with a recommendation on making Weaver tapestry's default implementer.
 
 ## Decisions
 
+### Added after Discussion (parent, 2026-11-28): The orch makes the six bench pairs; this session runs them pair by pair after the batch-gate change lands
+
+Decision: The orch created six pairs from this task worktree: wbr-b1 to wbr-b6, at /home/knatte/Code/loomyard-LYMHUB/wbr-bN with their -weft records sides. This session does everything else in them: commits each base tree, copies in the archived plan and decision record, seeds the run, moves it straight to the implementer row with a pause after that row, runs lym burler run, and collects the records. Assign b1/b2 board-viewer-server, b3/b4 launch-manifest-parity, b5/b6 gate-test-map-mode, odd Weaver and even Webster. Run one plan at a time, its Weaver and Webster runs started together, and the next plan once both have finished. Start the first plan only after batch-gate-tier1-own-packages has landed and its deploy has run, so every run uses one lym build; ask the orch if it has not landed when you are ready. Record the load average at each start in the report. Do not push the bench branches and do not remove the pairs: say when they are done and the orch removes them.
+
+Rationale: A task session cannot run lym fabric add, so the orch makes the pairs from the task worktree and the task agent runs the bench (operator, 2026-11-16). One lym build across the bench avoids the first bench's mid-bench rebuild limit, and one plan at a time keeps the machine's load from swamping the comparison while each plan's two implementers still share it.
+
 ## Constraints
 
 ## Auto-mode assumptions
