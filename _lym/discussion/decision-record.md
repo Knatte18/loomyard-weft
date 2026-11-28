@@ -291,6 +291,12 @@ Decision: This replaces the decision that every probe runs with eDP-1 as the onl
 
 Rationale: The operator, 2026-11-28: two screens are fine to test now; the run gets the cross-output facts it lacked instead of leaving them unobserved.
 
+### Added after Discussion (parent, 2026-11-28): D6 clamp: leave windows tiled, no release and no frame setting
+
+Decision: This replaces D6's clamp by release and frame setting. A window placed in a zone whose tile runs under a panel stays tiled: lym neither releases it from its tile nor sets its frameGeometry, in the same script run or a later one. KWin itself keeps a tiled window inside the output's work area. Recording .scratch/kwin-probes/recordings/neve-clamp/journal.txt (clamp probe, 2026-11-28, DP-2 work area 2048,0 2560x1368, one-row zones 1280x1440): LEFT, left tiled, settled at 2052,4 1274x1360, ending inside the work area, and the operator saw it above the panel; RIGHT, released and given 3332,4 1272x1364 in a later run, took the position but kept 634x642. Window frames read right after a placement may lag; read them in a later run before trusting them. Cards that release a window or set its frame drop that part.
+
+Rationale: The clamp probe observed method (a) work and method (b) fail on Neve with two screens; the earlier apply readings of zone -1 may come from the operator moving a probe window by hand (operator, 2026-11-28).
+
 ## Constraints
 
 - Plasma 6.6.6, KWin 6.6.6, Wayland on Neve (`plasmashell --version`, `kwin_wayland --version`, `XDG_SESSION_TYPE`).
