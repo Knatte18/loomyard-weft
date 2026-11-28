@@ -708,7 +708,7 @@
       "isolated": false,
       "brief": "push-retry-not-halt made pushes retry quietly, but dobby catch-up fetch failure still refuses the start",
       "body": "## Seen\n\nThe landed `push-retry-not-halt` (`3fb0787e3`) records that a dobby catch-up whose fetch fails on an unreachable origin still stops that run's start,\nand leaves to the parent whether that stays. Overnight runs then wait for an orch to run `lym batten run` again.\n\n## Idea\n\nTreat a catch-up fetch on an unreachable origin as a transient network stop: dobby retries the start on its own backoff and reports only past the bound,\nas the pushes now do.\n",
-      "status": "running · Darn-Write",
+      "status": "running · Code-Bouncer",
       "created": "2026-11-27T21:30:01Z",
       "revised": "2026-11-28T09:20:56Z",
       "profile": "light"
