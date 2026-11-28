@@ -570,13 +570,14 @@
       "issues": [],
       "recipe": "darn",
       "depends_on": [
-        "kde-window-placement-build"
+        "kde-window-placement-build",
+        "kwin-home-desktop-gone"
       ],
       "isolated": false,
       "brief": "",
       "body": "## Seen\n\nThe KDE placement task places a lym window only when the window opens, and lym moves no window by itself afterwards.\nA window the operator drags out of its zone, or one KWin moves on its own (seen with two screens, 2026-11-27), stays out of place until it is opened again.\nThe operator asked (2026-11-28) how windows that have come out of sync get tiled again.\n\n## Idea\n\nA verb, run by hand, that re-applies the stored placement to the hub's open lym windows:\neach goes back to its home desktop and zone, tiled, through the same KWin script path and lock the opening placement uses.\nIt moves only lym windows of the hub, and reports what it moved and what it could not place.\n\n## Open\n\n- Name and home of the verb (for example under `lym window`), and whether it covers one worktree or the whole hub.\n- Whether a desktop-bar button runs it.\n",
       "created": "2026-11-28T08:39:05Z",
-      "revised": "2026-11-28T08:45:53Z",
+      "revised": "2026-11-28T15:24:56Z",
       "profile": "light"
     },
     {

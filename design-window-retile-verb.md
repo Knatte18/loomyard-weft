@@ -2,7 +2,7 @@
 
 `window-retile-verb` · Task · feature, termwindow, desktop
 
-Depends on: [`kde-window-placement-build`](design-kde-window-placement-build.md)
+Depends on: [`kde-window-placement-build`](design-kde-window-placement-build.md), [`kwin-home-desktop-gone`](design-kwin-home-desktop-gone.md)
 
 ## Seen
 
