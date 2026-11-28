@@ -1,6 +1,8 @@
-# No gate checks Go formatting
+# Tier0 fails on a Go file gofmt would rewrite
 
-`battencli-wire-test-gofmt` · Note · enhancement, gate
+`battencli-wire-test-gofmt` · Task · enhancement, gate · draft
+
+Depends on: [`gate-call-shows-slot-wait`](design-gate-call-shows-slot-wait.md)
 
 ## Seen
 
