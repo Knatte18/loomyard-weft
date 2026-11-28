@@ -1,6 +1,6 @@
 # lym fabric clone --reset removes unpushed records, board commits and uncommitted Bolt changes
 
-`clone-reset-keeps-unpushed` · Task · bug, fabric · draft
+`clone-reset-keeps-unpushed` · Task · bug, fabric
 
 Depends on: [`missing-origin-unreachable`](design-missing-origin-unreachable.md), [`runpusher-removed-worktrees`](design-runpusher-removed-worktrees.md), [`catchup-fetch-stops-start`](design-catchup-fetch-stops-start.md)
 
